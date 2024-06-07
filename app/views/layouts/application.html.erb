@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-100" data-bs-theme="<%= params[:mode] %>">
   <head>
-    <title>Paychecq</title>
+    <title>PayChecQ</title>
+
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -10,10 +12,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
-
+  <body class="h-100">
     <%= yield %>
   </body>
 </html>
