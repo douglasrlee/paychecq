@@ -1,5 +1,57 @@
-$primary: #673AB7;
-$secondary: #D1C4E9;
+$paychecq-primary-light: #673AB7;
+$paychecq-secondary-light: #7E57C2;
+$paychecq-tertiary-light: #D1C4E9;
+
+$paychecq-primary-dark: #D1C4E9;
+$paychecq-secondary-dark: #EDE7F6;
+$paychecq-tertiary-dark: #673AB7;
+
+$primary: $paychecq-primary-light;
+$secondary: $paychecq-tertiary-light;
+
+$navbar-light-color: $paychecq-primary-light;
+$navbar-light-hover-color: $paychecq-tertiary-light;
+
+$dropdown-link-color: $paychecq-primary-light;
 
 @import 'bootstrap/scss/bootstrap';
 @import 'bootstrap-icons/font/bootstrap-icons';
+
+[data-bs-theme="dark"] {
+  .text-primary {
+    color: $paychecq-primary-dark !important;
+  }
+
+  .navbar-brand {
+    img {
+      content: url('/dark/dark-logo.png');
+    }
+  }
+
+  .navbar-nav {
+    --bs-nav-link-color: #{$paychecq-primary-dark};
+    --bs-nav-link-hover-color: #{$paychecq-secondary-dark};
+  }
+
+  .dropdown-menu {
+    --bs-dropdown-link-active-color: #{$paychecq-tertiary-dark};
+    --bs-dropdown-link-active-bg: #{$paychecq-primary-dark};
+  }
+}
+
+.global-notice {
+  margin: 20px auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 350px;
+}
+
+.avatar {
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 35px;
+  width: 35px;
+}

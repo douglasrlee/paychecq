@@ -1,0 +1,15 @@
+<h5 class="card-title text-center">Forgot your password?</h5>
+
+<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, novalidate: true }) do |f| %>
+  <div class="mt-4">
+    <%= f.label :email, "Email address", class: "form-label" %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", class: (resource.errors[:email].any? ? "is-invalid form-control" : "form-control") %>
+    <div class="invalid-feedback <%= "d-block" if resource.errors[:email].any? %>">
+      Email address <%= resource.errors[:email].first %>
+    </div>
+  </div>
+
+  <%= f.submit "Send password reset email", class: "btn btn-primary w-100 mb-2 mt-4" %>
+<% end %>
+
+<%= render "devise/shared/links" %>
