@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100" data-bs-theme="<%= params[:mode] %>">
+  <head>
+    <title>PayChecQ</title>
+
+    <%= favicon_link_tag asset_path('/light/light-logo.png'), id: "favicon" %>
+
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="h-100">
+    <% if notice.present? %>
+      <div class="global-notice alert alert-success alert-dismissible fade show" role="alert">
+        <%= notice %>
+
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% end %>
+
+    <div class="container-fluid h-100">
+      <div class="row justify-content-center align-items-center h-100">
+        <div class="gx-0" style="width: 350px;">
+          <div class="card">
+            <div class="card-header text-center">
+              <img src="/light/light-logo.png" alt="logo" height="50" />
+              <span class="h1 align-middle text-primary" style="font-size: 2rem;">PayChecQ</span>
+            </div>
+
+            <div class="card-body">
+              <% if alert.present? && alert != "You need to sign in or sign up before continuing." %>
+                <div class="alert alert-danger" role="alert">
+                  <%= alert %>
+                </div>
+              <% end %>
+
+              <%= yield %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

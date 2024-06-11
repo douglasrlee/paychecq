@@ -1,0 +1,25 @@
+<h5 class="card-title text-center">Change your password</h5>
+
+<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, novalidate:  true }) do |f| %>
+  <%= f.hidden_field :reset_password_token %>
+
+  <div class="mt-4">
+    <%= f.label :password, "New password", class: "form-label" %>
+    <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: (resource.errors[:password].any? ? "is-invalid form-control" : "form-control") %>
+    <div class="invalid-feedback <%= "d-block" if resource.errors[:password].any? %>">
+      Password <%= resource.errors[:password].first %>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <%= f.label :password_confirmation, "Confirm new password", class: "form-label" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", class: (resource.errors[:password_confirmation].any? ? "is-invalid form-control" : "form-control") %>
+    <div class="invalid-feedback <%= "d-block" if resource.errors[:password_confirmation].any? %>">
+      Password confirmation <%= resource.errors[:password_confirmation].first %>
+    </div>
+  </div>
+
+  <%= f.submit "Change my password", class: "btn btn-primary w-100 mb-2 mt-4" %>
+<% end %>
+
+<%= render "devise/shared/links" %>
