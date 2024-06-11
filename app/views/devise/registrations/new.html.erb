@@ -11,7 +11,7 @@
 
   <div class="mt-2">
     <%= f.label :email, "Email address", class: "form-label" %>
-    <%= f.email_field :email, autocomplete: "email", class: (resource.errors[:email].any? ? "is-invalid form-control" : "form-control") %>
+    <%= f.email_field :email, autocomplete: "username", class: (resource.errors[:email].any? ? "is-invalid form-control" : "form-control") %>
     <div class="invalid-feedback <%= "d-block" if resource.errors[:email].any? %>">
       Email address <%= resource.errors[:email].first %>
     </div>
