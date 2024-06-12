@@ -46,6 +46,9 @@ common: &default_settings
       # This should not be used when forwarding is enabled.
       enabled: false
 
+  browser_monitoring:
+    auto_instrument: true
+
 # Environment-specific settings are in this section.
 # RAILS_ENV or RACK_ENV (as appropriate) is used to determine the environment.
 # If your application has other named environments, configure them here.
