@@ -1,0 +1,36 @@
+require:
+  - rubocop-rails
+  - rubocop-factory_bot
+  - rubocop-rspec
+  - rubocop-rspec_rails
+
+AllCops:
+  EnabledByDefault: true
+
+Bundler/GemVersion:
+  Enabled: false
+Bundler/GemComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+Style/DocumentationMethod:
+  Enabled: false
+Style/Copyright:
+  Enabled: false
+Style/MissingElse:
+  Enabled: false
+Style/DisableCopsWithinSourceCodeDirective:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Layout/LineLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Rails/SchemaComment:
+  Enabled: false
