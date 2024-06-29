@@ -68,6 +68,8 @@ group :development, :test do
   gem 'rubocop-rspec'
 
   gem 'rubocop-rspec_rails', require: false
+
+  gem 'bullet'
 end
 
 group :development do
