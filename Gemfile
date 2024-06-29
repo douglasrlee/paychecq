@@ -53,7 +53,7 @@ gem 'devise', '~> 4.9'
 
 gem 'newrelic_rpm'
 
-gem "strong_migrations"
+gem 'strong_migrations'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
