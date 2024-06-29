@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+if ::ENV['CI'] == 'true'
+  require 'simplecov'
+  require 'simplecov-cobertura'
+
+  ::SimpleCov.start('rails')
+  ::SimpleCov.formatter = ::SimpleCov::Formatter::CoberturaFormatter
+end
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
 ::ENV['RAILS_ENV'] ||= 'test'

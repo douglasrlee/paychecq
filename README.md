@@ -2,6 +2,8 @@
 
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-community-brightgreen.svg)](https://rubystyle.guide)
+[![Ruby Checks](https://github.com/douglasrlee/paychecq/actions/workflows/ruby-checks.yml/badge.svg?branch=main)](https://github.com/douglasrlee/paychecq/actions/workflows/ruby-checks.yml)
+[![codecov](https://codecov.io/gh/douglasrlee/paychecq/graph/badge.svg?token=WAcZQEa4sN)](https://codecov.io/gh/douglasrlee/paychecq)
 
 ## Local Development
 
