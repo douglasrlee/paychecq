@@ -31,6 +31,8 @@ Layout/LineLength:
 
 Metrics/PerceivedComplexity:
   Enabled: false
+Metrics/BlockLength:
+  Enabled: false
 
 Rails/SchemaComment:
   Enabled: false
