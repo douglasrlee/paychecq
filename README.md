@@ -8,8 +8,6 @@ Afterward, it gives the user a _simple_ safe-to-speed total that is the money in
 
 That's it!
 
----
-
 ## Local Development
 
 ### Prerequisites
@@ -22,5 +20,3 @@ That's it!
       CREATE USER admin WITH PASSWORD 'password';
       ALTER USER admin WITH SUPERUSER;
       ```
-
----
