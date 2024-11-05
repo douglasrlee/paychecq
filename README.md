@@ -20,3 +20,15 @@ That's it!
       CREATE USER admin WITH PASSWORD 'password';
       ALTER USER admin WITH SUPERUSER;
       ```
+
+### Running Locally
+
+To start the server using the following command:
+```console
+mvn spring-boot:run
+```
+
+To run tests use the following command:
+```console
+mvn test
+```
