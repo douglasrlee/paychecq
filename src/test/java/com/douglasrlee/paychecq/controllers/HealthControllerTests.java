@@ -15,6 +15,7 @@ public class HealthControllerTests {
   @Autowired
   private TestRestTemplate restTemplate;
 
+  // region index
   @Test
   public void index_Returns_HealthResource() {
     HealthResource healthResource = this.restTemplate.getForObject("/health", HealthResource.class);
@@ -22,4 +23,5 @@ public class HealthControllerTests {
     assertNotNull(healthResource);
     assertEquals(healthResource.overallStatus, HealthStatus.UP);
   }
+  // endregion
 }

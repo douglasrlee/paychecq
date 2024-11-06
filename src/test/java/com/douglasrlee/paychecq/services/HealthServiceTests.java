@@ -13,6 +13,7 @@ public class HealthServiceTests extends BaseTests {
   @InjectMocks
   private HealthService healthService;
 
+  // region getHealth
   @Test
   public void getHeath_Returns_HealthResource() {
     HealthResource healthResource = healthService.getHealth();
@@ -20,4 +21,5 @@ public class HealthServiceTests extends BaseTests {
     assertNotNull(healthResource);
     assertEquals(healthResource.overallStatus, HealthStatus.UP);
   }
+  // endregion
 }
