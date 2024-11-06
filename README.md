@@ -1,5 +1,7 @@
 # PayChecQ
 
+[![Java Checks](https://github.com/douglasrlee/paychecq/actions/workflows/java-checks.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/java-checks.yml)
+
 Welcome! You've found the source code to the PayChecQ.com application.
 
 This application is a _simple_ tool that helps people budget better by automatically bucketing money into specific expenses/goals per payday.
