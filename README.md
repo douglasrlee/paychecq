@@ -21,6 +21,7 @@ That's it!
       ```sql
       CREATE USER admin WITH PASSWORD 'password';
       ALTER USER admin WITH SUPERUSER;
+      CREATE DATABASE paychecq_development;
       ```
 
 ### Running Locally
