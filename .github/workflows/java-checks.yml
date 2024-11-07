@@ -36,8 +36,6 @@ jobs:
 
       - name: Maven Test
         run: mvn test
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/paychecq_development
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
