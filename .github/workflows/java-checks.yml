@@ -34,6 +34,14 @@ jobs:
           java-version: '23'
           cache: 'maven'
 
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready --username=testuser --dbname=testdb --host=localhost --port=5432; do
+            >&2 echo "Postgres is unavailable - sleeping"
+            sleep 1
+          done
+          >&2 echo "Postgres is up - executing command"
+
       - name: Maven Test
         run: mvn test
 
