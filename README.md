@@ -1,6 +1,7 @@
 # PayChecQ
 
 [![Java Checks](https://github.com/douglasrlee/paychecq/actions/workflows/java-checks.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/java-checks.yml)
+[![codecov](https://codecov.io/gh/douglasrlee/paychecq/graph/badge.svg?token=5iy7awB3XM)](https://codecov.io/gh/douglasrlee/paychecq)
 
 Welcome! You've found the source code to the PayChecQ.com application.
 
