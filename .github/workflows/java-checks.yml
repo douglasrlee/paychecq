@@ -10,6 +10,19 @@ jobs:
   build:
     name: Java Tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: paychecq_development
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -23,6 +36,8 @@ jobs:
 
       - name: Maven Test
         run: mvn test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/paychecq_development
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
