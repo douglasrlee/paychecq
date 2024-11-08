@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
-import java.util.UUID;
-
 public class UserResource extends BaseResource {
-  private UUID id;
   @NotNull(message = "must be present")
   @Length(max = 255, message = "must be less than 255 characters")
   private String name;
@@ -16,14 +13,6 @@ public class UserResource extends BaseResource {
   @NotNull(message = "must be present")
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String password;
-
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
-  public UUID getId() {
-    return id;
-  }
 
   public void setName(String name) {
     this.name = name;
