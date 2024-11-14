@@ -13,7 +13,10 @@ Style/SymbolArray:
 
 Layout/SpaceInsideArrayLiteralBrackets:
   EnforcedStyle: space
+Layout/LineLength:
+  Enabled: false
 
 Metrics/BlockLength:
   Enabled: false
-
+Metrics/MethodLength:
+  Enabled: false
