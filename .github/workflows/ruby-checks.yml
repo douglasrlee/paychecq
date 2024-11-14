@@ -11,50 +11,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Scan for common Rails security vulnerabilities using static analysis
+      - name: bin/brakeman --no-pager
         run: bin/brakeman --no-pager
 
   scan_js:
+    name: Scan JavaScript
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Scan for security vulnerabilities in JavaScript dependencies
+      - name: bin/importmap audit
         run: bin/importmap audit
 
   lint:
+    name: Lint
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
+      - name: bin/rubocop
+        run: bin/rubocop
 
   test:
+    name: Test
     runs-on: ubuntu-latest
 
     services:
@@ -67,33 +71,26 @@ jobs:
           - 5432:5432
         options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      # redis:
-      #   image: redis
-      #   ports:
-      #     - 6379:6379
-      #   options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
-      - name: Install packages
+      - name: Install Packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y google-chrome-stable curl libjemalloc2 libvips postgresql-client
 
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Run tests
+      - name: bin/rails db:test:prepare test test:system
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test test:system
 
-      - name: Keep screenshots from failed system tests
+      - name: Keep Screenshots
         uses: actions/upload-artifact@v4
         if: failure()
         with:
