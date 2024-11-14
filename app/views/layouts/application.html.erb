@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-100">
   <head>
-    <title><%= content_for(:title) || "Paychecq" %></title>
+    <title><%= content_for(:title) || "PayChecQ" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -23,9 +23,32 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
 
-  <body>
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
+  <body class="h-100">
+    <%- if notice.present? %>
+      <div data-controller="toast">
+        <div data-toast-target="toast" class="toast mb-3 position-fixed bottom-0 start-50 translate-middle-x align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              <%= notice %>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%- if alert.present? %>
+      <div data-controller="toast">
+        <div data-toast-target="toast" class="toast mt-3 position-fixed top-0 start-50 translate-middle-x align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">
+              <%= alert %>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
+    <% end %>
 
     <%= yield %>
   </body>
