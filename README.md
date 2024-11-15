@@ -1,5 +1,9 @@
 # PayChecQ
 
+[![Ruby Checks](https://github.com/douglasrlee/paychecq/actions/workflows/ruby-checks.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/ruby-checks.yml)
+[![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
+
+
 Welcome! You've found the source code to the PayChecQ.com application.
 
 This application is a _simple_ tool that helps people budget better by automatically bucketing money into specific expenses/goals per payday.
