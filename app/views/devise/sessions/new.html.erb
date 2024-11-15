@@ -3,7 +3,11 @@
     <div class="col col-sm-6 col-md-6 col-lg-4 col-xl-3">
       <div class="card shadow">
         <div class="card-header d-flex justify-content-center align-items-center">
-          <%= image_tag('light/logo.svg', height: 50) %>
+          <%= picture_tag do %>
+            <%= tag(:source, :srcset => image_path('light/logo.svg'), media: '(prefers-color-scheme: light)') %>
+            <%= tag(:source, :srcset => image_path('dark/logo.svg'), media: '(prefers-color-scheme: dark)') %>
+            <%= image_tag('light/logo.svg', :alt => 'logo', height: 50) %>
+          <% end %>
           <h1 class="text-primary mb-0 ms-2">PayChecQ</h1>
         </div>
 

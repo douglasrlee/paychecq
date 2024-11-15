@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100" data-controller="theme">
+<html lang="en" class="h-100">
   <head>
     <title><%= content_for(:title) || "PayChecQ" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -13,9 +13,25 @@
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="<%= asset_path('light/logo.png') %>" type="image/png" id="icon-png">
+    <link rel="icon" href="<%= asset_path('light/logo.svg') %>" type="image/svg+xml" id="icon-svg">
+    <link rel="apple-touch-icon" href="<%= asset_path('light/logo.png') %>" id="icon-apple-touch">
+
+    <script>
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (prefersDark) {
+        document.documentElement.setAttribute("data-bs-theme", "dark");
+      }
+
+      const iconPng = document.querySelector("#icon-png");
+      const iconSvg = document.querySelector("#icon-svg");
+      const iconAppleTouch = document.querySelector("#icon-apple-touch");
+
+      iconPng.href = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "<%= asset_path('dark/logo.png') %>" : "<%= asset_path('light/logo.png') %>";
+      iconSvg.href = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "<%= asset_path('dark/logo.svg') %>" : "<%= asset_path('light/logo.svg') %>";
+      iconAppleTouch.href = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? "<%= asset_path('dark/logo.png') %>" : "<%= asset_path('light/logo.png') %>";
+    </script>
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
