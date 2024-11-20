@@ -1,60 +1,26 @@
-<div class="container-fluid h-100">
-  <div class="row h-100 justify-content-center align-items-center">
-    <div class="col col-sm-6 col-md-6 col-lg-4 col-xl-3">
-      <div class="card shadow">
-        <div class="card-header d-flex justify-content-center align-items-center">
-          <%= picture_tag do %>
-            <%= tag(:source, :srcset => image_path('light/logo.svg'), media: '(prefers-color-scheme: light)') %>
-            <%= tag(:source, :srcset => image_path('dark/logo.svg'), media: '(prefers-color-scheme: dark)') %>
-            <%= image_tag('light/logo.svg', :alt => 'logo', height: 50) %>
-          <% end %>
-          <h1 class="text-primary mb-0 ms-2">PayChecQ</h1>
-        </div>
+<div class="card-header d-flex justify-content-center align-items-center">
+  <%= picture_tag do %>
+    <%= tag(:source, :srcset => image_path('light/logo.svg'), media: '(prefers-color-scheme: light)') %>
+    <%= tag(:source, :srcset => image_path('dark/logo.svg'), media: '(prefers-color-scheme: dark)') %>
+    <%= image_tag('light/logo.svg', :alt => 'logo', height: 50) %>
+  <% end %>
+  <h1 class="text-primary mb-0 ms-2">PayChecQ</h1>
+</div>
 
-        <div class="card-body">
-          <h5 class="card-title text-center text-primary">Log In</h5>
+<div class="card-body">
+  <h5 class="card-title text-center text-primary">Log In</h5>
 
-          <%= form_for(
-                resource,
-                as: resource_name,
-                url: session_path(resource_name),
-                html: {
-                  novalidate: true
-                },
-                data: {
-                  controller: 'form',
-                  'form-target': 'form'
-                }
-            ) do |f| %>
-            <div class="mb-3 position-relative">
-              <%= f.label :email, class: 'form-label' %>
-              <%= f.email_field :email, autofocus: true, autocomplete: 'email', required: true, class: 'form-control' %>
-              <div class="invalid-tooltip">
-                Please provide a valid email
-              </div>
-            </div>
+  <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <%= f.input :email, autofocus: true, required: true, wrapper_html: { class: 'mb-3' }, input_html: { autocomplete: 'username' }, as: 'email' %>
 
-            <div class="mb-3 position-relative">
-              <%= f.label :password, class: 'form-label' %>
-              <%= f.password_field :password, autocomplete: 'current-password', required: true, class: 'form-control' %>
-              <div class="invalid-tooltip">
-                Please provide a password
-              </div>
-            </div>
+    <%= f.input :password, required: true, wrapper_html: { class: 'mb-3' }, input_html: { autocomplete: 'current-password' } %>
 
-            <% if devise_mapping.rememberable? %>
-              <div class="mb-3 form-check">
-                <%= f.check_box :remember_me, class: 'form-check-input' %>
-                <%= f.label :remember_me, class: 'form-check-label' %>
-              </div>
-            <% end %>
+    <% if devise_mapping.rememberable? %>
+      <%= f.input :remember_me, wrapper_html: { class: 'mb-3' }, as: 'boolean' %>
+    <% end %>
 
-            <%= f.submit "Log in", class: 'btn btn-primary w-100' %>
-          <% end %>
+    <%= f.button :submit, 'Log in', class: 'btn-primary w-100' %>
+  <% end %>
 
-          <%= render "devise/shared/links" %>
-        </div>
-      </div>
-    </div>
-  </div>
+  <%= render "devise/shared/links" %>
 </div>
