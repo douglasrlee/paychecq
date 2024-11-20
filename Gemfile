@@ -24,6 +24,8 @@ group :development, :test do
   gem 'brakeman', require: false
   gem 'bullet'
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
+  gem 'factory_bot_rails'
+  gem 'faker'
   gem 'rubocop-capybara', require: false
   gem 'rubocop-minitest', require: false
   gem 'rubocop-rails', require: false
@@ -37,4 +39,5 @@ end
 group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
+  gem 'shoulda', '~> 4.0'
 end
