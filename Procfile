@@ -1,2 +1,2 @@
-web: bin/rails server -p ${PORT:-5000} -e $RAILS_ENV
-release: printenv && bin/rails db:migrate
+web: bundle exec puma -C config/puma.rb
+release: printenv && bundle exec rails db:migrate
