@@ -36,6 +36,7 @@ production:
   primary: &primary_production
     <<: *default
     database: paychecq_production
+    url: <%= ENV.fetch("DATABASE_URL") %>
   cache:
     <<: *primary_production
     database: paychecq_production_cache
