@@ -18,6 +18,7 @@ gem 'solid_cable'
 gem 'solid_cache'
 gem 'solid_queue'
 gem 'stimulus-rails'
+gem 'strong_migrations'
 gem 'thruster', require: false
 gem 'turbo-rails'
 gem 'tzinfo-data', platforms: [ :windows, :jruby ]
@@ -31,7 +32,6 @@ group :development, :test do
   gem 'rubocop-capybara', require: false
   gem 'rubocop-minitest', require: false
   gem 'rubocop-rails', require: false
-  gem 'strong_migrations'
 end
 
 group :development do
