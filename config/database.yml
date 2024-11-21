@@ -35,4 +35,4 @@ test:
 production:
   <<: *default
   database: paychecq_production
-  #url: <%= ENV.fetch("DATABASE_URL") { '' } %>
+  url: <%= ENV.fetch("DATABASE_URL") { '' } %>
