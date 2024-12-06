@@ -156,6 +156,7 @@ GEM
     matrix (0.4.2)
     mini_mime (1.1.5)
     minitest (5.25.1)
+    mjml-rails (4.12.1)
     msgpack (1.7.5)
     net-imap (0.5.1)
       date
@@ -356,6 +357,7 @@ DEPENDENCIES
   faker
   importmap-rails
   jbuilder
+  mjml-rails
   pg (~> 1.1)
   propshaft
   puma (>= 5.0)

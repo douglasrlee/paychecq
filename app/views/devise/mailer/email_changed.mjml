@@ -1,0 +1,9 @@
+<mj-column>
+  <mj-text font-family="Roboto">Hello <%= @resource.name %>!</mj-text>>
+
+  <% if @resource.try(:unconfirmed_email?) %>
+    <mj-text font-family="Roboto">We're contacting you to notify you that your email is being changed to <%= @resource.unconfirmed_email %>.</mj-text>
+  <% else %>
+    <mj-text font-family="Roboto">We're contacting you to notify you that your email has been changed to <%= @resource.email %>.</mj-text>
+  <% end %>
+</mj-column>

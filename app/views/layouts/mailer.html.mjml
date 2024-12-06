@@ -1,0 +1,11 @@
+<mjml>
+  <mj-body>
+    <%= render partial: 'layouts/mailer_header' %>
+
+    <mj-section>
+      <%= yield %>
+    </mj-section>
+
+    <%= render partial: 'layouts/mailer_footer' %>
+  </mj-body>
+</mjml>
