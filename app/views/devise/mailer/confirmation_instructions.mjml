@@ -1,0 +1,15 @@
+<mj-column>
+  <mj-text font-family="Roboto">Welcome <%= @resource.name %>!</mj-text>>
+
+  <mj-text font-family="Roboto">Someone has used this email to signup to use PayChecQ.</mj-text>
+
+  <mj-text font-family="Roboto">If this was you, then please click the button below to confirm this request.</mj-text>
+
+  <mj-text font-family="Roboto">If this was not you, then you can ignore this email.</mj-text>
+
+  <mj-button font-family="Roboto" background-color="#673AB7" color="white" href="<%= confirmation_url(@resource, confirmation_token: @token) %>">
+    Confirm account
+  </mj-button>
+
+  <mj-text font-family="Roboto">You will not be able to access PayChecQ until you click the button above.</mj-text>
+</mj-column>

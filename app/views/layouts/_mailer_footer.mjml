@@ -1,0 +1,9 @@
+<mj-section padding-top="0">
+  <mj-column>
+    <mj-divider border-color="#673AB7"></mj-divider>
+
+    <mj-text font-family="Roboto" font-size="12px" font-weight="semi-bold" align="center">PayChecQ</mj-text>
+
+    <mj-text font-family="Roboto" font-size="10px" font-weight="thin" align="center">You have received this email because it communicates important updates related to your PayChecQ account.</mj-text>
+  </mj-column>
+</mj-section>

@@ -1,0 +1,7 @@
+<mj-section padding-bottom="0">
+  <mj-column>
+    <mj-image width="200px" src="<%= image_url('light/logo-with-name.svg') %>"></mj-image>
+
+    <mj-divider border-color="#673AB7"></mj-divider>
+  </mj-column>
+</mj-section>

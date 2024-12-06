@@ -1,0 +1,11 @@
+<mj-column>
+  <mj-text font-family="Roboto">Hello <%= @resource.name %>!</mj-text>>
+
+  <mj-text font-family="Roboto">Your account has been locked due to an excessive number of unsuccessful sign in attempts.</mj-text>
+
+  <mj-text font-family="Roboto">Click the button below to unlock your account:</mj-text>
+
+  <mj-button font-family="Roboto" background-color="#673AB7" color="white" href="<%= unlock_url(@resource, unlock_token: @token) %>">
+    Unlock my account
+  </mj-button>
+</mj-column>
