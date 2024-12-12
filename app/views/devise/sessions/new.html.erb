@@ -1,26 +1,15 @@
-<div class="card-header d-flex justify-content-center align-items-center">
-  <%= picture_tag do %>
-    <%= tag(:source, :srcset => image_path('light/logo.svg'), media: '(prefers-color-scheme: light)') %>
-    <%= tag(:source, :srcset => image_path('dark/logo.svg'), media: '(prefers-color-scheme: dark)') %>
-    <%= image_tag('light/logo.svg', :alt => 'logo', height: 50) %>
-  <% end %>
-  <h1 class="text-primary mb-0 ms-2">PayChecQ</h1>
-</div>
+<h5 class="card-title text-center text-primary">Log In</h5>
 
-<div class="card-body">
-  <h5 class="card-title text-center text-primary">Log In</h5>
+<%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  <%= f.input :email, autofocus: true, required: true, wrapper_html: { class: 'mb-3' }, input_html: { autocomplete: 'username' }, as: 'email' %>
 
-  <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-    <%= f.input :email, autofocus: true, required: true, wrapper_html: { class: 'mb-3' }, input_html: { autocomplete: 'username' }, as: 'email' %>
+  <%= f.input :password, required: true, wrapper_html: { class: 'mb-3' }, input_html: { autocomplete: 'current-password' } %>
 
-    <%= f.input :password, required: true, wrapper_html: { class: 'mb-3' }, input_html: { autocomplete: 'current-password' } %>
-
-    <% if devise_mapping.rememberable? %>
-      <%= f.input :remember_me, wrapper_html: { class: 'mb-3' }, as: 'boolean' %>
-    <% end %>
-
-    <%= f.button :submit, 'Log in', class: 'btn-primary w-100' %>
+  <% if devise_mapping.rememberable? %>
+    <%= f.input :remember_me, wrapper_html: { class: 'mb-3' }, as: 'boolean' %>
   <% end %>
 
-  <%= render "devise/shared/links" %>
-</div>
+  <%= f.button :submit, 'Log in', class: 'btn-primary w-100' %>
+<% end %>
+
+<%= render "devise/shared/links" %>
