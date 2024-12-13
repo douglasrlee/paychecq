@@ -1,0 +1,13 @@
+<div class="card mt-4">
+  <div class="card-header">
+    <h4 class="text-primary mb-0">Linked Bank Account</h4>
+  </div>
+
+  <div class="card-body">
+    <% if current_user.bank_accounts.empty? %>
+      <p>No linked bank account.</p>
+
+      <button class="btn btn-primary float-end">Link Account</button>
+    <% end %>
+  </div>
+</div>

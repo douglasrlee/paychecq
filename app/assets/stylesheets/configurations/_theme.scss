@@ -1,3 +1,19 @@
 // Bootstrap color overrides
 $primary: #673AB7;
 $secondary: #D1C4E9;
+
+.nav-link {
+  color: $primary !important;
+}
+
+.dropdown-item {
+  color: $primary !important;
+}
+
+.dropdown-item.active {
+  color: #FFFFFF !important;
+}
+
+.active {
+  color: $secondary !important;
+}
