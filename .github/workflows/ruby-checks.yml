@@ -1,4 +1,4 @@
-name: CI
+name: Ruby Checks
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
 
 jobs:
   scan_ruby:
+    name: Scan Ruby
     runs-on: ubuntu-latest
 
     steps:
@@ -19,10 +20,11 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Scan for common Rails security vulnerabilities using static analysis
+      - name: Scan for ruby vulnerabilities
         run: bin/brakeman --no-pager
 
   scan_js:
+    name: Scan JavaScript
     runs-on: ubuntu-latest
 
     steps:
@@ -35,11 +37,13 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Scan for security vulnerabilities in JavaScript dependencies
+      - name: Scan for javascript vulnerabilities
         run: bin/importmap audit
 
   lint:
+    name: Lint Ruby
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,6 +54,6 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Lint code for consistent style
+      - name: Lint ruby
         run: bin/rubocop -f github
 
