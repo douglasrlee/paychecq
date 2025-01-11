@@ -55,5 +55,5 @@ jobs:
           bundler-cache: true
 
       - name: Lint ruby
-        run: bin/rubocop
+        run: bin/rubocop -f github
 
