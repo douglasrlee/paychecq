@@ -279,6 +279,11 @@ GEM
       rubocop-minitest
       rubocop-performance
       rubocop-rails
+    rubocop-rspec (3.3.0)
+      rubocop (~> 1.61)
+    rubocop-rspec_rails (2.30.0)
+      rubocop (~> 1.61)
+      rubocop-rspec (~> 3, >= 3.0.1)
     ruby-progressbar (1.13.0)
     sass-embedded (1.83.1-aarch64-linux-gnu)
       google-protobuf (~> 4.29)
@@ -372,7 +377,10 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 8.0.1)
   rspec-rails (~> 7.0.0)
+  rubocop-rails
   rubocop-rails-omakase
+  rubocop-rspec
+  rubocop-rspec_rails
   solid_cable
   solid_cache
   solid_queue
