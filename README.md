@@ -31,3 +31,8 @@ To start the server using the following command:
 ```console
 ./bin/dev
 ```
+
+To run the test use the following command:
+```console
+bundle exec rspec
+```
