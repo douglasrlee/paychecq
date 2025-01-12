@@ -30,6 +30,9 @@ jobs:
     name: Scan JavaScript
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,6 +49,9 @@ jobs:
   lint:
     name: Lint Ruby
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
