@@ -27,6 +27,11 @@ That's it!
 
 ### Running Locally
 
+To setup initially run the following command:
+```console
+./bin setup --skip-server
+```
+
 To start the server using the following command:
 ```console
 ./bin/dev
