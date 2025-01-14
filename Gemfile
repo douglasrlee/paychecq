@@ -22,7 +22,7 @@ group :development, :test do
   gem 'brakeman', require: false
   gem 'bullet'
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
-  gem 'rspec-rails', '~> 7.0.0'
+  gem 'rspec-rails', '~> 7.1.0'
   gem 'rubocop-rails-omakase', require: false
   gem 'rubocop-rspec', require: false
   gem 'rubocop-rspec_rails', require: false
