@@ -16,12 +16,5 @@ test:
   database: paychecq_test
 
 production:
-  primary: &primary_production
-    <<: *default
-    database: paychecq_production
-    username: paychecq
-    password: <%= ENV["PAYCHECQ_DATABASE_PASSWORD"] %>
-  queue:
-    <<: *primary_production
-    database: paychecq_production_queue
-    migrations_paths: db/queue_migrate
+  <<: *default
+  database: paychecq_production
