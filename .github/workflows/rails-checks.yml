@@ -104,7 +104,6 @@ jobs:
       - name: Test ruby
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
         run: bin/rails db:test:prepare test test:system
 
       - name: Keep screenshots from failed system tests
