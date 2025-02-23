@@ -1,4 +1,4 @@
-name: Ruby Checks
+name: Rails Checks
 
 on:
   pull_request:
