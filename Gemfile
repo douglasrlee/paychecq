@@ -21,6 +21,7 @@ gem 'tzinfo-data', platforms: [ :windows, :jruby ]
 
 group :development, :test do
   gem 'brakeman', require: false
+  gem 'bullet'
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'rubocop-capybara', require: false
   gem 'rubocop-rails', require: false
