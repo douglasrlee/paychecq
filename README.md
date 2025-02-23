@@ -1,24 +1,39 @@
-# README
+# PayChecQ
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Welcome! You've found the source code to the PayChecQ.com application.
 
-Things you may want to cover:
+This application is a _simple_ tool that helps people budget better by automatically bucketing money into specific expenses/goals per payday.
 
-* Ruby version
+Afterward, it gives the user a _simple_ safe-to-speed total that is the money in their account minus the money that is artificially moved into those expenses/goals.
 
-* System dependencies
+That's it!
 
-* Configuration
+## Local Development
 
-* Database creation
+### Prerequisites
 
-* Database initialization
+* Ruby (Currently using Ruby 3.4.2)
+* Rails (Currently using Rails 8.0.1)
+* PostgreSQL 16 (Currently PostgreSQL 16.4)
+    * Superuser `admin` with password `password`
+      ```sql
+      CREATE USER admin WITH PASSWORD 'password';
+      ALTER USER admin WITH SUPERUSER;
+      ```
 
-* How to run the test suite
+### Running Locally
 
-* Services (job queues, cache servers, search engines, etc.)
+To setup initially run the following command:
+```console
+./bin setup --skip-server
+```
 
-* Deployment instructions
+To start the server using the following command:
+```console
+./bin/dev
+```
 
-* ...
+To run the tests use the following command:
+```console
+./bin/rails test test:system
+```
