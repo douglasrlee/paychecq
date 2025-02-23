@@ -1,6 +1,8 @@
 # PayChecQ
 
 [![Rails Checks](https://github.com/douglasrlee/paychecq/actions/workflows/rails-checks.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/rails-checks.yml)
+[![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop-rails)
+[![Rails Style Guide](https://img.shields.io/badge/code_style-community-brightgreen.svg)](https://rails.rubystyle.guide)
 
 Welcome! You've found the source code to the PayChecQ.com application.
 
