@@ -1,5 +1,7 @@
 # PayChecQ
 
+[![Rails Checks](https://github.com/douglasrlee/paychecq/actions/workflows/rails-checks.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/rails-checks.yml)
+
 Welcome! You've found the source code to the PayChecQ.com application.
 
 This application is a _simple_ tool that helps people budget better by automatically bucketing money into specific expenses/goals per payday.
@@ -25,7 +27,7 @@ That's it!
 
 To setup initially run the following command:
 ```console
-./bin setup --skip-server
+./bin/setup --skip-server
 ```
 
 To start the server using the following command:
