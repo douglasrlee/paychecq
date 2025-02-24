@@ -38,3 +38,6 @@
 
 # Ignore IDE directories/files
 .idea
+
+# Ignore coverage files
+coverage
