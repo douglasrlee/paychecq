@@ -40,5 +40,5 @@ To start the server using the following command:
 
 To run the tests use the following command:
 ```console
-./bin/rails test test:system
+./bin/rails db:test:prepare test test:system
 ```
