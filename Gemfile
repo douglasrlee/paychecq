@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 gem 'bootsnap', require: false
 gem 'importmap-rails'
 gem 'jbuilder'
+gem 'mission_control-jobs'
 gem 'pg', '~> 1.1'
 gem 'propshaft'
 gem 'puma', '>= 5.0'

@@ -25,5 +25,8 @@ module PayChecQ
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Disable mission controls basic auth requirement
+    config.mission_control.jobs.http_basic_auth_enabled = false
   end
 end
