@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+if ENV.key?('CI')
+  require 'simplecov'
+  require 'simplecov-cobertura'
+
+  SimpleCov.start 'rails'
+  SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
+end
+
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
 require 'rails/test_help'
