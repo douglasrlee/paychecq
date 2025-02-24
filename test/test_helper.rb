@@ -2,10 +2,10 @@
 
 if ENV.key?('CI')
   require 'simplecov'
-  require 'simplecov-cobertura'
+  #require 'simplecov-cobertura'
 
   SimpleCov.start 'rails'
-  SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
+  #SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
 end
 
 ENV['RAILS_ENV'] ||= 'test'
