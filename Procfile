@@ -1,3 +1,3 @@
 web: bin/rails server
-css: bin/rails tailwindcss:watch
+release: bundle exec rails db:migrate
 worker: bin/rails solid_queue:start
