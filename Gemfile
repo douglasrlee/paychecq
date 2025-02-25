@@ -2,6 +2,8 @@
 
 source 'https://rubygems.org'
 
+ruby '3.4.2'
+
 gem 'bootsnap', require: false
 gem 'importmap-rails'
 gem 'jbuilder'
