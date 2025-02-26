@@ -8,6 +8,7 @@ gem 'bootsnap', require: false
 gem 'importmap-rails'
 gem 'jbuilder'
 gem 'mission_control-jobs'
+gem 'newrelic_rpm'
 gem 'paper_trail'
 gem 'pg', '~> 1.1'
 gem 'propshaft'
