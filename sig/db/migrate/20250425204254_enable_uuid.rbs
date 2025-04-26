@@ -1,0 +1,3 @@
+class EnableUuid
+  def change: () -> void
+end
