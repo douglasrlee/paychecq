@@ -43,3 +43,6 @@
 **\rbs_collection.yaml
 **/rbs_collection.lock.yaml
 **/rbs_collection.yaml
+
+# Ignore coverage files
+coverage
