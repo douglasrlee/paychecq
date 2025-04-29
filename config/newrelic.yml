@@ -1,0 +1,29 @@
+common: &default
+  app_name: 'PayChecQ - Production'
+  distributed_tracing:
+    enabled: true
+  log_level: info
+  application_logging:
+    enabled: true
+    forwarding:
+      enabled: true
+      max_samples_stored: 10000
+    metrics:
+      enabled: true
+    local_decorating:
+      enabled: true
+
+development:
+  <<: *default
+  app_name: 'PayChecQ - Development'
+
+test:
+  <<: *default
+  monitor_mode: false
+
+staging:
+  <<: *default
+  app_name: 'PayChecQ - Staging'
+
+production:
+  <<: *default
