@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 ruby '3.4.3'
 
 gem 'bootsnap', require: false
+gem 'devise', '~> 4.9'
 gem 'importmap-rails'
 gem 'jbuilder'
 gem 'newrelic_rpm'
