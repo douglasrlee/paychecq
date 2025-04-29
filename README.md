@@ -1,5 +1,6 @@
 # PayChecQ
 
+[![codecov](https://codecov.io/gh/douglasrlee/paychecq/graph/badge.svg?token=WT5rfQs3G7)](https://codecov.io/gh/douglasrlee/paychecq)
 [![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop-rails)
 [![Rails Style Guide](https://img.shields.io/badge/code_style-community-brightgreen.svg)](https://rails.rubystyle.guide)
 
