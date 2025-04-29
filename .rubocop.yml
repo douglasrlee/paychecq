@@ -7,6 +7,8 @@ AllCops:
 
 Layout/SpaceInsideArrayLiteralBrackets:
   EnforcedStyle: space
+Layout/LineLength:
+  Enabled: false
 
 Style/Documentation:
   Enabled: false
@@ -14,4 +16,6 @@ Style/SymbolArray:
   EnforcedStyle: brackets
 
 Metrics/BlockLength:
+  Enabled: false
+Metrics/MethodLength:
   Enabled: false
