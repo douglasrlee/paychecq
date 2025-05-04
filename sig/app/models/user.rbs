@@ -1,0 +1,3 @@
+class User < ApplicationRecord
+  def send_devise_notification: (untyped notification, *untyped) -> void
+end
