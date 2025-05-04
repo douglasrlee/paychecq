@@ -13,6 +13,8 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  resources :transactions, only: [ :index ]
+
   # Defines the root path route ("/")
-  root 'posts#index'
+  root to: redirect('/transactions')
 end
