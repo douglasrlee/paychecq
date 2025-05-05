@@ -2,21 +2,21 @@
   "name": "PayChecQ",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "<%= asset_path 'favicon/light/web-app-manifest-192x192.png' %>",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "maskable"
     },
     {
-      "src": "/icon.png",
-      "type": "image/png",
+      "src": "<%= asset_path 'favicon/light/web-app-manifest-512x512.png' %>",
       "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ],
   "start_url": "/",
   "display": "standalone",
   "scope": "/",
-  "description": "PayChecQ.",
-  "theme_color": "red",
-  "background_color": "red"
+  "description": "This application is a simple tool that helps people budget better by automatically bucketing money into specific expenses/goals per payday.",
+  "background_color": "#ffffff"
 }
