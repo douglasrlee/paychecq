@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-dvh bg-gray-50 dark:bg-neutral-800" lang="en">
+<html class="h-dvh" lang="en">
   <head>
     <title><%= content_for(:title) || "PayChecQ" %></title>
 
@@ -28,17 +28,15 @@
       const darkIconShortcutHref = "<%= asset_path('favicon/dark/favicon.ico') %>";
       const darkIconAppleTouchHref = "<%= asset_path('favicon/dark/apple-touch-icon.png') %>";
 
-      const darkThemeColor = '#404040';
+      const darkThemeColor = '#000000';
       const lightThemeColor = '#ffffff';
-      const deviseDarkThemeColor = '#262626';
-      const deviseLightThemeColor = '#f9fafb';
 
       const lightIconPngHref = "<%= asset_path('favicon/light/favicon-96x96.png') %>";
       const lightIconSvgHref = "<%= asset_path('favicon/light/favicon.svg') %>";
       const lightIconShortcutHref = "<%= asset_path('favicon/light/favicon.ico') %>";
       const lightIconAppleTouchHref = "<%= asset_path('favicon/light/apple-touch-icon.png') %>";
 
-      function setTheme(isDark, isDeviseController) {
+      function setTheme(isDark) {
         const iconPng = document.querySelector("#icon-png");
         const iconSvg = document.querySelector("#icon-svg");
         const iconShortcut = document.querySelector("#icon-shortcut");
@@ -50,26 +48,18 @@
           iconShortcut.href = darkIconShortcutHref;
           iconAppleTouch.href = darkIconAppleTouchHref;
 
-          if (isDeviseController === 'true') {
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', deviseDarkThemeColor);
-          } else {
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', darkThemeColor);
-          }
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', darkThemeColor);
         } else {
           iconPng.href = lightIconPngHref;
           iconSvg.href = lightIconSvgHref;
           iconShortcut.href = lightIconShortcutHref;
           iconAppleTouch.href = lightIconAppleTouchHref;
 
-          if (isDeviseController === 'true') {
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', deviseLightThemeColor);
-          } else {
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', lightThemeColor);
-          }
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', lightThemeColor);
         }
       }
 
-      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches, '<%= devise_controller? %>');
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
 
       document.addEventListener('DOMContentLoaded', function() {
         document.ontouchmove = function() {
@@ -82,25 +72,12 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body data-controller="theme" data-theme-is-devise-controller="<%= devise_controller? %>" class="h-dvh <%= devise_controller? ? '' : 'pt-16' %>">
-    <%- if notice.present? %>
-      <%= render 'components/notification', notification: notice, type: :notice %>
-    <% end %>
+  <body data-controller="theme" class="h-dvh">
+    <main class="container mx-auto mt-28 px-5 flex">
+      <p class="notice"><%= notice %></p>
+      <p class="alert"><%= alert %></p>
 
-    <%- if alert.present? %>
-      <%= render 'components/notification', notification: alert, type: :alert %>
-    <% end %>
-
-    <%- unless devise_controller? %>
-      <%=  render 'components/navigation'  %>
-    <%- end %>
-
-    <%- if devise_controller? %>
-      <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <%= yield %>
-      </div>
-    <%- else %>
       <%= yield %>
-    <%- end %>
+    </main>
   </body>
 </html>
