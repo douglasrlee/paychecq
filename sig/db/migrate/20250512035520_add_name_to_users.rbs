@@ -1,0 +1,3 @@
+class AddNameToUsers
+  def change: () -> void
+end

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="h-dvh" lang="en">
+<html class="h-dvh bg-white dark:bg-black" lang="en">
   <head>
     <title><%= content_for(:title) || "PayChecQ" %></title>
 
@@ -72,12 +72,16 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body data-controller="theme" class="h-dvh">
-    <main class="container mx-auto mt-28 px-5 flex">
-      <p class="notice"><%= notice %></p>
-      <p class="alert"><%= alert %></p>
+  <body data-controller="theme" class="h-dvh <%= devise_controller? ? '' : 'pt-16' %>">
+    <!--p class="notice"><%= notice %></p>
+    <p class="alert"><%= alert %></p-->
 
+    <%- if devise_controller? %>
+      <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <%= yield %>
+      </div>
+    <%- else %>
       <%= yield %>
-    </main>
+    <%- end %>
   </body>
 </html>

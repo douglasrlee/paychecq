@@ -1,29 +1,47 @@
-<h2>Sign up</h2>
+<div class="sm:mx-auto sm:w-full sm:max-w-md">
+  <%= picture_tag do %>
+    <%= tag(:source, :srcset => image_path('light/logo.svg'), media: '(prefers-color-scheme: light)') %>
+    <%= tag(:source, :srcset => image_path('dark/logo.svg'), media: '(prefers-color-scheme: dark)') %>
+    <%= image_tag('light/logo.svg', :alt => 'PayChecQ', height: 40, class: 'mx-auto h-10 w-auto') %>
+  <% end %>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "users/shared/error_messages", resource: resource %>
+  <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-primary dark:text-secondary">Sign up</h2>
+</div>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+  <div class="bg-neutral-50 dark:bg-neutral-900 px-6 py-12 shadow sm:rounded-lg sm:px-12">
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { novalidate: true }) do |form| %>
+      <div class="space-y-6">
+        <div>
+          <%= render 'components/form_input', form: form, resource: resource, name: :name, value: nil, attribute_name: :name, type: :text, icon: :user, autofocus: true, autocomplete: 'name' %>
+        </div>
+
+        <div>
+          <%= render 'components/form_input', form: form, resource: resource, name: :email, value: nil, attribute_name: :email, type: :email, autocomplete: 'email' %>
+        </div>
+
+        <div>
+          <%= render 'components/form_input', form: form, resource: resource, name: :password, value: nil, attribute_name: :password, type: :password, autocomplete: 'new-password' %>
+        </div>
+
+        <div>
+          <%= render 'components/form_input', form: form, resource: resource, name: :password_confirmation, value: nil, attribute_name: :password_confirmation, type: :password, autocomplete: 'new-password' %>
+        </div>
+
+        <div>
+          <%= render 'components/form_button', form: form, name: 'Sign up' %>
+        </div>
+      </div>
+    <% end %>
   </div>
+</div>
 
-  <div class="field">
-    <%= f.label :password %>
-    <% if @minimum_password_length %>
-    <em>(<%= @minimum_password_length %> characters minimum)</em>
-    <% end %><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-  </div>
+<p class="mt-10 text-center text-sm/6 text-gray-500 dark:text-gray-300">
+  Didn't receive confirmation instructions?
+  <%= link_to "Resend", new_confirmation_path(resource_name), class: 'font-semibold text-primary dark:text-secondary hover:text-primary-alt dark:hover:text-secondary-alt' %>
+</p>
 
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
-<% end %>
-
-<%= render "users/shared/links" %>
+<p class="mt-2 text-center text-sm/6 text-gray-500 dark:text-gray-300">
+  Already signed up?
+  <%= link_to "Sign in", new_session_path(resource_name), class: 'font-semibold text-primary dark:text-secondary hover:text-primary-alt dark:hover:text-secondary-alt' %>
+</p>
