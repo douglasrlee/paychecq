@@ -43,16 +43,18 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
+
+  config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.smtp_settings = {
-    user_name: 'apikey',
-    password: ENV.fetch('SENDGRID_API_KEY'),
-    domain: 'paychecq.com',
-    address: 'smtp.sendgrid.net',
-    port: 587,
-    authentication: :plain,
-    enable_starttls_auto: true
+    address: "mail.smtp2go.com",
+    port: 2525,
+    domain: "paychecq.com",
+    authentication: "plain",
+    enable_starttls_auto: true,
+    user_name: ENV.fetch('SMTP2GO_USERNAME'),
+    password: ENV.fetch('SMTP2GO_PASSWORD')
   }
 
   # Make template changes take effect immediately.
