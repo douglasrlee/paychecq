@@ -48,10 +48,10 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.smtp_settings = {
-    address: "mail.smtp2go.com",
+    address: 'mail.smtp2go.com',
     port: 2525,
-    domain: "paychecq.com",
-    authentication: "plain",
+    domain: 'paychecq.com',
+    authentication: 'plain',
     enable_starttls_auto: true,
     user_name: ENV.fetch('SMTP2GO_USERNAME'),
     password: ENV.fetch('SMTP2GO_PASSWORD')
