@@ -68,8 +68,8 @@ Rails.application.configure do
     domain: 'paychecq.com',
     authentication: 'plain',
     enable_starttls_auto: true,
-    user_name: ENV.fetch('SMTP2GO_USERNAME'),
-    password: ENV.fetch('SMTP2GO_PASSWORD')
+    user_name: ENV.fetch('SMTP2GO_USERNAME', ''),
+    password: ENV.fetch('SMTP2GO_PASSWORD', '')
   }
 
   # Set host to be used by links generated in mailer templates.
