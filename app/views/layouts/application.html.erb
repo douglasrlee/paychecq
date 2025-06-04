@@ -73,8 +73,13 @@
   </head>
 
   <body data-controller="theme" class="h-dvh <%= devise_controller? ? '' : 'pt-16' %>">
-    <!--p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p-->
+    <%- if notice.present? %>
+      <%= render 'components/notification', notification: notice, type: :notice %>
+    <% end %>
+
+    <%- if alert.present? %>
+      <%= render 'components/notification', notification: alert, type: :alert %>
+    <% end %>
 
     <%- if devise_controller? %>
       <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
