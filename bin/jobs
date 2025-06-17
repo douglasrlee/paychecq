@@ -3,4 +3,6 @@
 require_relative "../config/environment"
 require "solid_queue/cli"
 
+SolidQueue.logger = ActiveSupport::Logger.new($stdout)
+
 SolidQueue::Cli.start(ARGV)
