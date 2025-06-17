@@ -9,6 +9,9 @@ jobs:
   scan_ruby:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,6 +27,10 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,6 +46,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
 
     services:
       postgres:
