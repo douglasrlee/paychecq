@@ -14,11 +14,13 @@ gem 'solid_cable'
 gem 'solid_cache'
 gem 'solid_queue'
 gem 'stimulus-rails'
+gem 'strong_migrations'
 gem 'thruster', require: false
 gem 'turbo-rails'
 
 group :development, :test do
   gem 'brakeman', require: false
+  gem 'bullet'
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
   gem 'rubocop-capybara', require: false
   gem 'rubocop-rails', require: false
