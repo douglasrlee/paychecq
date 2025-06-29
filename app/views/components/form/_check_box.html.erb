@@ -1,0 +1,16 @@
+<%# locals: (form:, name:) %>
+
+<div class="flex gap-3">
+  <div class="flex h-6 shrink-0 items-center">
+    <div class="group grid size-4 grid-cols-1">
+      <%= form.check_box name, class: 'cursor-pointer col-start-1 row-start-1 appearance-none rounded border border-primary-light dark:border-primary-dark bg-neutral-100 dark:bg-neutral-900 checked:border-primary-light dark:checked:border-primary-dark checked:bg-primary-light dark:checked:bg-primary-dark indeterminate:border-primary-light dark:indeterminate:border-primary-dark indeterminate:bg-primary-light dark:indeterminate:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-light dark:focus-visible:outline-primary-dark forced-colors:appearance-auto' %>
+
+      <svg class="fill-none pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white dark:stroke-black" viewBox="0 0 14 14">
+        <path class="opacity-0 group-has-[:checked]:opacity-100" d="M3 8L6 11L11 3.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path class="opacity-0 group-has-[:indeterminate]:opacity-100" d="M3 7H11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+  </div>
+
+  <%= form.label name, class: 'cursor-pointer block text-sm/6 text-primary-light dark:text-primary-dark' %>
+</div>
