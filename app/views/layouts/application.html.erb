@@ -1,28 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-dvh bg-white dark:bg-black">
   <head>
-    <title><%= content_for(:title) || "Pay Chec Q" %></title>
+    <title><%= content_for(:title) || 'PayChecQ' %></title>
+
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%= tag.link rel: 'manifest', href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link id="icon-png" rel="icon" type="image/png" href="<%= asset_path 'light/favicon/favicon-96x96.png' %>" sizes="96x96" />
+    <link id="icon-svg" rel="icon" type="image/svg+xml" href="<%= asset_path 'light/favicon/favicon.svg' %>" />
+    <link id="icon-shortcut" rel="shortcut icon" href="<%= asset_path 'light/favicon/favicon.ico' %>" />
+    <link id="icon-apple-touch" rel="apple-touch-icon" sizes="180x180" href="<%= asset_path 'light/favicon/apple-touch-icon.png' %>" />
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+    <meta name="apple-mobile-web-app-title" content="PayChecQ" />
+    <meta name="theme-color" content="">
+
+    <script>
+      const darkThemeColor = '#000000';
+      const lightThemeColor = '#ffffff';
+
+      const darkIconPngHref = "<%= asset_path('dark/favicon/favicon-96x96.png') %>";
+      const darkIconSvgHref = "<%= asset_path('dark/favicon/favicon.svg') %>";
+      const darkIconShortcutHref = "<%= asset_path('dark/favicon/favicon.ico') %>";
+      const darkIconAppleTouchHref = "<%= asset_path('dark/favicon/apple-touch-icon.png') %>";
+
+      const lightIconPngHref = "<%= asset_path('light/favicon/favicon-96x96.png') %>";
+      const lightIconSvgHref = "<%= asset_path('light/favicon/favicon.svg') %>";
+      const lightIconShortcutHref = "<%= asset_path('light/favicon/favicon.ico') %>";
+      const lightIconAppleTouchHref = "<%= asset_path('light/favicon/apple-touch-icon.png') %>";
+
+      function setTheme(isDark) {
+        const iconPng = document.querySelector("#icon-png");
+        const iconSvg = document.querySelector("#icon-svg");
+        const iconShortcut = document.querySelector("#icon-shortcut");
+        const iconAppleTouch = document.querySelector("#icon-apple-touch");
+
+        if (isDark) {
+          iconPng.href = darkIconPngHref;
+          iconSvg.href = darkIconSvgHref;
+          iconShortcut.href = darkIconShortcutHref;
+          iconAppleTouch.href = darkIconAppleTouchHref;
+
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', darkThemeColor);
+        } else {
+          iconPng.href = lightIconPngHref;
+          iconSvg.href = lightIconSvgHref;
+          iconShortcut.href = lightIconShortcutHref;
+          iconAppleTouch.href = lightIconAppleTouchHref;
+
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', lightThemeColor);
+        }
+      }
+
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      document.addEventListener('DOMContentLoaded', function() {
+        document.ontouchmove = function() {
+          document.activeElement?.blur();
+        }
+      });
+    </script>
+
+    <%= stylesheet_link_tag :app, 'data-turbo-track': 'reload' %>
+    <%= javascript_include_tag 'application', 'data-turbo-track': 'reload', type: 'module' %>
   </head>
 
-  <body>
+  <body data-controller="theme" class="h-dvh">
+    <%- if notice.present? %>
+      <%= render 'components/notification', notification: notice, type: :notice %>
+    <% end %>
+
+    <%- if alert.present? %>
+      <%= render 'components/notification', notification: alert, type: :alert %>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>

@@ -1,0 +1,17 @@
+<%# locals: (form:, name:, value: nil, required: false, autofocus: nil, autocomplete: nil, placeholder: nil) %>
+
+<div>
+  <%= form.label name, class: 'block text-sm/6 font-medium text-primary-light dark:text-primary-dark' %>
+
+  <div class="mt-2">
+    <%= form.email_field(
+      name,
+      required: required,
+      autofocus: autofocus,
+      autocomplete: autocomplete,
+      placeholder: placeholder,
+      value: value,
+      class: 'block w-full rounded-md bg-neutral-100 dark:bg-neutral-900 px-3 py-1.5 text-base text-black dark:text-white outline-1 -outline-offset-1 outline-primary-light dark:outline-primary-dark focus:outline-2 focus:-outline-offset-2 focus:outline-secondary-light dark:focus:outline-secondary-dark sm:text-sm/6'
+    ) %>
+  </div>
+</div>

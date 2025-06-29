@@ -1,0 +1,40 @@
+<div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <%= picture_tag do %>
+      <%= tag(:source, :srcset => image_path('light/logo.svg'), media: '(prefers-color-scheme: light)') %>
+      <%= tag(:source, :srcset => image_path('dark/logo.svg'), media: '(prefers-color-scheme: dark)') %>
+      <%= image_tag('light/logo.svg', :alt => 'PayChecQ', height: 40, class: 'mx-auto h-10 w-auto') %>
+    <% end %>
+
+    <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-primary-light dark:text-primary-dark">Sign in to your account</h2>
+  </div>
+
+  <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+    <div class="bg-neutral-100 dark:bg-neutral-900 px-6 py-12 shadow-sm sm:rounded-lg sm:px-12">
+      <%= form_with url: session_path, html: { novalidate: true } do |form| %>
+        <div class="space-y-6">
+          <%= render 'components/form/email_field', form: form, name: :email, value: params[:email_address], autofocus: true, autocomplete: 'username' %>
+
+          <%= render 'components/form/password_field', form: form, name: :password, autocomplete: 'current-password' %>
+
+          <div class="flex items-center justify-between">
+            <div class="flex gap-3">
+              <%= render 'components/form/check_box', form: form, name: :remember_me %>
+            </div>
+
+            <div class="text-sm/6">
+              <%= link_to 'Forgot password?', new_password_path, class: 'font-semibold text-primary-light dark:text-primary-dark hover:text-secondary-light dark:hover:text-secondary-dark' %>
+            </div>
+          </div>
+
+          <%= render 'components/form/submit', form: form, text: 'Sign in' %>
+        </div>
+      <% end %>
+    </div>
+
+    <!--p class="mt-10 text-center text-sm/6 text-gray-500">
+      Not a member?
+      <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">Start a 14 day free trial</a>
+    </p-->
+  </div>
+</div>
