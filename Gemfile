@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'bcrypt', '~> 3.1'
 gem 'bootsnap', require: false
 gem 'cssbundling-rails'
 gem 'jbuilder'
@@ -34,5 +35,3 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
-
-gem "bcrypt", "~> 3.1"
