@@ -124,6 +124,7 @@
     <orderEntry type="library" scope="PROVIDED" name="solid_queue (v1.2.1, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="stimulus-rails (v1.3.4, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="stringio (v3.1.7, rbenv: 3.4.7) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="strong_migrations (v2.5.1, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="thor (v1.4.0, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="thruster (v0.1.15, rbenv: 3.4.7) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="timeout (v0.4.3, rbenv: 3.4.7) [gem]" level="application" />
