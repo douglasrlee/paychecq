@@ -1,24 +1,9 @@
-# README
+<p align="center">
+  <img width="100" alt="PayChecQ Logo" src="https://github.com/user-attachments/assets/f0e9c4ce-989c-4277-ab7d-59c8cd262bf8" />
+</p>
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+# PayChecQ
 
-Things you may want to cover:
+Welcome! You’ve found the source code for the PayChecQ.com application!
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+This is a simple budgeting application that takes the money from your paycheck and divides it appropriately into expenses and goals on a recurring basis, based on how often you get paid — leaving you with a safe-to-spend amount each paycheck.
