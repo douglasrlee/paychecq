@@ -51,6 +51,9 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # The Bullet gem is designed to help you increase your application's performance by reducing the number of queries it makes.
+  gem "bullet"
 end
 
 group :development do
