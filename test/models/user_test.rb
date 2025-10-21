@@ -8,6 +8,7 @@ class UserTest < ActiveSupport::TestCase
 
   test "requires first_name, last_name, and email" do
     user = User.new
+
     assert_not user.valid?
     assert_includes user.errors.attribute_names, :first_name
     assert_includes user.errors.attribute_names, :last_name
@@ -61,6 +62,7 @@ class UserTest < ActiveSupport::TestCase
       email: original.email.upcase,
       password: "password"
     )
+
     assert_not dup.valid?
     assert_includes dup.errors[:email], "has already been taken"
   end
@@ -78,10 +80,10 @@ class UserTest < ActiveSupport::TestCase
 
     user.password = "secret123"
     user.password_confirmation = "secret123"
+
     assert user.valid?, user.errors.full_messages.to_s
     assert user.save!
 
-    # authenticate
     assert user.authenticate("secret123"), "Expected authenticate to succeed with correct password"
     assert_not user.authenticate("wrong"), "Expected authenticate to fail with wrong password"
   end

@@ -29,8 +29,9 @@ class PaperTrailTest < ActiveSupport::TestCase
       end
 
       versions = PaperTrail::Version.where(item_type: "User", item_id: @user.id.to_s).order(:created_at)
-      assert_equal ["create", "update", "destroy"], versions.pluck(:event)
-      assert_equal ["test-user", "test-user", "test-user"], versions.pluck(:whodunnit)
+
+      assert_equal %w[create update destroy], versions.pluck(:event)
+      assert_equal %w[test-user test-user test-user], versions.pluck(:whodunnit)
     ensure
       PaperTrail.enabled = previously_enabled
     end
