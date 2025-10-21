@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>bootsnap</w>
+      <w>citext</w>
       <w>cssbundling</w>
       <w>hotwire's</w>
       <w>jbuilder</w>
