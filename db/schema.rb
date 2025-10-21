@@ -35,7 +35,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_21_021213) do
   end
 
   create_table "versions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "whodunnit"
+    t.uuid "whodunnit"
     t.datetime "created_at"
     t.string "item_id", null: false
     t.string "item_type", null: false

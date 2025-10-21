@@ -5,7 +5,7 @@ class CreateVersions < ActiveRecord::Migration[8.0]
     create_table :versions, id: :uuid do |table|
       # Consider using a bigint type for performance if you are going to store only numeric ids.
       # table.bigint :whodunnit
-      table.string   :whodunnit
+      table.uuid     :whodunnit
 
       # Known issue in MySQL: fractional second precision
       # -------------------------------------------------
