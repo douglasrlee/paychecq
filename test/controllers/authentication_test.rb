@@ -4,7 +4,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
   class AuthTestController < ActionController::Base
     include Authentication
 
-    allow_unauthenticated_access only: [:public_action, :login, :set_return_to, :next_url]
+    allow_unauthenticated_access only: [ :public_action, :login, :set_return_to, :next_url ]
 
     def protected_action
       render json: { ok: true, current_user_id: Current.user&.id }
