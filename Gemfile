@@ -43,7 +43,7 @@ gem "thruster", require: false
 gem "strong_migrations"
 
 # Track changes to your models, for auditing or versioning.
-gem 'paper_trail'
+gem "paper_trail"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
