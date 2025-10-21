@@ -13,5 +13,5 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "sessions#new"
 end
