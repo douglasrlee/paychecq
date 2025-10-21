@@ -1,12 +1,13 @@
 class PasswordsController < ApplicationController
   allow_unauthenticated_access
+
   before_action :set_user_by_token, only: %i[ edit update ]
 
   def new
   end
 
   def create
-    if user = User.find_by(email_address: params[:email_address])
+    if user = User.find_by(email: params[:email])
       PasswordsMailer.reset(user).deliver_later
     end
 
