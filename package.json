@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
-    "@hotwired/turbo-rails": "^8.0.18",
+    "@hotwired/turbo-rails": "^8.0.20",
     "esbuild": "^0.25.11",
     "tailwindcss": "^4.1.16"
   }
