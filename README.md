@@ -21,7 +21,7 @@ This is a simple budgeting application that takes the money from your paycheck a
 - PostgreSQL 17
   - admin role
     - `CREATE ROLE admin WITH LOGIN PASSWORD 'password';`
-    - `ALTER ROLE admin WITH SUPERUSER;`
+    - `ALTER ROLE admin WITH CREATEDB;`
 
 ### Setup
 
