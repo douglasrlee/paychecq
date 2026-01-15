@@ -1,5 +1,7 @@
 # PayChecQ
 
+[![CI](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml)
+
 Welcome! You've found the source code for the main PayChecQ.com application!
 
 A _simple_ budgeting application that allows you to take money from each of your paychecks and _virtually_ place the money in buckets of expenses and goals that then allow you to see how much money is safe-to-spend.
