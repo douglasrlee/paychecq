@@ -1,4 +1,4 @@
-# PayChecQ
+# <img src=".github/README/PayChecQ Logo.png" alt="PayChecQ Logo" height="32"> PayChecQ
 
 [![CI](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml)
 
