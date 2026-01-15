@@ -10,6 +10,8 @@
     "@hotwired/turbo-rails": "^8.0.20"
   },
   "devDependencies": {
-    "esbuild": "^0.27.2"
+    "@tailwindcss/cli": "^4.1.18",
+    "esbuild": "^0.27.2",
+    "tailwindcss": "^4.1.18"
   }
 }
