@@ -28,13 +28,15 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
+# Ignore public assets
 /public/assets
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
-
+# Ignore asset builds
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
+# Ignore node modules
 /node_modules
