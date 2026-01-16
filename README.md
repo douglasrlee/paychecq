@@ -10,7 +10,6 @@ A _simple_ budgeting application that allows you to take money from each of your
 
 - Ruby 4.0.1
 - Node.js 24.13.0
-- Yarn
 - PostgreSQL 17
 
 ## Setup
@@ -29,7 +28,7 @@ bin/setup --skip-server
 
 This will:
 - Install Ruby gem dependencies
-- Install JavaScript dependencies via Yarn
+- Install JavaScript dependencies via NPM
 - Create and prepare the database
 
 ## Running the Application
