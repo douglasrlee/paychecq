@@ -1,3 +1,3 @@
 class Transaction < ApplicationRecord
-  validates_presence_of(:name, :amount)
+  validates :name, :amount, presence: true
 end
