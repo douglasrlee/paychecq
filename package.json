@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
-    "@hotwired/turbo-rails": "^8.0.20"
+    "@hotwired/turbo-rails": "^8.0.20",
+    "daisyui": "^5.5.14"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="min-h-dvh bg-base-300">
   <head>
     <title><%= content_for(:title) || "PayChecQ" %></title>
 
@@ -26,7 +26,10 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
+  <body class="min-h-dvh">
+    <%= render "components/alert", type: "error", message: flash[:alert] if flash[:alert] %>
+    <%= render "components/alert", type: "success", message: flash[:notice] if flash[:notice] %>
+
     <%= yield %>
   </body>
 </html>
