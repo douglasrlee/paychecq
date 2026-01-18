@@ -1,11 +1,12 @@
 <div class="flex min-h-dvh flex-col items-center justify-center">
-  <div class="sm:mx-auto sm:w-full sm:max-w-md">
-    <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company" class="mx-auto h-10 w-auto dark:hidden" />
-    <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company" class="mx-auto h-10 w-auto not-dark:hidden" />
-    <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to your account</h2>
+  <div>
+    <%= image_tag "light/logo.svg", alt: "PayChecQ Logo", class: "mx-auto h-10 w-auto dark:hidden" %>
+    <%= image_tag "dark/logo.svg", alt: "PayChecQ Logo", class: "mx-auto h-10 w-auto not-dark:hidden" %>
+    
+    <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight">Sign in to your account</h2>
   </div>
 
-  <div class="card card-dash bg-base-100 mt-10 w-full max-w-120">
+  <div class="card card-xl bg-base-100 mt-10 w-full max-w-120">
     <div class="card-body">
       <%= form_with url: session_path, class: "space-y-6", html: { novalidate: true } do |form| %>
         <fieldset class="fieldset">
