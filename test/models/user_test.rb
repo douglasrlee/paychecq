@@ -83,6 +83,18 @@ class UserTest < ActiveSupport::TestCase
     assert_includes user.errors[:email_address], "has already been taken"
   end
 
+  test "is invalid with malformed email_address" do
+    user = User.new(
+      first_name: "Test",
+      last_name: "User",
+      email_address: "not-a-valid-email",
+      password: "password"
+    )
+
+    assert_not user.valid?
+    assert_includes user.errors[:email_address], "is invalid"
+  end
+
   test "downcases and strips email_address" do
     user = User.new(email_address: " DOWNCASED@EXAMPLE.COM ")
 
