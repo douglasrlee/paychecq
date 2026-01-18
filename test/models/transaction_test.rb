@@ -20,4 +20,11 @@ class TransactionTest < ActiveSupport::TestCase
     assert_not transaction.valid?
     assert_includes transaction.errors[:amount], "can't be blank"
   end
+
+  test "is invalid with non-numeric amount" do
+    transaction = Transaction.new(name: "Grocery Store", amount: "not a number")
+
+    assert_not transaction.valid?
+    assert_includes transaction.errors[:amount], "is not a number"
+  end
 end
