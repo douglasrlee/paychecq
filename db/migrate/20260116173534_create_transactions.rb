@@ -4,7 +4,7 @@ class CreateTransactions < ActiveRecord::Migration[8.1]
 
     create_table :transactions, id: :uuid do |table|
       table.string :name, null: false
-      table.decimal :amount, null: false
+      table.decimal :amount, precision: 10, scale: 2, null: false
       table.boolean :pending, null: false, default: false
 
       table.timestamps
