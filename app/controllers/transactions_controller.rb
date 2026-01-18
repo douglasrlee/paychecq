@@ -48,7 +48,7 @@ class TransactionsController < ApplicationController
   private
 
   def set_transaction
-    @transaction = transactions.find(params.expect(:id))
+    @transaction = Transaction.find(params.expect(:id))
   end
 
   def transaction_params

@@ -5,6 +5,5 @@
 import { application } from "./application"
 
 import AutoDismissController from "./auto_dismiss_controller"
-import HelloController from "./hello_controller"
+
 application.register("auto-dismiss", AutoDismissController)
-application.register("hello", HelloController)

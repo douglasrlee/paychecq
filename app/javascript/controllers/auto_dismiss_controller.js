@@ -8,10 +8,15 @@ export default class extends Controller {
       this.element.classList.remove("opacity-0");
     });
 
-    setTimeout(() => {
+    this.dismissTimeout = setTimeout(() => {
       this.element.classList.add("opacity-0");
 
-      setTimeout(() => this.element.remove(), 300);
+      this.removeTimeout = setTimeout(() => this.element.remove(), 300);
     }, 3000);
+  }
+
+  disconnect() {
+    clearTimeout(this.dismissTimeout);
+    clearTimeout(this.removeTimeout);
   }
 }
