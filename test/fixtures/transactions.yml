@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+crest:
+  name: Crest
+  amount: 9.99
+  pending: false
+
+bestbuy:
+  name: Best Buy
+  amount: 99.99
+  pending: false

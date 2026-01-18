@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="min-h-dvh bg-base-300">
   <head>
-    <title><%= content_for(:title) || "Pay Chec Q" %></title>
+    <title><%= content_for(:title) || "PayChecQ" %></title>
+
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Pay Chec Q">
+    <meta name="application-name" content="PayChecQ">
     <meta name="mobile-web-app-capable" content="yes">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -20,10 +22,14 @@
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
+  <body class="min-h-dvh">
+    <%= render "components/alert", type: "error", message: flash[:alert] if flash[:alert] %>
+    <%= render "components/alert", type: "success", message: flash[:notice] if flash[:notice] %>
+
     <%= yield %>
   </body>
 </html>
