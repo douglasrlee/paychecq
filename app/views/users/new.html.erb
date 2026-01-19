@@ -1,0 +1,28 @@
+<div class="flex min-h-dvh flex-col items-center justify-center">
+  <div>
+    <%= image_tag "light/logo.svg", alt: "PayChecQ Logo", class: "mx-auto h-10 w-auto dark:hidden" %>
+    <%= image_tag "dark/logo.svg", alt: "PayChecQ Logo", class: "mx-auto h-10 w-auto not-dark:hidden" %>
+    
+    <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight">Create an account</h2>
+  </div>
+
+  <div class="card card-xl bg-base-100 mt-10 w-full max-w-120">
+    <div class="card-body">
+      <%= form_with model: @user, class: "space-y-6", html: { novalidate: true } do |form| %>
+        <%= render "components/text_input", form: form, resource: @user, field: :first_name, required: true, autofocus: true, autocomplete: "given-name" %>
+
+        <%= render "components/text_input", form: form, resource: @user, field: :last_name, required: true, autocomplete: "family-name" %>
+
+        <%= render "components/email_input", form: form, resource: @user, field: :email_address, required: true, autocomplete: "username" %>
+
+        <%= render "components/password_input", form: form, resource: @user, field: :password, required: true, autocomplete: "new-password" %>
+
+        <%= render "components/password_input", form: form, resource: @user, field: :password_confirmation, required: true, autocomplete: "new-password" %>
+
+        <%= form.submit "Create account", class: 'mt-10 btn btn-primary w-full' %>
+      <% end %>
+    </div>
+  </div>
+
+  <p class="mt-10 text-center text-sm/6">Already joined? <%= link_to "Sign in!", new_session_path, class: "link link-primary link-hover" %></p>
+</div>
