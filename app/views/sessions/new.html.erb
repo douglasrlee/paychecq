@@ -9,17 +9,9 @@
   <div class="card card-xl bg-base-100 mt-10 w-full max-w-120">
     <div class="card-body">
       <%= form_with url: session_path, class: "space-y-6", html: { novalidate: true } do |form| %>
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend">Email Address</legend>
+        <%= render "components/email_input", form: form, field: :email_address, required: true, autofocus: true, autocomplete: "username" %>
 
-          <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", value: params[:email_address], class: "input w-full" %>
-        </fieldset>
-
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend">Password</legend>
-
-          <%= form.password_field :password, required: true, autocomplete: "current-password", maxlength: 72, class: "input w-full" %>
-        </fieldset>
+        <%= render "components/password_input", form: form, field: :password, required: true, autofocus: true, autocomplete: "current-password" %>
 
         <div class="flex justify-end">
           <div class="text-sm/6">
@@ -31,4 +23,6 @@
       <% end %>
     </div>
   </div>
+
+  <p class="mt-10 text-center text-sm/6">New here? <%= link_to "Join now!", new_user_path, class: "link link-primary link-hover" %></p>
 </div>
