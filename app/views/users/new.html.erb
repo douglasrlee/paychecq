@@ -19,12 +19,6 @@
 
         <%= render "components/password_input", form: form, resource: @user, field: :password_confirmation, required: true, autocomplete: "new-password" %>
 
-        <div class="flex justify-end">
-          <div class="text-sm/6">
-            <%= link_to "Forgot password?", new_password_path, class: "link link-primary link-hover" %>
-          </div>
-        </div>
-
         <%= form.submit "Create account", class: 'btn btn-primary w-full' %>
       <% end %>
     </div>
