@@ -25,8 +25,8 @@
         const lightIcon = '<%= asset_path("light/logo.svg") %>';
         const matcher = window.matchMedia('(prefers-color-scheme: dark)');
 
-        function updateFavicon(matcher) {
-          favicon.href = matcher.matches ? darkIcon : lightIcon;
+        function updateFavicon(event) {
+          favicon.href = event.matches ? darkIcon : lightIcon;
         }
 
         matcher.addEventListener('change', updateFavicon);
