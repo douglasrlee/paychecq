@@ -11,7 +11,7 @@
       <%= form_with url: session_path, class: "space-y-6", html: { novalidate: true } do |form| %>
         <%= render "components/email_input", form: form, field: :email_address, required: true, autofocus: true, autocomplete: "username" %>
 
-        <%= render "components/password_input", form: form, field: :password, required: true, autofocus: true, autocomplete: "current-password" %>
+        <%= render "components/password_input", form: form, field: :password, required: true, autocomplete: "current-password" %>
 
         <div class="flex justify-end">
           <div class="text-sm/6">
