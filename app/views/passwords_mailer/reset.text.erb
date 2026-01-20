@@ -1,4 +1,12 @@
-You can reset your password on
+Reset your password
+
+We received a request to reset your password.
+
+Navigate to the link below to choose a new one:
 <%= edit_password_url(@user.password_reset_token) %>
 
 This link will expire in <%= distance_of_time_in_words(0, @user.password_reset_token_expires_in) %>.
+
+If you didn't request a password reset, you can safely ignore this email.
+
+- PayChecQ

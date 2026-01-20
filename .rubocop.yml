@@ -3,7 +3,7 @@ plugins:
   - rubocop-capybara
 
 AllCops:
-  TargetRailsVersion: 8.0
+  TargetRailsVersion: 8.1
   MigratedSchemaVersion: '20260120060426'
   NewCops: enable
 
@@ -24,6 +24,8 @@ Layout/LineLength:
   Enabled: false
 
 Metrics/BlockLength:
+  Enabled: false
+Metrics/AbcSize:
   Enabled: false
 
 Rails/I18nLocaleTexts:

@@ -17,7 +17,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
 
-    assert_notice 'reset instructions sent'
+    assert_notice "If an account exists with this email, you'll receive reset instructions shortly."
   end
 
   test 'create for an unknown user redirects but sends no mail' do
@@ -28,7 +28,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
 
-    assert_notice 'reset instructions sent'
+    assert_notice "If an account exists with this email, you'll receive reset instructions shortly."
   end
 
   test 'edit' do
@@ -56,7 +56,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
 
-    assert_notice 'Password has been reset'
+    assert_notice 'Password updated.'
   end
 
   test 'update with non matching passwords' do

@@ -10,18 +10,26 @@ class PasswordsController < ApplicationController
   def edit; end
 
   def create
-    if (user = User.find_by(email_address: params[:email_address]))
-      PasswordsMailer.reset(user).deliver_later
-    end
+    if params[:email_address].blank?
+      redirect_to new_password_path, alert: 'Email address required.'
+    else
+      if (user = User.find_by(email_address: params[:email_address]))
+        PasswordsMailer.reset(user).deliver_later
+      end
 
-    redirect_to new_session_path, notice: 'Password reset instructions sent (if user with that email address exists).'
+      redirect_to new_session_path, notice: "If an account exists with this email, you'll receive reset instructions shortly."
+    end
   end
 
   def update
-    if @user.update(params.permit(:password, :password_confirmation))
+    if params[:password].blank?
+      redirect_to edit_password_path(params[:token]), alert: 'Password required.'
+    elsif params[:password_confirmation].blank?
+      redirect_to edit_password_path(params[:token]), alert: 'Password confirmation required.'
+    elsif @user.update(params.permit(:password, :password_confirmation))
       @user.sessions.destroy_all
 
-      redirect_to new_session_path, notice: 'Password has been reset.'
+      redirect_to new_session_path, notice: 'Password updated.'
     else
       redirect_to edit_password_path(params[:token]), alert: 'Passwords did not match.'
     end

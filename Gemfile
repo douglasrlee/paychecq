@@ -45,6 +45,10 @@ gem 'strong_migrations'
 # Track changes to your models, for auditing or versioning. [https://github.com/paper-trail-gem/paper_trail]
 gem 'paper_trail'
 
+# MJML-Rails allows you to render HTML emails from an MJML template. [https://github.com/sighmon/mjml-rails]
+gem 'mjml-rails'
+gem 'mrml'
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
@@ -68,6 +72,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem 'web-console'
+
+  # Preview email in the default browser instead of sending it. [https://github.com/fgrehm/letter_opener_web]
+  gem 'letter_opener_web'
 end
 
 group :test do
