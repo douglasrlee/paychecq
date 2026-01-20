@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   allow_unauthenticated_access only: [ :new, :create ]
 
-  rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_user_path, alert: "Try again later." }
+  rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_user_path, alert: 'Try again later.' }
 
   def new
     @user = User.new
@@ -15,7 +15,7 @@ class UsersController < ApplicationController
 
       redirect_to root_path
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 

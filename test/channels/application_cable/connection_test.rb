@@ -1,7 +1,7 @@
-require "test_helper"
+require 'test_helper'
 
 class ApplicationCable::ConnectionTest < ActionCable::Connection::TestCase
-  test "connects with valid session" do
+  test 'connects with valid session' do
     user = users(:johndoe)
     session = user.sessions.create!
 
@@ -12,12 +12,12 @@ class ApplicationCable::ConnectionTest < ActionCable::Connection::TestCase
     assert_equal user, connection.current_user
   end
 
-  test "rejects connection without session" do
+  test 'rejects connection without session' do
     assert_reject_connection { connect }
   end
 
-  test "rejects connection with invalid session" do
-    cookies.signed[:session_id] = "invalid"
+  test 'rejects connection with invalid session' do
+    cookies.signed[:session_id] = 'invalid'
 
     assert_reject_connection { connect }
   end
