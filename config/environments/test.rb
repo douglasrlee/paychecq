@@ -56,4 +56,9 @@ Rails.application.configure do
     Bullet.bullet_logger = true
     Bullet.raise         = true # raise an error if n+1 query occurs
   end
+
+  # Disable PaperTrail in tests
+  config.after_initialize do
+    PaperTrail.enabled = false
+  end
 end
