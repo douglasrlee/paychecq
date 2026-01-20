@@ -42,6 +42,9 @@ gem "image_processing", "~> 1.2"
 # Catch unsafe migrations in development [https://github.com/ankane/strong_migrations]
 gem "strong_migrations"
 
+# Track changes to your models, for auditing or versioning. [https://github.com/paper-trail-gem/paper_trail]
+gem "paper_trail"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
