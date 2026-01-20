@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml)
 [![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop-rails)
-[![Rails Style Guide](https://img.shields.io/badge/code_style-community-brightgreen.svg)](https://rails.rubystyle.guide)
 
 Welcome! You've found the source code for the main PayChecQ.com application!
 
