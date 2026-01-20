@@ -1,21 +1,21 @@
-require "test_helper"
+require 'test_helper'
 
 class UsersControllerTest < ActionDispatch::IntegrationTest
-  test "new" do
+  test 'new' do
     get new_user_path
 
     assert_response :success
   end
 
-  test "create with valid params" do
-    assert_difference([ "User.count", "Session.count" ]) do
+  test 'create with valid params' do
+    assert_difference([ 'User.count', 'Session.count' ]) do
       post users_path, params: {
         user: {
-          first_name: "Test",
-          last_name: "User",
-          email_address: "newuser@example.com",
-          password: "password",
-          password_confirmation: "password"
+          first_name: 'Test',
+          last_name: 'User',
+          email_address: 'newuser@example.com',
+          password: 'password',
+          password_confirmation: 'password'
         }
       }
     end
@@ -24,15 +24,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert cookies[:session_id]
   end
 
-  test "create with invalid params" do
-    assert_no_difference("User.count") do
+  test 'create with invalid params' do
+    assert_no_difference('User.count') do
       post users_path, params: {
         user: {
-          first_name: "",
-          last_name: "",
-          email_address: "",
-          password: "",
-          password_confirmation: ""
+          first_name: '',
+          last_name: '',
+          email_address: '',
+          password: '',
+          password_confirmation: ''
         }
       }
     end
@@ -40,15 +40,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "create with mismatched passwords" do
-    assert_no_difference("User.count") do
+  test 'create with mismatched passwords' do
+    assert_no_difference('User.count') do
       post users_path, params: {
         user: {
-          first_name: "Test",
-          last_name: "User",
-          email_address: "newuser@example.com",
-          password: "password",
-          password_confirmation: "different"
+          first_name: 'Test',
+          last_name: 'User',
+          email_address: 'newuser@example.com',
+          password: 'password',
+          password_confirmation: 'different'
         }
       }
     end
