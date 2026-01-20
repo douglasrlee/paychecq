@@ -58,5 +58,7 @@ Rails.application.configure do
   end
 
   # Disable PaperTrail in tests
-  PaperTrail.enabled = false
+  config.after_initialize do
+    PaperTrail.enabled = false
+  end
 end

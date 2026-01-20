@@ -7,6 +7,6 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   def user_for_paper_trail
-    Current.user.id
+    Current.user&.id
   end
 end
