@@ -31,6 +31,17 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice "If an account exists with this email, you'll receive reset instructions shortly."
   end
 
+  test 'create with blank email address' do
+    post passwords_path, params: { email_address: '' }
+
+    assert_enqueued_emails 0
+    assert_redirected_to new_password_path
+
+    follow_redirect!
+
+    assert_notice 'Email address required'
+  end
+
   test 'edit' do
     get edit_password_path(@user.password_reset_token)
 
@@ -70,6 +81,32 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_notice 'Passwords did not match'
+  end
+
+  test 'update with blank password' do
+    token = @user.password_reset_token
+    assert_no_changes -> { @user.reload.password_digest } do
+      put password_path(token), params: { password: '', password_confirmation: 'new' }
+
+      assert_redirected_to edit_password_path(token)
+    end
+
+    follow_redirect!
+
+    assert_notice 'Password required'
+  end
+
+  test 'update with blank password confirmation' do
+    token = @user.password_reset_token
+    assert_no_changes -> { @user.reload.password_digest } do
+      put password_path(token), params: { password: 'new', password_confirmation: '' }
+
+      assert_redirected_to edit_password_path(token)
+    end
+
+    follow_redirect!
+
+    assert_notice 'Password confirmation required'
   end
 
   private
