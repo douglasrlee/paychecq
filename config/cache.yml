@@ -12,5 +12,6 @@ test:
   <<: *default
 
 production:
-  database: cache
+  # Running in single database mode.
+  # database: production
   <<: *default
