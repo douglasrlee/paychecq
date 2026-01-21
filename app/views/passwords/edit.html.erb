@@ -11,7 +11,7 @@
       <%= form_with url: password_path(params[:token]), method: :put, class: "space-y-6", html: { novalidate: true } do |form| %>
         <%= render "components/password_input", form: form, field: :password, required: true, autofocus: true, autocomplete: "new-password" %>
 
-        <%= render "components/password_input", form: form, field: :password_confirmation, required: true, autofocus: true, autocomplete: "new-password" %>
+        <%= render "components/password_input", form: form, field: :password_confirmation, required: true, autocomplete: "new-password" %>
 
         <%= form.submit "Update password", class: 'btn btn-primary w-full' %>
       <% end %>
