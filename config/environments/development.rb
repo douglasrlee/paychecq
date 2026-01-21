@@ -34,7 +34,7 @@ Rails.application.configure do
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
 
-  # User letter_opener for emails in development
+  # Use letter_opener for emails in development
   config.action_mailer.delivery_method = :letter_opener_web
 
   # Send emails in development
