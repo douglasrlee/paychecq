@@ -87,9 +87,6 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: paychecq_production
-    username: paychecq
-    password: <%= ENV["PAYCHECQ_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
     database: paychecq_production_cache
