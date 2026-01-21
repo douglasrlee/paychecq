@@ -11,6 +11,11 @@ development:
 test:
   <<: *default
 
+staging:
+  # Running in single database mode.
+  # database: cache
+  <<: *default
+
 production:
   # Running in single database mode.
   # database: cache

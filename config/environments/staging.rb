@@ -37,14 +37,14 @@ Rails.application.configure do
   config.log_tags = [ :request_id ]
   config.logger   = ActiveSupport::TaggedLogging.logger($stdout)
 
-  # Change to "debug" to log everything (including potentially personally-identifiable information!).
-  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
+  # More verbose logging in staging to help debug issues before production.
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'debug')
 
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = '/up'
 
-  # Don't log any deprecations.
-  config.active_support.report_deprecations = false
+  # Report deprecations to help catch issues before production.
+  config.active_support.deprecation = :log
 
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
@@ -60,7 +60,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: 'paychecq.com' }
+  config.action_mailer.default_url_options = { host: 'staging.paychecq.com' }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
@@ -83,8 +83,7 @@ Rails.application.configure do
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
+  #   "staging.example.com",     # Allow requests from staging.example.com
   # ]
   #
   # Skip DNS rebinding protection for the default health check endpoint.
