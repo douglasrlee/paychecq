@@ -27,6 +27,10 @@ Metrics/BlockLength:
   Enabled: false
 Metrics/AbcSize:
   Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
 
 Rails/I18nLocaleTexts:
   Enabled: false
