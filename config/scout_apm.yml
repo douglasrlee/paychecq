@@ -8,7 +8,7 @@ common: &defaults
   # log_level: Verboseness of logs.
   # - Default: 'info'
   # - Valid Options: debug, info, warn, error
-  log_level: debug
+  # log_level: debug
 
   # use_prepend: Use the newer `prepend` instrumentation method. In some cases, gems
   #              that use `alias_method` can conflict with gems that use `prepend`.
@@ -44,6 +44,12 @@ common: &defaults
   logs_enabled: false
   logs_ingest_key: ""
 
+  # In many apps, more than 30% of the time spent in a transaction is within custom code written
+  # by your development team. In traces, this shows up as time spent in “Controller” or “Job”.
+  # AutoInstruments helps break down the time spent in your custom code without the need to add
+  # custom instrumentation on your own.
+  auto_instruments: true
+
 development:
   <<: *defaults
   name: PayChecQ - Development
@@ -59,6 +65,7 @@ staging:
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
+  log_level: debug
 
 production:
   <<: *defaults
