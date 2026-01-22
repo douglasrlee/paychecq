@@ -44,10 +44,10 @@ plugin :solid_queue if ENV['SOLID_QUEUE_IN_PUMA']
 pidfile ENV['PIDFILE'] if ENV['PIDFILE']
 
 # Report runtime metrics to Heroku via Barnes.
-if ENV.fetch('WEB_CONCURRENCY', 0).to_i.positive?
-  before_fork do
-    Barnes.start
-  end
-else
-  Barnes.start
-end
+# if ENV.fetch('WEB_CONCURRENCY', 0).to_i.positive?
+#   before_fork do
+#     Barnes.start
+#   end
+# else
+#   Barnes.start
+# end

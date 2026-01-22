@@ -56,7 +56,7 @@ gem 'mjml-rails'
 gem 'mrml'
 
 # To provide more visibility into the Ruby runtime on Heroku [https://devcenter.heroku.com/articles/language-runtime-metrics-ruby#getting-started]
-gem 'barnes'
+# gem 'barnes'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
