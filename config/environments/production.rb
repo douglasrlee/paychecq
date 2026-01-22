@@ -40,8 +40,8 @@ Rails.application.configure do
   # Change to "debug" to log everything (including potentially personally-identifiable information!).
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
-  # Disable ANSI color codes in logs for cleaner output in log aggregators.
-  config.colorize_logging = false
+  # Enable ANSI color codes in logs for cleaner output in log aggregators.
+  config.colorize_logging = true
 
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = '/up'

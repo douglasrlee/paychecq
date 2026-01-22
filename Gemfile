@@ -2,10 +2,6 @@ source 'https://rubygems.org'
 
 ruby '4.0.1'
 
-# Monitor a Ruby app [https://scoutapm.com]
-gem 'scout_apm'
-gem 'scout_apm_logging'
-
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 8.1.2'
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -57,6 +53,12 @@ gem 'mrml'
 
 # To provide more visibility into the Ruby runtime on Heroku [https://devcenter.heroku.com/articles/language-runtime-metrics-ruby#getting-started]
 gem 'barnes'
+
+# Application monitoring [appsignal.com]
+gem 'appsignal'
+
+# The ostruct gem provides the OpenStruct class, which lets you create objects with arbitrary attributes (required for appsignal)
+gem 'ostruct'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
