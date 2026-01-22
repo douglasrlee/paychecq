@@ -55,6 +55,9 @@ gem 'mrml'
 gem 'scout_apm'
 gem 'scout_apm_logging'
 
+# To provide more visibility into the Ruby runtime on heroku [https://devcenter.heroku.com/articles/language-runtime-metrics-ruby#getting-started]
+gem 'barnes'
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
