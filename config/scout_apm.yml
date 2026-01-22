@@ -66,6 +66,7 @@ staging:
   logs_enabled: true
   logs_monitor: true
   log_level: debug
+  revision_sha: <%= ENV['HEROKU_BUILD_COMMIT'] %>
 
 production:
   <<: *defaults
@@ -74,3 +75,4 @@ production:
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
+  revision_sha: <%= ENV['HEROKU_BUILD_COMMIT'] %>
