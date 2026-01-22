@@ -55,7 +55,7 @@ gem 'mrml'
 gem 'scout_apm'
 gem 'scout_apm_logging'
 
-# To provide more visibility into the Ruby runtime on heroku [https://devcenter.heroku.com/articles/language-runtime-metrics-ruby#getting-started]
+# To provide more visibility into the Ruby runtime on Heroku [https://devcenter.heroku.com/articles/language-runtime-metrics-ruby#getting-started]
 gem 'barnes'
 
 group :development, :test do
