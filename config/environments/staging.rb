@@ -40,6 +40,9 @@ Rails.application.configure do
   # More verbose logging in staging to help debug issues before production.
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'debug')
 
+  # Disable ANSI color codes in logs for cleaner output in log aggregators.
+  config.colorize_logging = false
+
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = '/up'
 
