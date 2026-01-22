@@ -61,7 +61,7 @@ test:
 staging:
   <<: *defaults
   name: PayChecQ - Staging
-  monitor: <%= !ARGV.any? { |arg| arg.include?('assets:') } %>
+  monitor: <%= File.basename($PROGRAM_NAME) != 'rake' %>
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
@@ -70,7 +70,7 @@ staging:
 production:
   <<: *defaults
   name: PayChecQ - Production
-  monitor: <%= !ARGV.any? { |arg| arg.include?('assets:') } %>
+  monitor: <%= File.basename($PROGRAM_NAME) != 'rake' %>
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
