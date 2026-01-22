@@ -61,18 +61,16 @@ test:
 staging:
   <<: *defaults
   name: PayChecQ - Staging
-  monitor: true
+  monitor: <%= !ARGV.any? { |arg| arg.include?('assets:precompile') } %>
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
   log_level: debug
-  revision_sha: <%= ENV['HEROKU_BUILD_COMMIT'] %>
 
 production:
   <<: *defaults
   name: PayChecQ - Production
-  monitor: true
+  monitor: <%= !ARGV.any? { |arg| arg.include?('assets:precompile') } %>
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
-  revision_sha: <%= ENV['HEROKU_BUILD_COMMIT'] %>
