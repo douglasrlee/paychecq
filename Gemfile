@@ -2,6 +2,10 @@ source 'https://rubygems.org'
 
 ruby '4.0.1'
 
+# Monitor a Ruby app [https://scoutapm.com]
+gem 'scout_apm'
+gem 'scout_apm_logging'
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 8.1.2'
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -50,10 +54,6 @@ gem 'paper_trail'
 # MJML-Rails allows you to render HTML emails from an MJML template. [https://github.com/sighmon/mjml-rails]
 gem 'mjml-rails'
 gem 'mrml'
-
-# Monitor a Ruby app [https://scoutapm.com]
-gem 'scout_apm'
-gem 'scout_apm_logging'
 
 # To provide more visibility into the Ruby runtime on Heroku [https://devcenter.heroku.com/articles/language-runtime-metrics-ruby#getting-started]
 gem 'barnes'
