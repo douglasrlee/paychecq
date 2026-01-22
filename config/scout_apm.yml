@@ -59,6 +59,7 @@ staging:
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
+  revision_sha: <%= ENV['HEROKU_SLUG_COMMIT'] %>
 
 production:
   <<: *defaults
@@ -67,3 +68,4 @@ production:
   errors_enabled: true
   logs_enabled: true
   logs_monitor: true
+  revision_sha: <%= ENV['HEROKU_SLUG_COMMIT'] %>
