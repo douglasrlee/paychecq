@@ -1,3 +1,3 @@
 web: bundle exec puma -C config/puma.rb
-worker: bin/rails solid_queue:start
+worker: bin/jobs --mode async
 release: bundle exec rake db:migrate
