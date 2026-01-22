@@ -1,4 +1,4 @@
 web: env RUBY_DEBUG_OPEN=true bin/rails server
-worker: SOLID_QUEUE_LOG_STDOUT=1 bin/rails solid_queue:start
+worker: SOLID_QUEUE_LOG_STDOUT=1 bin/jobs --mode async
 js: npm run build:watch
 css: npm run build:css:watch
