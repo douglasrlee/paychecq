@@ -1,12 +1,12 @@
-if Rails.env.local?
-  Rails.application.config.after_initialize do
+Rails.application.config.after_initialize do
+  if Rails.env.local?
     stdout_logger = ActiveSupport::Logger.new($stdout)
     Rails.logger.broadcast_to(stdout_logger)
-    SolidQueue.logger = Rails.logger
+  else
+    appsignal_logger = Appsignal::Logger.new('rails')
+    appsignal_logger.level = Logger::Severity::DEBUG
+    Rails.logger.broadcast_to(appsignal_logger)
   end
-else
-  appsignal_logger = Appsignal::Logger.new('rails')
-  appsignal_logger.level = Logger::Severity::DEBUG
 
-  Rails.logger = ActiveSupport::TaggedLogging.new(appsignal_logger)
+  SolidQueue.logger = Rails.logger
 end
