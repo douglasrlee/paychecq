@@ -11,7 +11,11 @@ else
     appsignal_logger = Appsignal::Logger.new('rails')
     appsignal_logger.level = Rails.configuration.log_level
 
-    Rails.logger = ActiveSupport::TaggedLogging.new(appsignal_logger)
+    stdout_logger = ActiveSupport::Logger.new($stdout)
+
+    Rails.logger.broadcast_to(stdout_logger)
+    Rails.logger.broadcast_to(appsignal_logger)
+
     SolidQueue.logger = Rails.logger
   end
 end
