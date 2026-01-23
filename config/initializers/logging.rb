@@ -10,4 +10,8 @@ Rails.application.config.after_initialize do
 
   SolidQueue.logger = Rails.logger
   ActiveJob::Base.logger = Rails.logger
+
+  # Silence SolidQueue internal table queries
+  SolidQueue.silence_polling = true if SolidQueue.respond_to?(:silence_polling=)
+  SolidQueue::Record.logger = nil
 end
