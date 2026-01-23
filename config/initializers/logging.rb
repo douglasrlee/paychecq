@@ -7,7 +7,11 @@ if Rails.env.local?
     SolidQueue.logger = Rails.logger
   end
 else
-  appsignal_logger = Appsignal::Logger.new('rails')
+  Rails.application.config.after_initialize do
+    appsignal_logger = Appsignal::Logger.new('rails')
+    appsignal_logger.level = Rails.configuration.log_level
 
-  Rails.logger = ActiveSupport::TaggedLogging.new(appsignal_logger)
+    Rails.logger = ActiveSupport::TaggedLogging.new(appsignal_logger)
+    SolidQueue.logger = Rails.logger
+  end
 end
