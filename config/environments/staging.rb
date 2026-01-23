@@ -37,8 +37,8 @@ Rails.application.configure do
   config.log_tags = [ :request_id ]
   config.logger   = ActiveSupport::TaggedLogging.logger($stdout)
 
-  # More verbose logging in staging to help debug issues before production.
-  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'debug')
+  # Use INFO level to reduce noise from SQL queries while keeping job execution logs.
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
 
   # Enable ANSI color codes in logs for cleaner output in log aggregators.
   config.colorize_logging = true
