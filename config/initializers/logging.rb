@@ -4,9 +4,10 @@ Rails.application.config.after_initialize do
     Rails.logger.broadcast_to(stdout_logger)
   else
     appsignal_logger = Appsignal::Logger.new('rails')
-    appsignal_logger.level = Logger::Severity::DEBUG
+    appsignal_logger.level = Rails.logger.level
     Rails.logger.broadcast_to(appsignal_logger)
   end
 
   SolidQueue.logger = Rails.logger
+  ActiveJob::Base.logger = Rails.logger
 end
