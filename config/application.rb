@@ -23,5 +23,8 @@ module PayChecQ
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Use custom mail delivery job with retries
+    config.action_mailer.delivery_job = 'MailDeliveryJob'
   end
 end
