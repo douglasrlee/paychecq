@@ -21,9 +21,19 @@
         background-color: #ffffff !important;
       }
 
+      .dark-text,
+      .dark-text > div {
+        color: #333333 !important;
+      }
+
       .dark-text-muted,
       .dark-text-muted > div {
         color: #666666 !important;
+      }
+
+      .footer-text,
+      .footer-text > div {
+        color: #999999 !important;
       }
 
       @media (prefers-color-scheme: dark) {
@@ -49,7 +59,12 @@
         .dark-text-muted > div {
           color: #a0a0a8 !important;
         }
-        
+
+        .footer-text,
+        .footer-text > div {
+          color: #808080 !important;
+        }
+
         /* primary: #D1C4E9, primary-content: black */
         .dark-btn a {
           background-color: #D1C4E9 !important; color: #000000 !important;
@@ -109,7 +124,7 @@
 
     <mj-section padding="40px 0">
       <mj-column>
-        <mj-text font-size="12px" align="center" css-class="dark-text-muted">
+        <mj-text font-size="12px" align="center" css-class="footer-text">
           &copy; <%= Date.current.year %> PayChecQ
         </mj-text>
       </mj-column>
