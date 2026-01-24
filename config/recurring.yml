@@ -11,10 +11,10 @@
 
 staging:
   clear_solid_queue_finished_jobs:
-    class: ClearSolidQueueJobsJob
+    class: ClearSolidQueueFinishedJobsJob
     schedule: every hour at minute 12
 
 production:
   clear_solid_queue_finished_jobs:
-    class: ClearSolidQueueJobsJob
+    class: ClearSolidQueueFinishedJobsJob
     schedule: every hour at minute 12
