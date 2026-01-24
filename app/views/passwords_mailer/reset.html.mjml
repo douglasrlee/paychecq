@@ -20,6 +20,8 @@
         display: block !important;
       }
       
+      body,
+      .body,
       .dark-bg,
       .dark-bg div,
       .dark-bg table,
@@ -52,6 +54,8 @@
 
       @media (prefers-color-scheme: dark) {
         /* base-300: oklch(27% 0.006 286.033) */
+        body,
+        .body,
         .dark-bg,
         .dark-bg div,
         .dark-bg table,
@@ -148,7 +152,7 @@
       </mj-section>
     </mj-wrapper>
 
-    <mj-section padding="40px 0">
+    <mj-section padding="40px 0 10px 0">
       <mj-column>
         <mj-text font-size="12px" align="center" css-class="footer-text">
           &copy; <%= Date.current.year %> PayChecQ
