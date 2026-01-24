@@ -1,5 +1,10 @@
 <mjml>
   <mj-head>
+    <mj-raw>
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
+    </mj-raw>
+
     <mj-attributes>
       <mj-all font-family="Helvetica, Arial, sans-serif" />
       <mj-text font-size="16px" line-height="1.5" color="#333333" />
@@ -15,9 +20,18 @@
         display: block !important;
       }
       
+      .dark-bg,
+      .dark-bg div,
+      .dark-bg table,
+      .dark-bg td,
+      .dark-bg th {
+        background-color: #f2f2f2 !important;
+      }
+
       .card-bg,
+      .card-bg div,
       .card-bg table,
-      .card-bg > tbody > tr > td {
+      .card-bg td {
         background-color: #ffffff !important;
       }
 
@@ -38,15 +52,27 @@
 
       @media (prefers-color-scheme: dark) {
         /* base-300: oklch(27% 0.006 286.033) */
-        .dark-bg {
+        .dark-bg,
+        .dark-bg div,
+        .dark-bg table,
+        .dark-bg td,
+        .dark-bg th {
           background-color: #262629 !important;
+        }
+
+        .card-wrapper,
+        .card-wrapper > tbody > tr > td {
+          background-color: #262629 !important;
+          border-radius: 0 !important;
         }
 
         /* base-100: oklch(44% 0.017 285.786) */
         .card-bg,
+        .card-bg div,
         .card-bg table,
-        .card-bg > tbody > tr > td {
+        .card-bg td {
           background-color: #51515c !important;
+          border-radius: 0 !important;
         }
 
         /* base-content: oklch(97.807% 0.029 256.847) */
@@ -81,7 +107,7 @@
     </mj-style>
   </mj-head>
 
-  <mj-body background-color="#f2f2f2" css-class="dark-bg">
+  <mj-body css-class="dark-bg">
     <mj-section padding="40px 0 40px 0">
       <mj-column>
         <mj-image src="<%= asset_url('light/logo.png') %>" alt="PayChecQ" width="40px" css-class="logo-light" />
@@ -96,7 +122,7 @@
       </mj-column>
     </mj-section>
 
-    <mj-wrapper padding="0 60px">
+    <mj-wrapper padding="0 60px" css-class="card-wrapper">
       <mj-section background-color="#ffffff" border-radius="8px" padding="40px 30px" css-class="card-bg">
         <mj-column>
           <mj-text css-class="dark-text">
