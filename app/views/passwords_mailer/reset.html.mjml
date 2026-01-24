@@ -7,12 +7,29 @@
     </mj-attributes>
 
     <mj-style>
-      .logo-dark { display: none !important; }
-      .logo-light { display: block !important; }
+      .logo-dark {
+        display: none !important;
+      }
+      
+      .logo-light {
+        display: block !important;
+      }
+      
       .card-bg,
       .card-bg table,
-      .card-bg > tbody > tr > td { background-color: #ffffff !important; }
-      
+      .card-bg > tbody > tr > td {
+        background-color: #ffffff !important;
+      }
+
+      .dark-text-muted,
+      .dark-text-muted > div {
+        color: #666666 !important;
+      }
+
+      .dark-bg {
+        background-color: #f2f2f2 !important;
+      }
+
       @media (prefers-color-scheme: dark) {
         /* base-300: oklch(27% 0.006 286.033) */
         .dark-bg {
@@ -50,7 +67,7 @@
     </mj-style>
   </mj-head>
 
-  <mj-body background-color="#f2f2f2" css-class="dark-bg">
+  <mj-body css-class="dark-bg">
     <mj-section padding="40px 0 40px 0">
       <mj-column>
         <mj-image src="<%= asset_url('light/logo.png') %>" alt="PayChecQ" width="40px" css-class="logo-light" />
@@ -80,11 +97,11 @@
             Reset Password
           </mj-button>
 
-          <mj-text font-size="14px" color="#666666" css-class="dark-text-muted">
+          <mj-text font-size="14px" css-class="dark-text-muted">
             This link will expire in <%= distance_of_time_in_words(0, @user.password_reset_token_expires_in) %>.
           </mj-text>
 
-          <mj-text font-size="14px" color="#666666" padding-top="20px" css-class="dark-text-muted">
+          <mj-text font-size="14px" padding-top="20px" css-class="dark-text-muted">
             If you didn't request a password reset, you can safely ignore this email.
           </mj-text>
         </mj-column>
@@ -93,7 +110,7 @@
 
     <mj-section padding="40px 0">
       <mj-column>
-        <mj-text font-size="12px" color="#999999" align="center" css-class="dark-text-muted">
+        <mj-text font-size="12px" align="center" css-class="dark-text-muted">
           &copy; <%= Date.current.year %> PayChecQ
         </mj-text>
       </mj-column>
