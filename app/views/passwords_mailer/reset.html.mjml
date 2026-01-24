@@ -41,7 +41,10 @@
 
         /* base-content: oklch(97.807% 0.029 256.847) */
         .dark-text,
-        .dark-text > div { color: #ecf9ff !important; }
+        .dark-text > div {
+          color: #ecf9ff !important;
+        }
+
         .dark-text-muted,
         .dark-text-muted > div {
           color: #a0a0a8 !important;
