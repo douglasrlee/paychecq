@@ -5,38 +5,117 @@
       <mj-text font-size="16px" line-height="1.5" color="#333333" />
       <mj-button background-color="#673AB7" border-radius="6px" font-size="16px" font-weight="600" />
     </mj-attributes>
+
+    <mj-style>
+      .logo-dark {
+        display: none !important;
+      }
+      
+      .logo-light {
+        display: block !important;
+      }
+      
+      .card-bg,
+      .card-bg table,
+      .card-bg > tbody > tr > td {
+        background-color: #ffffff !important;
+      }
+
+      .dark-text,
+      .dark-text > div {
+        color: #333333 !important;
+      }
+
+      .dark-text-muted,
+      .dark-text-muted > div {
+        color: #666666 !important;
+      }
+
+      .footer-text,
+      .footer-text > div {
+        color: #999999 !important;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        /* base-300: oklch(27% 0.006 286.033) */
+        .dark-bg {
+          background-color: #262629 !important;
+        }
+
+        /* base-100: oklch(44% 0.017 285.786) */
+        .card-bg,
+        .card-bg table,
+        .card-bg > tbody > tr > td {
+          background-color: #51515c !important;
+        }
+
+        /* base-content: oklch(97.807% 0.029 256.847) */
+        .dark-text,
+        .dark-text > div {
+          color: #ecf9ff !important;
+        }
+
+        .dark-text-muted,
+        .dark-text-muted > div {
+          color: #a0a0a8 !important;
+        }
+
+        .footer-text,
+        .footer-text > div {
+          color: #808080 !important;
+        }
+
+        /* primary: #D1C4E9, primary-content: black */
+        .dark-btn a {
+          background-color: #D1C4E9 !important; color: #000000 !important;
+        }
+
+        .logo-dark {
+          display: block !important;
+        }
+
+        .logo-light {
+          display: none !important;
+        }
+      }
+    </mj-style>
   </mj-head>
 
-  <mj-body background-color="#f2f2f2">
+  <mj-body background-color="#f2f2f2" css-class="dark-bg">
     <mj-section padding="40px 0 40px 0">
       <mj-column>
-        <mj-image src="<%= asset_url('light/logo.png') %>" alt="PayChecQ" width="40px" />
-        <mj-text font-size="24px" font-weight="bold" align="center" padding-top="24px">
+        <mj-image src="<%= asset_url('light/logo.png') %>" alt="PayChecQ" width="40px" css-class="logo-light" />
+        <mj-raw>
+          <div class="logo-dark" style="display:none;text-align:center;">
+            <img src="<%= asset_url('dark/logo.png') %>" alt="PayChecQ" width="40" style="width:40px;" />
+          </div>
+        </mj-raw>
+        <mj-text font-size="24px" font-weight="bold" align="center" padding-top="24px" css-class="dark-text">
           Reset your password
         </mj-text>
       </mj-column>
     </mj-section>
 
     <mj-wrapper padding="0 60px">
-      <mj-section background-color="#ffffff" border-radius="8px" padding="40px 30px">
+      <mj-section background-color="#ffffff" border-radius="8px" padding="40px 30px" css-class="card-bg">
         <mj-column>
-          <mj-text>
+          <mj-text css-class="dark-text">
             We received a request to reset your password.
           </mj-text>
 
-          <mj-text>
+          <mj-text css-class="dark-text">
             Click the button below to choose a new one.
           </mj-text>
 
-          <mj-button href="<%= edit_password_url(@user.password_reset_token) %>" padding="30px 0">
+          <mj-button href="<%= edit_password_url(@user.password_reset_token) %>" padding="30px 0" css-class="dark-btn">
             Reset Password
           </mj-button>
 
-          <mj-text font-size="14px" color="#666666">
+          <mj-text font-size="14px" css-class="dark-text-muted">
             This link will expire in <%= distance_of_time_in_words(0, @user.password_reset_token_expires_in) %>.
           </mj-text>
 
-          <mj-text font-size="14px" color="#666666" padding-top="20px">
+          <mj-text font-size="14px" padding-top="20px" css-class="dark-text-muted">
             If you didn't request a password reset, you can safely ignore this email.
           </mj-text>
         </mj-column>
@@ -45,7 +124,7 @@
 
     <mj-section padding="40px 0">
       <mj-column>
-        <mj-text font-size="12px" color="#999999" align="center">
+        <mj-text font-size="12px" align="center" css-class="footer-text">
           &copy; <%= Date.current.year %> PayChecQ
         </mj-text>
       </mj-column>
