@@ -152,7 +152,7 @@
       </mj-section>
     </mj-wrapper>
 
-    <mj-section padding="40px 0">
+    <mj-section padding="40px 0 10px 0">
       <mj-column>
         <mj-text font-size="12px" align="center" css-class="footer-text">
           &copy; <%= Date.current.year %> PayChecQ
