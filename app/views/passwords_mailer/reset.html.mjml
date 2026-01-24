@@ -20,6 +20,8 @@
         display: block !important;
       }
       
+      body,
+      .body,
       .dark-bg,
       .dark-bg div,
       .dark-bg table,
@@ -52,6 +54,8 @@
 
       @media (prefers-color-scheme: dark) {
         /* base-300: oklch(27% 0.006 286.033) */
+        body,
+        .body,
         .dark-bg,
         .dark-bg div,
         .dark-bg table,
