@@ -34,8 +34,15 @@ Rails.application.configure do
   # Care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = true
 
-  # Use letter_opener for emails in development
-  config.action_mailer.delivery_method = :letter_opener_web
+  # Use Mailgun for emails
+  config.action_mailer.delivery_method = :mailgun
+
+  config.action_mailer.mailgun_settings = {
+    api_key: ENV.fetch('MAILGUN_API_KEY'),
+    domain: 'sandbox2d9b7705f68a414aa443e7cd1e9a4d1d.mailgun.org'
+    # api_host: 'api.eu.mailgun.net'  # Uncomment this line for EU region domains
+    # timeout: 20 # Default depends on rest-client, whose default is 60s. Added in 1.2.3.
+  }
 
   # Send emails in development
   config.action_mailer.perform_deliveries = true
@@ -66,6 +73,9 @@ Rails.application.configure do
 
   # Highlight code that triggered redirect in logs.
   config.action_dispatch.verbose_redirect_logs = true
+
+  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
+  config.asset_host = 'http://localhost:3000'
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true
