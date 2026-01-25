@@ -73,6 +73,4 @@ bin/bundler-audit
 
 ## Email in Development
 
-Emails sent in development are captured by Letter Opener Web. View them at http://localhost:3000/letter_opener.
-
 Mailer previews (for viewing email templates without sending) are available at http://localhost:3000/rails/mailers.

@@ -56,6 +56,4 @@ bin/ci                           # Run full CI pipeline locally
 
 ### Email
 - Templates use MJML (`mjml-rails` gem) for responsive emails — files are `.html.mjml`
-- Uses `letter_opener_web` to capture sent emails in development
-- View emails at http://localhost:3000/letter_opener
 - Mailer previews available at http://localhost:3000/rails/mailers
