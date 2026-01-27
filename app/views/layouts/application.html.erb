@@ -47,6 +47,8 @@
     <%= render "components/alert", type: "error", message: flash[:alert] if flash[:alert] %>
     <%= render "components/alert", type: "success", message: flash[:notice] if flash[:notice] %>
 
+    <%= render "components/navigation" unless authentication_page? %>
+
     <%= yield %>
   </body>
 </html>
