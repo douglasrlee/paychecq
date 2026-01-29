@@ -4,7 +4,18 @@
 
 /* Prevent iOS Safari from zooming on input focus (requires 16px minimum) */
 @layer base {
-  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="time"],
   select,
   textarea {
     font-size: 16px;
