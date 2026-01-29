@@ -2,6 +2,11 @@
 
 @source inline("alert-error alert-success alert-warning alert-info");
 
+/* Disable overscroll bounce and scroll chaining */
+html, body {
+  overscroll-behavior: none;
+}
+
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {
