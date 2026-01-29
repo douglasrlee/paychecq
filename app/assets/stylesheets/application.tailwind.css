@@ -74,7 +74,7 @@
   --noise: 0;
 }
 
-/* Pull-to-refresh indicator */
+/* #region Pull-to-refresh */
 .pull-to-refresh-indicator {
   height: 0;
   overflow: hidden;
@@ -82,7 +82,10 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease;
+}
+
+.pull-to-refresh-indicator.hiding {
+  transition: opacity 0.2s ease, height 0.2s ease;
 }
 
 .ptr-content {
@@ -109,4 +112,4 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-/* Pull-to-refresh indicator */
+/* #endregion */

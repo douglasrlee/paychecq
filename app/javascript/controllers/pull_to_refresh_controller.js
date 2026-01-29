@@ -13,13 +13,28 @@ export default class extends Controller {
   // continues showing the spinner for the remaining duration.
   connect() {
     this.startY = 0
+    this.hideTimeout = null
     this.indicator = document.getElementById("ptr") || this.createIndicator()
 
     if (Date.now() < refreshUntil) this.showSpinner(refreshUntil - Date.now())
 
-    this.element.addEventListener("touchstart", this.onStart.bind(this), { passive: true })
-    this.element.addEventListener("touchmove", this.onMove.bind(this), { passive: false })
-    this.element.addEventListener("touchend", this.onEnd.bind(this), { passive: true })
+    // Store bound handlers for cleanup
+    this.boundOnStart = this.onStart.bind(this)
+    this.boundOnMove = this.onMove.bind(this)
+    this.boundOnEnd = this.onEnd.bind(this)
+
+    this.element.addEventListener("touchstart", this.boundOnStart, { passive: true })
+    this.element.addEventListener("touchmove", this.boundOnMove, { passive: false })
+    this.element.addEventListener("touchend", this.boundOnEnd, { passive: true })
+  }
+
+  // Cleans up event listeners and timeout when controller disconnects.
+  disconnect() {
+    if (this.hideTimeout) clearTimeout(this.hideTimeout)
+
+    this.element.removeEventListener("touchstart", this.boundOnStart)
+    this.element.removeEventListener("touchmove", this.boundOnMove)
+    this.element.removeEventListener("touchend", this.boundOnEnd)
   }
 
   // Creates the pull-to-refresh indicator element with spinner and text.
@@ -81,13 +96,17 @@ export default class extends Controller {
     this.indicator.style.opacity = "1"
     this.indicator.querySelector(".ptr-spinner").classList.add("spinning")
     this.indicator.querySelector(".ptr-text").textContent = "Refreshing..."
-    setTimeout(() => this.hideIndicator(), duration)
+    this.hideTimeout = setTimeout(() => this.hideIndicator(), duration)
   }
 
-  // Hides the indicator by collapsing its height and stops the spinner.
+  // Hides the indicator with a smooth slide-up animation.
   hideIndicator() {
+    this.indicator.classList.add("hiding")
     this.indicator.style.height = "0"
     this.indicator.style.opacity = "0"
     this.indicator.querySelector(".ptr-spinner").classList.remove("spinning")
+
+    // Remove hiding class after transition completes
+    setTimeout(() => this.indicator.classList.remove("hiding"), 200)
   }
 }
