@@ -1,5 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Configuration constants
+const PULL_RESISTANCE = 0.5       // Dampening factor for pull distance (lower = more resistance)
+const MAX_PULL_HEIGHT = 120       // Maximum indicator height during pull (px)
+const SPINNER_HEIGHT = 50         // Indicator height while refreshing (px)
+const REFRESH_DURATION = 800      // How long to show spinner after refresh triggers (ms)
+const TRANSITION_DURATION = 200   // Hide animation duration (ms) - must match CSS
+
 // Tracks when the refresh animation should end (timestamp in ms)
 // Global so it persists across Turbo page replacements
 let refreshUntil = 0
@@ -14,6 +21,11 @@ export default class extends Controller {
   connect() {
     this.startY = 0
     this.hideTimeout = null
+    this.transitionTimeout = null
+
+    // Singleton indicator: intentionally placed outside <main> and NOT removed on
+    // disconnect so it persists across Turbo page replacements. Multiple controller
+    // instances share the same element; getElementById prevents duplicates.
     this.indicator = document.getElementById("ptr") || this.createIndicator()
 
     if (Date.now() < refreshUntil) this.showSpinner(refreshUntil - Date.now())
@@ -24,17 +36,23 @@ export default class extends Controller {
     this.boundOnEnd = this.onEnd.bind(this)
 
     this.element.addEventListener("touchstart", this.boundOnStart, { passive: true })
+    // passive: false required to call preventDefault() during pull gesture.
+    // This may impact scroll performance, but is necessary to prevent scroll
+    // while pulling down. preventDefault() is only called when actively pulling.
     this.element.addEventListener("touchmove", this.boundOnMove, { passive: false })
     this.element.addEventListener("touchend", this.boundOnEnd, { passive: true })
   }
 
-  // Cleans up event listeners and timeout when controller disconnects.
+  // Cleans up event listeners and timeouts when controller disconnects.
   disconnect() {
     if (this.hideTimeout) clearTimeout(this.hideTimeout)
+    if (this.transitionTimeout) clearTimeout(this.transitionTimeout)
 
     this.element.removeEventListener("touchstart", this.boundOnStart)
     this.element.removeEventListener("touchmove", this.boundOnMove)
     this.element.removeEventListener("touchend", this.boundOnEnd)
+
+    this.indicator = null
   }
 
   // Creates the pull-to-refresh indicator element with spinner and text.
@@ -55,8 +73,10 @@ export default class extends Controller {
   }
 
   // Handles touch start. Records the starting Y position only if
-  // the user is at the top of the scrollable area (scrollTop === 0).
+  // the user is at the top of the scrollable area (scrollTop === 0)
+  // and no refresh is currently in progress.
   onStart(e) {
+    if (Date.now() < refreshUntil) return // Refresh already in progress
     if (this.element.scrollTop === 0) this.startY = e.touches[0].clientY
   }
 
@@ -65,10 +85,15 @@ export default class extends Controller {
   // down to avoid conflicting scroll behavior.
   onMove(e) {
     if (!this.startY) return
-    const dist = (e.touches[0].clientY - this.startY) * 0.5
+    if (this.element.scrollTop > 0) {
+      this.startY = 0
+      this.hideIndicator()
+      return
+    }
+    const dist = (e.touches[0].clientY - this.startY) * PULL_RESISTANCE
     if (dist > 0) {
       e.preventDefault()
-      this.indicator.style.height = `${Math.min(dist, 120)}px`
+      this.indicator.style.height = `${Math.min(dist, MAX_PULL_HEIGHT)}px`
       this.indicator.style.opacity = Math.min(dist / this.thresholdValue, 1)
       this.indicator.querySelector(".ptr-text").textContent =
         dist >= this.thresholdValue ? "Release to refresh" : "Pull to refresh"
@@ -77,13 +102,14 @@ export default class extends Controller {
 
   // Handles touch end. If pulled past the threshold, triggers a refresh.
   // Otherwise, hides the indicator.
+  // Note: This does not check for unsaved form data before refreshing.
   onEnd() {
     const dist = this.indicator.offsetHeight
     this.startY = 0
     if (dist >= this.thresholdValue) {
-      this.showSpinner(800)
-      refreshUntil = Date.now() + 800
-      window.Turbo.visit(location.href, { action: "replace" })
+      this.showSpinner(REFRESH_DURATION)
+      refreshUntil = Date.now() + REFRESH_DURATION
+      Turbo.visit(location.pathname + location.search, { action: "replace" })
     } else {
       this.hideIndicator()
     }
@@ -92,7 +118,7 @@ export default class extends Controller {
   // Shows the spinning loader for the specified duration (ms).
   // Automatically hides after the duration elapses.
   showSpinner(duration) {
-    this.indicator.style.height = "50px"
+    this.indicator.style.height = `${SPINNER_HEIGHT}px`
     this.indicator.style.opacity = "1"
     this.indicator.querySelector(".ptr-spinner").classList.add("spinning")
     this.indicator.querySelector(".ptr-text").textContent = "Refreshing..."
@@ -101,12 +127,14 @@ export default class extends Controller {
 
   // Hides the indicator with a smooth slide-up animation.
   hideIndicator() {
+    if (!this.indicator) return
+
     this.indicator.classList.add("hiding")
     this.indicator.style.height = "0"
     this.indicator.style.opacity = "0"
     this.indicator.querySelector(".ptr-spinner").classList.remove("spinning")
 
     // Remove hiding class after transition completes
-    setTimeout(() => this.indicator.classList.remove("hiding"), 200)
+    this.transitionTimeout = setTimeout(() => this.indicator.classList.remove("hiding"), TRANSITION_DURATION)
   }
 }
