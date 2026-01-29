@@ -73,3 +73,43 @@
   --depth: 1;
   --noise: 0;
 }
+
+/* #region Pull-to-refresh */
+.pull-to-refresh-indicator {
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+.pull-to-refresh-indicator.hiding {
+  transition: opacity 0.2s ease, height 0.2s ease;
+}
+
+.ptr-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-primary);
+}
+
+.ptr-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.ptr-spinner.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+.ptr-text {
+  font-size: 0.875rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+/* #endregion */

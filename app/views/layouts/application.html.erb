@@ -51,7 +51,7 @@
 
     <%= render "components/navigation" unless authentication_page? %>
 
-    <main class="flex-1 overflow-y-auto overscroll-contain">
+    <main class="flex-1 overflow-y-auto overscroll-contain" data-controller="pull-to-refresh">
       <%= yield %>
     </main>
   </body>
