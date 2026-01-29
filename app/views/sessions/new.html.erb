@@ -6,7 +6,7 @@
     <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight">Sign in to your account</h2>
   </div>
 
-  <div class="card card-xl bg-base-200 mt-10 w-full max-w-120 shadow-md">
+  <div class="card card-xl bg-base-100 mt-10 w-full max-w-120 shadow-md">
     <div class="card-body">
       <%= form_with url: session_path, class: "space-y-6", html: { novalidate: true } do |form| %>
         <%= render "components/email_input", form: form, field: :email_address, required: true, autofocus: true, autocomplete: "username" %>
