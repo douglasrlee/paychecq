@@ -2,6 +2,13 @@ ENV['RAILS_ENV'] ||= 'test'
 
 require_relative '../config/environment'
 require 'rails/test_help'
+
+require 'simplecov'
+require 'simplecov-cobertura'
+
+SimpleCov.start
+SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
+
 require_relative 'test_helpers/session_test_helper'
 
 module ActiveSupport
