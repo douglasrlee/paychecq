@@ -2,9 +2,11 @@
 
 @source inline("alert-error alert-success alert-warning alert-info");
 
-/* Disable overscroll bounce and scroll chaining */
-html, body {
-  overscroll-behavior: none;
+/* Disable overscroll bounce in standalone PWA mode */
+@media (display-mode: standalone) {
+  html, body {
+    overscroll-behavior: none;
+  }
 }
 
 @plugin "daisyui";
