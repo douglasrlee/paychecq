@@ -6,7 +6,7 @@
     <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight">Create an account</h2>
   </div>
 
-  <div class="card card-xl bg-base-100 mt-10 w-full max-w-120">
+  <div class="card card-xl bg-base-100 mt-10 w-full max-w-120 shadow-md">
     <div class="card-body">
       <%= form_with model: @user, class: "space-y-6", html: { novalidate: true } do |form| %>
         <%= render "components/text_input", form: form, resource: @user, field: :first_name, required: true, autofocus: true, autocomplete: "given-name" %>
@@ -24,5 +24,5 @@
     </div>
   </div>
 
-  <p class="mt-10 text-center text-sm/6">Already joined? <%= link_to "Sign in!", new_session_path, class: "link link-primary link-hover" %></p>
+  <p class="mt-10 mb-10 text-center text-sm/6">Already joined? <%= link_to "Sign in!", new_session_path, class: "link link-primary link-hover" %></p>
 </div>
