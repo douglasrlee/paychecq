@@ -2,11 +2,9 @@
 
 @source inline("alert-error alert-success alert-warning alert-info");
 
-/* Disable iOS PWA overscroll bounce */
-@layer base {
-  html, body {
-    overscroll-behavior: none;
-  }
+/* Disable overscroll bounce and scroll chaining */
+html, body {
+  overscroll-behavior: none;
 }
 
 @plugin "daisyui";
