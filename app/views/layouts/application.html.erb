@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="min-h-dvh bg-base-300">
+<html lang="en" class="min-h-dvh bg-base-100 dark:bg-base-300">
   <head>
     <title><%= content_for(:title) || "PayChecQ" %></title>
 
@@ -45,12 +45,14 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body class="min-h-dvh">
+  <body class="h-dvh flex flex-col overflow-hidden">
     <%= render "components/alert", type: "error", message: flash[:alert] if flash[:alert] %>
     <%= render "components/alert", type: "success", message: flash[:notice] if flash[:notice] %>
 
     <%= render "components/navigation" unless authentication_page? %>
 
-    <%= yield %>
+    <main class="flex-1 overflow-y-auto overscroll-contain">
+      <%= yield %>
+    </main>
   </body>
 </html>
