@@ -9,8 +9,7 @@
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
     "build:watch": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --watch",
     "build:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
-    "build:css:watch": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --watch",
-    "analyze": "bundle-analyzer ./app/assets/builds --bundle-name=paychecq"
+    "build:css:watch": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --watch"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
@@ -18,7 +17,6 @@
     "daisyui": "^5.5.14"
   },
   "devDependencies": {
-    "@codecov/bundle-analyzer": "^1.9.1",
     "@tailwindcss/cli": "^4.1.18",
     "esbuild": "^0.27.2",
     "tailwindcss": "^4.1.18"
