@@ -94,5 +94,6 @@ group :test do
   gem 'selenium-webdriver'
 
   # Code coverage
-  gem 'simplecov'
+  gem 'simplecov', require: false
+  gem 'simplecov_json_formatter', require: false
 end

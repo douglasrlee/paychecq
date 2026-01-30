@@ -4,9 +4,8 @@ if ENV['CI']
   require 'simplecov'
   require 'simplecov_json_formatter'
 
-  SimpleCov.start do
+  SimpleCov.start 'rails' do
     formatter SimpleCov::Formatter::JSONFormatter
-    add_filter '/test/'
   end
 end
 

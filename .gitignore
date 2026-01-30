@@ -43,3 +43,6 @@
 
 # OS files
 .DS_Store
+
+# Ignore coverage files
+coverage

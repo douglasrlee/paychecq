@@ -439,6 +439,7 @@ DEPENDENCIES
   rubocop-rails
   selenium-webdriver
   simplecov
+  simplecov_json_formatter
   solid_cable
   solid_cache
   solid_queue
