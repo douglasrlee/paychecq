@@ -1,6 +1,8 @@
 # <img src=".github/README/PayChecQ Logo.png" alt="PayChecQ Logo" height="32"> PayChecQ
 
 [![CI](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml/badge.svg)](https://github.com/douglasrlee/paychecq/actions/workflows/ci.yml)
+[![Maintainability](https://qlty.sh/gh/douglasrlee/projects/paychecq/maintainability.svg)](https://qlty.sh/gh/douglasrlee/projects/paychecq)
+[![Code Coverage](https://qlty.sh/gh/douglasrlee/projects/paychecq/coverage.svg)](https://qlty.sh/gh/douglasrlee/projects/paychecq)
 [![Rails Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop-rails)
 
 Welcome! You've found the source code for the main PayChecQ.com application!
