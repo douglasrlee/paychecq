@@ -1,18 +1,7 @@
 ENV['RAILS_ENV'] ||= 'test'
 
-if ENV['CI']
-  require 'simplecov'
-  require 'simplecov_json_formatter'
-
-  SimpleCov.start do
-    formatter SimpleCov::Formatter::JSONFormatter
-    add_filter '/test/'
-  end
-end
-
 require_relative '../config/environment'
 require 'rails/test_help'
-
 require_relative 'test_helpers/session_test_helper'
 
 module ActiveSupport
