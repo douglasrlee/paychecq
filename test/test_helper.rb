@@ -16,12 +16,11 @@ require_relative 'test_helpers/session_test_helper'
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
-
-    # Give each parallel worker a unique SimpleCov command name for proper coverage merging
-    parallelize_setup do |worker|
-      SimpleCov.command_name "test-#{worker}" if defined?(SimpleCov)
+    # Disable parallel testing in CI for accurate coverage merging
+    if ENV['CI']
+      parallelize(workers: 1)
+    else
+      parallelize(workers: :number_of_processors)
     end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
