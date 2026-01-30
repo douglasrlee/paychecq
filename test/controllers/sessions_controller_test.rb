@@ -16,6 +16,14 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert cookies[:session_id]
   end
 
+  test 'redirects to original url after login' do
+    get transactions_path
+    assert_redirected_to new_session_path
+
+    post session_path, params: { email_address: @user.email_address, password: 'password' }
+    assert_redirected_to transactions_path
+  end
+
   test 'create with invalid credentials' do
     post session_path, params: { email_address: @user.email_address, password: 'wrong' }
 
