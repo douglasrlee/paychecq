@@ -94,5 +94,5 @@ group :test do
   gem 'selenium-webdriver'
 
   # Code coverage
-  'simplecov'
+  gem 'simplecov'
 end
