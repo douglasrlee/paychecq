@@ -7,7 +7,6 @@ if ENV['CI']
   SimpleCov.start 'rails' do
     command_name "test-#{Process.pid}"
     formatter SimpleCov::Formatter::CoberturaFormatter
-    enable_coverage :branch
   end
 end
 
