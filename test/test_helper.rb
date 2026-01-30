@@ -2,11 +2,11 @@ ENV['RAILS_ENV'] ||= 'test'
 
 if ENV['CI']
   require 'simplecov'
-  require 'simplecov-cobertura'
+  require 'simplecov_json_formatter'
 
   SimpleCov.start 'rails' do
     command_name "test-#{Process.pid}"
-    formatter SimpleCov::Formatter::CoberturaFormatter
+    formatter SimpleCov::Formatter::JSONFormatter
     enable_coverage :branch
   end
 end

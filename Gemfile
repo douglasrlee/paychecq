@@ -95,5 +95,5 @@ group :test do
 
   # Code coverage reporting
   gem 'simplecov', require: false
-  gem 'simplecov-cobertura', require: false
+  gem 'simplecov_json_formatter', require: false
 end
