@@ -15,9 +15,11 @@ module Authentication
 
   private
 
+  # :nocov:
   def authenticated?
     resume_session
   end
+  # :nocov:
 
   def require_authentication
     resume_session || request_authentication

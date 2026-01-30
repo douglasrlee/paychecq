@@ -27,6 +27,14 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to transaction_url(Transaction.order(:created_at).last)
   end
 
+  test 'should not create transaction with invalid params' do
+    assert_no_difference('Transaction.count') do
+      post transactions_url, params: { transaction: { amount: nil, name: nil } }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
   test 'should show transaction' do
     get transaction_url(@transaction)
 
@@ -43,6 +51,12 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     patch transaction_url(@transaction), params: { transaction: { amount: @transaction.amount, name: @transaction.name, pending: @transaction.pending } }
 
     assert_redirected_to transaction_url(@transaction)
+  end
+
+  test 'should not update transaction with invalid params' do
+    patch transaction_url(@transaction), params: { transaction: { amount: nil, name: nil } }
+
+    assert_response :unprocessable_entity
   end
 
   test 'should destroy transaction' do
