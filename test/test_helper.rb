@@ -19,7 +19,7 @@ if ENV['CI']
 
       json = JSON.pretty_generate(data)
       File.write(File.join(SimpleCov.coverage_dir, 'coverage.json'), json)
-      puts "Coverage JSON written with relative paths"
+      puts 'Coverage JSON written with relative paths'
       json
     end
   end
