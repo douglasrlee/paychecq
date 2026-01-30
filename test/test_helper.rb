@@ -2,12 +2,14 @@ ENV['RAILS_ENV'] ||= 'test'
 
 if ENV['CI']
   require 'simplecov'
-  require 'simplecov-cobertura'
+  require 'simplecov-lcov'
+
+  SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
 
   SimpleCov.start 'rails' do
     command_name "test-#{Process.pid}"
     enable_coverage :branch
-    formatter SimpleCov::Formatter::CoberturaFormatter
+    formatter SimpleCov::Formatter::LcovFormatter
   end
 end
 
