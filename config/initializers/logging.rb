@@ -1,3 +1,6 @@
+# Only configure logging when running as a server (not tests, migrations, console, etc.)
+return unless defined?(Rails::Server) || $PROGRAM_NAME.include?('puma')
+
 if Rails.env.local?
   Rails.application.config.after_initialize do
     stdout_logger = ActiveSupport::Logger.new($stdout)
