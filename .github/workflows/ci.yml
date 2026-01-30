@@ -76,6 +76,8 @@ jobs:
         run: bin/rails db:test:prepare test
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/coverage.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -130,4 +132,6 @@ jobs:
       - name: Build assets
         run: npm run build
       - name: Analyze bundle
-        run: npm run analyze -- --upload-token=${{ secrets.CODECOV_TOKEN }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: npm run analyze -- --upload

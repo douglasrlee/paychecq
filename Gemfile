@@ -94,6 +94,6 @@ group :test do
   gem 'selenium-webdriver'
 
   # Code coverage reporting
-  gem 'simplecov'
-  gem 'simplecov-cobertura'
+  gem 'simplecov', require: false
+  gem 'simplecov-cobertura', require: false
 end
