@@ -5,9 +5,7 @@ if ENV['CI']
   require 'simplecov-cobertura'
 
   SimpleCov.start 'rails' do
-    command_name "test-#{Process.pid}"
     formatter SimpleCov::Formatter::CoberturaFormatter
-    enable_coverage :branch
   end
 end
 
@@ -20,6 +18,11 @@ module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
+
+    # Give each parallel worker a unique SimpleCov command name for proper coverage merging
+    parallelize_setup do |worker|
+      SimpleCov.command_name "test-#{worker}" if defined?(SimpleCov)
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
