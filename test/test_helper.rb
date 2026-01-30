@@ -24,7 +24,7 @@ module ActiveSupport
       SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}" if defined?(SimpleCov)
     end
 
-    parallelize_teardown do |worker|
+    parallelize_teardown do |_worker|
       SimpleCov.result if defined?(SimpleCov)
     end
 
