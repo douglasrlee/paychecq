@@ -3,9 +3,29 @@ ENV['RAILS_ENV'] ||= 'test'
 if ENV['CI']
   require 'simplecov'
   require 'simplecov_json_formatter'
+  require 'json'
+
+  # Custom formatter that outputs relative paths
+  class RelativePathJSONFormatter
+    def format(result)
+      root = SimpleCov.root
+      data = {
+        meta: { simplecov_version: SimpleCov::VERSION },
+        coverage: result.files.each_with_object({}) do |file, hsh|
+          relative_path = file.filename.sub("#{root}/", '')
+          hsh[relative_path] = { lines: file.coverage_data['lines'] }
+        end
+      }
+
+      json = JSON.pretty_generate(data)
+      File.write(File.join(SimpleCov.coverage_dir, 'coverage.json'), json)
+      puts "Coverage JSON written with relative paths"
+      json
+    end
+  end
 
   SimpleCov.start 'rails' do
-    formatter SimpleCov::Formatter::JSONFormatter
+    formatter RelativePathJSONFormatter
   end
 end
 
