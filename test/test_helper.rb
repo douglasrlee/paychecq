@@ -16,11 +16,16 @@ require_relative 'test_helpers/session_test_helper'
 
 module ActiveSupport
   class TestCase
-    # Disable parallel testing in CI for accurate coverage merging
-    if ENV['CI']
-      parallelize(workers: 1)
-    else
-      parallelize(workers: :number_of_processors)
+    # Run tests in parallel with specified workers
+    parallelize(workers: :number_of_processors)
+
+    # Configure SimpleCov for parallel test coverage merging
+    parallelize_setup do |worker|
+      SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}" if defined?(SimpleCov)
+    end
+
+    parallelize_teardown do |worker|
+      SimpleCov.result if defined?(SimpleCov)
     end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
