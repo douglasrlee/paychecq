@@ -94,6 +94,5 @@ group :test do
   gem 'selenium-webdriver'
 
   # Code coverage reporting
-  gem 'simplecov', require: false
-  gem 'simplecov-lcov', require: false
+  gem 'coveralls_reborn', require: false
 end
