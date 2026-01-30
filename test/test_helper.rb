@@ -1,18 +1,7 @@
 ENV['RAILS_ENV'] ||= 'test'
 
-if ENV['CI']
-  require 'simplecov'
-  require 'simplecov-cobertura'
-
-  SimpleCov.start 'rails' do
-    command_name "test-#{Process.pid}"
-    formatter SimpleCov::Formatter::CoberturaFormatter
-  end
-end
-
 require_relative '../config/environment'
 require 'rails/test_help'
-
 require_relative 'test_helpers/session_test_helper'
 
 module ActiveSupport
