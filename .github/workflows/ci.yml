@@ -134,4 +134,4 @@ jobs:
       - name: Analyze bundle
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: npm run analyze -- --upload
+        run: npm run analyze -- --upload-token=$CODECOV_TOKEN
