@@ -6,7 +6,7 @@ if ENV['CI']
 
   SimpleCov.start do
     formatter SimpleCov::Formatter::JSONFormatter
-    add_filter '/spec/'
+    add_filter '/test/'
   end
 end
 
