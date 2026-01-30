@@ -93,6 +93,7 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 
-  # Code coverage
-  gem 'simplecov'
+  # Code coverage reporting
+  gem 'simplecov', require: false
+  gem 'simplecov-cobertura', require: false
 end

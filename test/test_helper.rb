@@ -2,11 +2,10 @@ ENV['RAILS_ENV'] ||= 'test'
 
 if ENV['CI']
   require 'simplecov'
-  require 'simplecov_json_formatter'
+  require 'simplecov-cobertura'
 
-  SimpleCov.start do
-    formatter SimpleCov::Formatter::JSONFormatter
-    add_filter '/test/'
+  SimpleCov.start 'rails' do
+    formatter SimpleCov::Formatter::CoberturaFormatter
   end
 end
 
@@ -19,6 +18,15 @@ module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
+
+    # Configure SimpleCov for parallel test coverage merging
+    parallelize_setup do |worker|
+      SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}" if defined?(SimpleCov)
+    end
+
+    parallelize_teardown do |_worker|
+      SimpleCov.result if defined?(SimpleCov)
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
