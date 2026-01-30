@@ -25,6 +25,8 @@ if ENV['CI']
   end
 
   SimpleCov.start 'rails' do
+    # Unique command name per parallel worker for proper merging
+    command_name "test-#{Process.pid}"
     formatter RelativePathJSONFormatter
   end
 end
@@ -36,8 +38,12 @@ require_relative 'test_helpers/session_test_helper'
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # Disable parallel testing in CI for accurate coverage merging
+    if ENV['CI']
+      parallelize(workers: 1)
+    else
+      parallelize(workers: :number_of_processors)
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
