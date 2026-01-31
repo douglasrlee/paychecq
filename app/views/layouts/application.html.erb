@@ -46,12 +46,12 @@
   </head>
 
   <body class="h-dvh flex flex-col overflow-hidden">
-    <%= render "components/alert", type: "error", message: flash[:alert] if flash[:alert] %>
-    <%= render "components/alert", type: "success", message: flash[:notice] if flash[:notice] %>
-
     <%= render "components/navigation" unless authentication_page? %>
 
-    <main class="flex-1 overflow-y-auto overscroll-contain" data-controller="pull-to-refresh">
+    <main class="relative flex-1 overflow-y-auto overscroll-contain"<% if pull_to_refresh? %> data-controller="pull-to-refresh"<% end %>>
+      <%= render "components/toast", type: "error", message: flash[:alert] if flash[:alert] %>
+      <%= render "components/toast", type: "success", message: flash[:notice] if flash[:notice] %>
+
       <%= yield %>
     </main>
   </body>

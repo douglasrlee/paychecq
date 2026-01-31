@@ -101,4 +101,29 @@ class ApplicationHelperTest < ActionView::TestCase
 
     assert_equal "https://www.gravatar.com/avatar/#{expected_hash}?s=80&d=mp", url
   end
+
+  test 'pull_to_refresh? returns true for transactions#index' do
+    @controller_name = 'transactions'
+    @action_name = 'index'
+
+    assert pull_to_refresh?
+  end
+
+  test 'pull_to_refresh? returns false for transactions#show' do
+    @controller_name = 'transactions'
+    @action_name = 'show'
+
+    assert_not pull_to_refresh?
+  end
+
+  test 'pull_to_refresh? returns false for other controllers' do
+    @controller_name = 'profiles'
+    @action_name = 'show'
+
+    assert_not pull_to_refresh?
+  end
+
+  test 'pull_to_refresh_pages returns array of whitelisted pages' do
+    assert_includes pull_to_refresh_pages, 'transactions#index'
+  end
 end
