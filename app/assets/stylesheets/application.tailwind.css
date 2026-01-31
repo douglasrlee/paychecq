@@ -74,6 +74,10 @@
   --noise: 0;
 }
 
+@utility shadow-glow {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
 /* #region Pull-to-refresh */
 .pull-to-refresh-indicator {
   height: 0;
