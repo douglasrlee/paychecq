@@ -157,7 +157,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'update_security password invalidates other sessions' do
-    current_session = @user.sessions.create!
+    @user.sessions.create!
     other_session = @user.sessions.create!
     sign_in_as(@user)
 
