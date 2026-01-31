@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   def show
-    @user = User.find(Current.user.id)
+    @user = Current.user
   end
 
   def edit
