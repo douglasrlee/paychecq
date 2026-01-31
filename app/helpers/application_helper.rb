@@ -10,4 +10,14 @@ module ApplicationHelper
 
     "https://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mp"
   end
+
+  def pull_to_refresh?
+    pull_to_refresh_pages.include?("#{controller_name}##{action_name}")
+  end
+
+  def pull_to_refresh_pages
+    %w[
+      transactions#index
+    ]
+  end
 end
