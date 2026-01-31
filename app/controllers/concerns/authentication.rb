@@ -23,6 +23,9 @@ module Authentication
 
   def require_authentication
     resume_session || request_authentication
+
+    # Prevent caching of authenticated pages
+    response.headers['Cache-Control'] = 'no-store'
   end
 
   def resume_session

@@ -15,6 +15,7 @@ class ProfilesControllerTest < ActionDispatch::IntegrationTest
     get profile_path
 
     assert_response :success
+    assert_equal 'no-store', response.headers['Cache-Control']
   end
 
   test 'edit requires authentication' do
