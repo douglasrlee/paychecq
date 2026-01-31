@@ -15,6 +15,8 @@ module ApplicationHelper
     pull_to_refresh_pages.include?("#{controller_name}##{action_name}")
   end
 
+  private
+
   def pull_to_refresh_pages
     %w[
       transactions#index
