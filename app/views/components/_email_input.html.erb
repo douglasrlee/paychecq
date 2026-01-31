@@ -1,7 +1,7 @@
 <%# locals: (form:, resource: nil, field:, autocomplete: nil, autofocus: false, required: false) %>
 
 <fieldset class="fieldset">
-  <legend class="fieldset-legend"><%= field.to_s.titleize %></legend>
+  <legend class="fieldset-legend"><%= field.to_s.titleize %><% if required %><span class="text-error"> *</span><% end %></legend>
 
   <div class="relative">
     <%= form.email_field field, required: required, autofocus: autofocus, autocomplete: autocomplete, value: resource&.send(field), class: "input w-full #{resource&.errors&.[](field)&.any? ? 'input-error' : ''}" %>

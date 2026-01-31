@@ -14,8 +14,8 @@ Rails.application.routes.draw do
   resources :users, only: [ :new, :create ]
   resources :transactions
   resource :profile, only: [ :show, :edit, :update ] do
-    get :edit_password
-    patch :update_password
+    get :edit_security
+    patch :update_security
   end
 
   # Defines the root path route ("/")

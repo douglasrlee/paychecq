@@ -16,11 +16,6 @@
               <p class="text-lg"><%= @user.last_name %></p>
             </div>
           </div>
-
-          <div>
-            <label class="label font-medium">Email</label>
-            <p class="text-lg"><%= @user.email_address %></p>
-          </div>
         </div>
 
         <div class="justify-end card-actions">
@@ -32,16 +27,23 @@
 
   <div class="card card-lg bg-base-100 mt-10 w-full max-w-240 shadow-md">
     <div class="card-body">
-      <h2 class="card-title">Password</h2>
+      <h2 class="card-title">Security</h2>
 
-      <%= turbo_frame_tag "password" do %>
-        <div class="mt-6">
-          <label class="label font-medium">Password</label>
-          <p class="text-lg">••••••••</p>
+      <%= turbo_frame_tag "security" do %>
+        <div class="mt-6 space-y-6">
+          <div>
+            <label class="label font-medium">Email</label>
+            <p class="text-lg"><%= @user.email_address %></p>
+          </div>
+
+          <div>
+            <label class="label font-medium">Password</label>
+            <p class="text-lg">••••••••</p>
+          </div>
         </div>
 
         <div class="justify-end card-actions">
-          <%= link_to "Change Password", edit_password_profile_path, class: "btn btn-link" %>
+          <%= link_to "Edit", edit_security_profile_path, class: "btn btn-link" %>
         </div>
       <% end %>
     </div>
