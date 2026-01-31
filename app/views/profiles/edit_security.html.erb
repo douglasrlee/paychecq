@@ -1,0 +1,19 @@
+<%= turbo_frame_tag "security" do %>
+  <%= form_with url: update_security_profile_path, method: :patch, scope: :login, class: "mt-6 space-y-6", data: { turbo_frame: "_top" }, html: { novalidate: true } do |form| %>
+    <%= render "components/email_input", form: form, resource: @user, field: :email_address, required: true, autocomplete: "username" %>
+
+    <%= render "components/password_input", form: form, resource: @user, field: :current_password, required: true, autocomplete: "current-password" %>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <%= render "components/password_input", form: form, resource: @user, field: :password, autocomplete: "new-password" %>
+
+      <%= render "components/password_input", form: form, resource: @user, field: :password_confirmation, autocomplete: "new-password" %>
+    </div>
+
+    <div class="card-actions justify-end">
+      <%= link_to "Cancel", profile_path, class: "btn btn-ghost" %>
+
+      <%= form.submit "Save", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+<% end %>
