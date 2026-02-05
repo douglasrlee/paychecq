@@ -75,6 +75,7 @@ jobs:
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: bin/rails db:test:prepare test
       - name: Upload coverage to Codecov
+        if: github.actor != 'dependabot[bot]'
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage/coverage.xml
@@ -118,6 +119,7 @@ jobs:
 
   bundle-analysis:
     name: Bundle Analysis
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
