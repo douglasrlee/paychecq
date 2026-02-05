@@ -2,7 +2,7 @@ require 'test_helper'
 
 class BanksControllerTest < ActionDispatch::IntegrationTest
   # Valid 1x1 transparent PNG for logo tests
-  VALID_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  VALID_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='.freeze
 
   setup { @user = users(:johndoe) }
 
@@ -233,11 +233,11 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
 
     # Mock Plaid item remove (cleanup after failed save)
     remove_stub = stub_request(:post, 'https://sandbox.plaid.com/item/remove')
-      .to_return(
-        status: 200,
-        headers: { 'Content-Type' => 'application/json' },
-        body: { request_id: 'req-remove' }.to_json
-      )
+                  .to_return(
+                    status: 200,
+                    headers: { 'Content-Type' => 'application/json' },
+                    body: { request_id: 'req-remove' }.to_json
+                  )
 
     assert_no_difference 'Bank.count' do
       post banks_path, params: {
@@ -331,11 +331,11 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
 
     # Mock Plaid item remove - should be called to clean up
     remove_stub = stub_request(:post, 'https://sandbox.plaid.com/item/remove')
-      .to_return(
-        status: 200,
-        headers: { 'Content-Type' => 'application/json' },
-        body: { request_id: 'req-remove' }.to_json
-      )
+                  .to_return(
+                    status: 200,
+                    headers: { 'Content-Type' => 'application/json' },
+                    body: { request_id: 'req-remove' }.to_json
+                  )
 
     assert_no_difference 'Bank.count' do
       post banks_path, params: {
