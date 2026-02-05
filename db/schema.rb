@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_05_082205) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_231555) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -25,7 +25,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_082205) do
     t.datetime "created_at", null: false
     t.decimal "current_balance", precision: 10, scale: 2
     t.datetime "last_synced_at", null: false
-    t.string "masked_account_number", null: false
+    t.string "masked_account_number"
     t.string "name", null: false
     t.string "official_name"
     t.string "plaid_account_id", null: false

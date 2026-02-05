@@ -2,11 +2,11 @@ class Bank < ApplicationRecord
   encrypts :plaid_access_token
 
   # Magic bytes for common image formats (binary encoded)
-  IMAGE_SIGNATURES = [
-    "\x89PNG\r\n\x1A\n".b,  # PNG
-    "\xFF\xD8\xFF".b,       # JPEG
-    'GIF8'.b                # GIF
-  ].freeze
+  IMAGE_SIGNATURES = {
+    "\x89PNG\r\n\x1A\n".b => 'image/png',
+    "\xFF\xD8\xFF".b => 'image/jpeg',
+    'GIF8'.b => 'image/gif'
+  }.freeze
 
   belongs_to :user
 
@@ -19,13 +19,29 @@ class Bank < ApplicationRecord
 
   before_destroy :unlink_from_plaid
 
+  def logo_data_uri
+    return nil if logo.blank?
+
+    mime_type = detect_logo_mime_type
+    return nil unless mime_type
+
+    "data:#{mime_type};base64,#{logo}"
+  rescue ArgumentError
+    nil
+  end
+
   private
 
-  def logo_is_valid_image
+  def detect_logo_mime_type
     decoded = Base64.strict_decode64(logo)
-    return if IMAGE_SIGNATURES.any? { |sig| decoded.start_with?(sig) }
+    IMAGE_SIGNATURES.each do |signature, mime_type|
+      return mime_type if decoded.start_with?(signature)
+    end
+    nil
+  end
 
-    errors.add(:logo, 'must be a valid PNG, JPEG, or GIF image')
+  def logo_is_valid_image
+    errors.add(:logo, 'must be a valid PNG, JPEG, or GIF image') if detect_logo_mime_type.nil?
   rescue ArgumentError
     errors.add(:logo, 'must be valid base64-encoded data')
   end
