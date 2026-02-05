@@ -5,7 +5,9 @@
 import { application } from "./application"
 
 import AutoDismissController from "./auto_dismiss_controller"
+import PlaidLinkController from "./plaid_link_controller"
 import PullToRefreshController from "./pull_to_refresh_controller"
 
 application.register("auto-dismiss", AutoDismissController)
+application.register("plaid-link", PlaidLinkController)
 application.register("pull-to-refresh", PullToRefreshController)

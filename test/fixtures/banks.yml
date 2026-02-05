@@ -1,0 +1,15 @@
+chase:
+  user: johndoe
+  name: Chase
+  plaid_item_id: item_chase_123
+  plaid_access_token: access_token_chase_123
+  plaid_institution_id: ins_3
+  plaid_institution_name: Chase
+
+wells_fargo:
+  user: janedoe
+  name: Wells Fargo
+  plaid_item_id: item_wells_456
+  plaid_access_token: access_token_wells_456
+  plaid_institution_id: ins_4
+  plaid_institution_name: Wells Fargo

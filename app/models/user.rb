@@ -2,6 +2,8 @@ class User < ApplicationRecord
   has_paper_trail
   has_secure_password
   has_many :sessions, dependent: :destroy
+  has_many :banks, dependent: :destroy
+  has_many :bank_accounts, through: :banks
 
   validates :first_name, :last_name, :email_address, presence: true
   validates :email_address, uniqueness: { case_sensitive: false }
