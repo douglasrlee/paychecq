@@ -40,7 +40,7 @@ class BankAccountTest < ActiveSupport::TestCase
     assert_includes bank_account.errors[:name], "can't be blank"
   end
 
-  test 'is invalid without masked_account_number' do
+  test 'is valid without masked_account_number' do
     bank_account = BankAccount.new(
       bank: banks(:chase),
       name: 'Test Account',
@@ -49,8 +49,7 @@ class BankAccountTest < ActiveSupport::TestCase
       last_synced_at: Time.current
     )
 
-    assert_not bank_account.valid?
-    assert_includes bank_account.errors[:masked_account_number], "can't be blank"
+    assert bank_account.valid?
   end
 
   test 'is invalid without account_type' do

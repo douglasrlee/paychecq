@@ -1,6 +1,9 @@
 require 'test_helper'
 
 class BanksControllerTest < ActionDispatch::IntegrationTest
+  # Valid 1x1 transparent PNG for logo tests
+  VALID_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
   setup { @user = users(:johndoe) }
 
   test 'create successfully links bank and creates accounts' do
@@ -34,7 +37,7 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
           institution: {
             institution_id: 'ins_1',
             name: 'Test Bank',
-            logo: 'base64encodedlogo'
+            logo: VALID_PNG_BASE64
           },
           request_id: 'req-456'
         }.to_json
@@ -96,7 +99,7 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'item-sandbox-test-456', bank.plaid_item_id
     assert_equal 'access-sandbox-test-123', bank.plaid_access_token
     assert_equal 'ins_1', bank.plaid_institution_id
-    assert_equal 'base64encodedlogo', bank.logo
+    assert_equal VALID_PNG_BASE64, bank.logo
 
     # Verify accounts were created correctly
     checking = bank.bank_accounts.find_by(plaid_account_id: 'acc-checking-123')
@@ -181,7 +184,7 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
     assert_nil bank.logo
   end
 
-  test 'create fails when user already has a bank' do
+  test 'create fails when user already has a bank and cleans up Plaid item' do
     # johndoe already has a bank from fixtures
     sign_in_as(@user)
 
@@ -228,6 +231,14 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
         }.to_json
       )
 
+    # Mock Plaid item remove (cleanup after failed save)
+    remove_stub = stub_request(:post, 'https://sandbox.plaid.com/item/remove')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: { request_id: 'req-remove' }.to_json
+      )
+
     assert_no_difference 'Bank.count' do
       post banks_path, params: {
         public_token: 'public-token',
@@ -238,6 +249,7 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to settings_path
     assert_equal 'Failed to link bank account. Please try again.', flash[:alert]
+    assert_requested remove_stub
   end
 
   test 'create requires authentication' do
@@ -270,6 +282,72 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to settings_path
     assert_equal 'Failed to link bank account. Please try again.', flash[:alert]
+  end
+
+  test 'create cleans up Plaid item when accounts_get fails after token exchange' do
+    user_without_bank = User.create!(
+      first_name: 'AccountsFail',
+      last_name: 'User',
+      email_address: 'accountsfail@example.com',
+      password: 'password'
+    )
+    sign_in_as(user_without_bank)
+
+    # Mock Plaid token exchange - succeeds
+    stub_request(:post, 'https://sandbox.plaid.com/item/public_token/exchange')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          access_token: 'access-sandbox-accounts-fail',
+          item_id: 'item-sandbox-accounts-fail',
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    # Mock Plaid institutions get by id - succeeds
+    stub_request(:post, 'https://sandbox.plaid.com/institutions/get_by_id')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          institution: { institution_id: 'ins_1', name: 'Test Bank', logo: nil },
+          request_id: 'req-456'
+        }.to_json
+      )
+
+    # Mock Plaid accounts get - FAILS
+    stub_request(:post, 'https://sandbox.plaid.com/accounts/get')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_INPUT',
+          error_code: 'INVALID_ACCESS_TOKEN',
+          error_message: 'The access token is invalid',
+          request_id: 'req-error'
+        }.to_json
+      )
+
+    # Mock Plaid item remove - should be called to clean up
+    remove_stub = stub_request(:post, 'https://sandbox.plaid.com/item/remove')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: { request_id: 'req-remove' }.to_json
+      )
+
+    assert_no_difference 'Bank.count' do
+      post banks_path, params: {
+        public_token: 'public-token',
+        institution_id: 'ins_1',
+        institution_name: 'Test Bank'
+      }
+    end
+
+    assert_redirected_to settings_path
+    assert_equal 'Failed to link bank account. Please try again.', flash[:alert]
+    assert_requested remove_stub
   end
 
   test 'destroy requires authentication' do

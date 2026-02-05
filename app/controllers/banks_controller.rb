@@ -29,6 +29,13 @@ class BanksController < ApplicationController
     )
     accounts_response = client.accounts_get(accounts_request)
 
+    # Ensure at least one account was returned
+    if accounts_response.accounts.empty?
+      PlaidService.remove_item(exchange_response.access_token)
+
+      return redirect_to settings_path, alert: 'No accounts found at this institution. Please try a different bank.'
+    end
+
     # Create bank and accounts in a transaction
     ActiveRecord::Base.transaction do
       bank = Current.user.banks.create!(
@@ -60,10 +67,16 @@ class BanksController < ApplicationController
     Rails.logger.error("Plaid error: #{error.response_body}")
     Appsignal.send_error(error)
 
+    # Clean up the Plaid item if we have an access token (token exchange succeeded but a later call failed)
+    PlaidService.remove_item(exchange_response.access_token) if exchange_response
+
     redirect_to settings_path, alert: 'Failed to link bank account. Please try again.'
   rescue ActiveRecord::RecordInvalid => error
     Rails.logger.error("Bank creation error: #{error.message}")
     Appsignal.send_error(error)
+
+    # Clean up the Plaid item since we couldn't save the bank record
+    PlaidService.remove_item(exchange_response.access_token)
 
     redirect_to settings_path, alert: 'Failed to link bank account. Please try again.'
   end

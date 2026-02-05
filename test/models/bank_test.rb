@@ -233,4 +233,72 @@ class BankTest < ActiveSupport::TestCase
 
     assert_nil BankAccount.find_by(id: account.id)
   end
+
+  test 'is invalid with non-base64 logo' do
+    user = User.create!(
+      first_name: 'Logo',
+      last_name: 'User',
+      email_address: 'logouser_invalid@example.com',
+      password: 'password'
+    )
+
+    bank = Bank.new(
+      user: user,
+      name: 'Test Bank',
+      plaid_item_id: 'item_logo_test',
+      plaid_access_token: 'access_token_logo_test',
+      plaid_institution_id: 'ins_999',
+      plaid_institution_name: 'Test Bank',
+      logo: 'not-valid-base64!!!'
+    )
+
+    assert_not bank.valid?
+    assert_includes bank.errors[:logo], 'must be valid base64-encoded data'
+  end
+
+  test 'is invalid with non-image base64 logo' do
+    user = User.create!(
+      first_name: 'Logo',
+      last_name: 'User',
+      email_address: 'logouser_nonimage@example.com',
+      password: 'password'
+    )
+
+    bank = Bank.new(
+      user: user,
+      name: 'Test Bank',
+      plaid_item_id: 'item_logo_test2',
+      plaid_access_token: 'access_token_logo_test2',
+      plaid_institution_id: 'ins_999',
+      plaid_institution_name: 'Test Bank',
+      logo: Base64.strict_encode64('this is just text, not an image')
+    )
+
+    assert_not bank.valid?
+    assert_includes bank.errors[:logo], 'must be a valid PNG, JPEG, or GIF image'
+  end
+
+  test 'is valid with valid PNG logo' do
+    user = User.create!(
+      first_name: 'Logo',
+      last_name: 'User',
+      email_address: 'logouser_valid@example.com',
+      password: 'password'
+    )
+
+    # Valid 1x1 transparent PNG
+    valid_png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+    bank = Bank.new(
+      user: user,
+      name: 'Test Bank',
+      plaid_item_id: 'item_logo_test3',
+      plaid_access_token: 'access_token_logo_test3',
+      plaid_institution_id: 'ins_999',
+      plaid_institution_name: 'Test Bank',
+      logo: valid_png
+    )
+
+    assert bank.valid?
+  end
 end
