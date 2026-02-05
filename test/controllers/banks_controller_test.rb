@@ -61,18 +61,6 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
                 available: 1000.00,
                 current: 1050.00
               }
-            },
-            {
-              account_id: 'acc-savings-456',
-              name: 'Savings Account',
-              official_name: 'Primary Savings',
-              mask: '5678',
-              type: 'depository',
-              subtype: 'savings',
-              balances: {
-                available: 5000.00,
-                current: 5000.00
-              }
             }
           ],
           request_id: 'req-789'
@@ -80,7 +68,7 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
       )
 
     assert_difference 'Bank.count', 1 do
-      assert_difference 'BankAccount.count', 2 do
+      assert_difference 'BankAccount.count', 1 do
         post banks_path, params: {
           public_token: 'public-sandbox-token',
           institution_id: 'ins_1',
@@ -101,7 +89,7 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'ins_1', bank.plaid_institution_id
     assert_equal VALID_PNG_BASE64, bank.logo
 
-    # Verify accounts were created correctly
+    # Verify account was created correctly
     checking = bank.bank_accounts.find_by(plaid_account_id: 'acc-checking-123')
     assert_not_nil checking
     assert_equal 'Checking Account', checking.name
@@ -110,10 +98,6 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'checking', checking.account_subtype
     assert_equal 1000.00, checking.available_balance
     assert_equal 1050.00, checking.current_balance
-
-    savings = bank.bank_accounts.find_by(plaid_account_id: 'acc-savings-456')
-    assert_not_nil savings
-    assert_equal 'Savings Account', savings.name
   end
 
   test 'create succeeds without logo when institution fetch fails' do

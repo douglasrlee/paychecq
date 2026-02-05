@@ -58,7 +58,7 @@ export default class extends Controller {
     this.setLoading(true);
 
     try {
-      const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+      const csrfToken = document.querySelector("meta[name='csrf-token']")?.content;
 
       const formData = new FormData();
       formData.append("public_token", publicToken);
@@ -81,6 +81,8 @@ export default class extends Controller {
       }
     } catch (error) {
       console.error("Failed to link bank:", error);
+
+      this.setLoading(false);
       
       Turbo.visit("/settings");
     }
