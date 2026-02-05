@@ -113,6 +113,133 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Savings Account', savings.name
   end
 
+  test 'create succeeds without logo when institution fetch fails' do
+    user_without_bank = User.create!(
+      first_name: 'NoLogo',
+      last_name: 'User',
+      email_address: 'nologo@example.com',
+      password: 'password'
+    )
+    sign_in_as(user_without_bank)
+
+    # Mock Plaid token exchange
+    stub_request(:post, 'https://sandbox.plaid.com/item/public_token/exchange')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          access_token: 'access-sandbox-nologo',
+          item_id: 'item-sandbox-nologo',
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    # Mock Plaid institutions get by id - FAILS
+    stub_request(:post, 'https://sandbox.plaid.com/institutions/get_by_id')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_INPUT',
+          error_code: 'INVALID_INSTITUTION',
+          error_message: 'Institution not found'
+        }.to_json
+      )
+
+    # Mock Plaid accounts get
+    stub_request(:post, 'https://sandbox.plaid.com/accounts/get')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          accounts: [
+            {
+              account_id: 'acc-nologo-123',
+              name: 'Checking',
+              mask: '1234',
+              type: 'depository',
+              subtype: 'checking',
+              balances: { available: 100.00, current: 100.00 }
+            }
+          ],
+          request_id: 'req-789'
+        }.to_json
+      )
+
+    assert_difference 'Bank.count', 1 do
+      post banks_path, params: {
+        public_token: 'public-token',
+        institution_id: 'ins_1',
+        institution_name: 'Test Bank'
+      }
+    end
+
+    assert_redirected_to settings_path
+    assert_equal 'Bank account linked successfully.', flash[:notice]
+
+    bank = Bank.find_by(plaid_item_id: 'item-sandbox-nologo')
+    assert_nil bank.logo
+  end
+
+  test 'create fails when user already has a bank' do
+    # johndoe already has a bank from fixtures
+    sign_in_as(@user)
+
+    # Mock Plaid token exchange
+    stub_request(:post, 'https://sandbox.plaid.com/item/public_token/exchange')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          access_token: 'access-sandbox-duplicate',
+          item_id: 'item-sandbox-duplicate',
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    # Mock Plaid institutions get by id
+    stub_request(:post, 'https://sandbox.plaid.com/institutions/get_by_id')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          institution: { institution_id: 'ins_1', name: 'Test Bank', logo: nil },
+          request_id: 'req-456'
+        }.to_json
+      )
+
+    # Mock Plaid accounts get
+    stub_request(:post, 'https://sandbox.plaid.com/accounts/get')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          accounts: [
+            {
+              account_id: 'acc-dup-123',
+              name: 'Checking',
+              mask: '1234',
+              type: 'depository',
+              subtype: 'checking',
+              balances: { available: 100.00, current: 100.00 }
+            }
+          ],
+          request_id: 'req-789'
+        }.to_json
+      )
+
+    assert_no_difference 'Bank.count' do
+      post banks_path, params: {
+        public_token: 'public-token',
+        institution_id: 'ins_1',
+        institution_name: 'Test Bank'
+      }
+    end
+
+    assert_redirected_to settings_path
+    assert_equal 'Failed to link bank account. Please try again.', flash[:alert]
+  end
+
   test 'create requires authentication' do
     post banks_path, params: { public_token: 'test-token' }
 
