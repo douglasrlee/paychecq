@@ -301,4 +301,33 @@ class BankTest < ActiveSupport::TestCase
 
     assert bank.valid?
   end
+
+  test 'logo_data_uri returns nil when logo is blank' do
+    bank = banks(:chase)
+    bank.logo = nil
+
+    assert_nil bank.logo_data_uri
+  end
+
+  test 'logo_data_uri returns nil for invalid base64' do
+    bank = banks(:chase)
+    bank.logo = 'not-valid-base64!!!'
+
+    assert_nil bank.logo_data_uri
+  end
+
+  test 'logo_data_uri returns nil for non-image base64' do
+    bank = banks(:chase)
+    bank.logo = Base64.strict_encode64('this is just text')
+
+    assert_nil bank.logo_data_uri
+  end
+
+  test 'logo_data_uri returns correct data URI for valid PNG' do
+    bank = banks(:chase)
+    valid_png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+    bank.logo = valid_png
+
+    assert_equal "data:image/png;base64,#{valid_png}", bank.logo_data_uri
+  end
 end
