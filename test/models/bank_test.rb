@@ -2,8 +2,15 @@ require 'test_helper'
 
 class BankTest < ActiveSupport::TestCase
   test 'is valid with all required attributes' do
+    user = User.create!(
+      first_name: 'New',
+      last_name: 'User',
+      email_address: 'newuser@example.com',
+      password: 'password'
+    )
+
     bank = Bank.new(
-      user: users(:johndoe),
+      user: user,
       name: 'Test Bank',
       plaid_item_id: 'item_test_123',
       plaid_access_token: 'access_token_test_123',
@@ -28,8 +35,15 @@ class BankTest < ActiveSupport::TestCase
   end
 
   test 'is invalid without a name' do
+    user = User.create!(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'testuser_name@example.com',
+      password: 'password'
+    )
+
     bank = Bank.new(
-      user: users(:johndoe),
+      user: user,
       plaid_item_id: 'item_test_123',
       plaid_access_token: 'access_token_test_123',
       plaid_institution_id: 'ins_999',
@@ -41,8 +55,15 @@ class BankTest < ActiveSupport::TestCase
   end
 
   test 'is invalid without plaid_item_id' do
+    user = User.create!(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'testuser_item@example.com',
+      password: 'password'
+    )
+
     bank = Bank.new(
-      user: users(:johndoe),
+      user: user,
       name: 'Test Bank',
       plaid_access_token: 'access_token_test_123',
       plaid_institution_id: 'ins_999',
@@ -54,8 +75,15 @@ class BankTest < ActiveSupport::TestCase
   end
 
   test 'is invalid without plaid_access_token' do
+    user = User.create!(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'testuser_token@example.com',
+      password: 'password'
+    )
+
     bank = Bank.new(
-      user: users(:johndoe),
+      user: user,
       name: 'Test Bank',
       plaid_item_id: 'item_test_123',
       plaid_institution_id: 'ins_999',
@@ -67,8 +95,15 @@ class BankTest < ActiveSupport::TestCase
   end
 
   test 'is invalid without plaid_institution_id' do
+    user = User.create!(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'testuser_inst@example.com',
+      password: 'password'
+    )
+
     bank = Bank.new(
-      user: users(:johndoe),
+      user: user,
       name: 'Test Bank',
       plaid_item_id: 'item_test_123',
       plaid_access_token: 'access_token_test_123',
@@ -80,8 +115,15 @@ class BankTest < ActiveSupport::TestCase
   end
 
   test 'is invalid without plaid_institution_name' do
+    user = User.create!(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'testuser_instname@example.com',
+      password: 'password'
+    )
+
     bank = Bank.new(
-      user: users(:johndoe),
+      user: user,
       name: 'Test Bank',
       plaid_item_id: 'item_test_123',
       plaid_access_token: 'access_token_test_123',
@@ -93,19 +135,16 @@ class BankTest < ActiveSupport::TestCase
   end
 
   test 'is invalid with duplicate plaid_item_id' do
-    Bank.create!(
-      user: users(:johndoe),
-      name: 'Existing Bank',
-      plaid_item_id: 'duplicate_item_id',
-      plaid_access_token: 'access_token_1',
-      plaid_institution_id: 'ins_1',
-      plaid_institution_name: 'Existing Bank'
-    )
-
+    # Use existing fixture bank's plaid_item_id
     bank = Bank.new(
-      user: users(:janedoe),
+      user: User.create!(
+        first_name: 'Test',
+        last_name: 'User',
+        email_address: 'testuser_dup@example.com',
+        password: 'password'
+      ),
       name: 'New Bank',
-      plaid_item_id: 'duplicate_item_id',
+      plaid_item_id: banks(:chase).plaid_item_id,
       plaid_access_token: 'access_token_2',
       plaid_institution_id: 'ins_2',
       plaid_institution_name: 'New Bank'
@@ -115,9 +154,31 @@ class BankTest < ActiveSupport::TestCase
     assert_includes bank.errors[:plaid_item_id], 'has already been taken'
   end
 
-  test 'encrypts plaid_access_token' do
-    bank = Bank.create!(
+  test 'is invalid when user already has a bank' do
+    # johndoe already has chase bank from fixtures
+    bank = Bank.new(
       user: users(:johndoe),
+      name: 'Second Bank',
+      plaid_item_id: 'item_second_bank',
+      plaid_access_token: 'access_token_second',
+      plaid_institution_id: 'ins_2',
+      plaid_institution_name: 'Second Bank'
+    )
+
+    assert_not bank.valid?
+    assert_includes bank.errors[:user_id], 'already has a linked bank account'
+  end
+
+  test 'encrypts plaid_access_token' do
+    user = User.create!(
+      first_name: 'Encrypt',
+      last_name: 'User',
+      email_address: 'encryptuser@example.com',
+      password: 'password'
+    )
+
+    bank = Bank.create!(
+      user: user,
       name: 'Encryption Test Bank',
       plaid_item_id: 'item_encryption_test',
       plaid_access_token: 'secret_token_123',
@@ -130,15 +191,30 @@ class BankTest < ActiveSupport::TestCase
 
     # Verify it's encrypted in the database
     raw_value = Bank.connection.select_value(
-      "SELECT plaid_access_token FROM banks WHERE id = '#{bank.id}'"
+      Bank.sanitize_sql_array([ 'SELECT plaid_access_token FROM banks WHERE id = ?', bank.id ])
     )
     assert_not_equal 'secret_token_123', raw_value
     assert raw_value.start_with?('{'), 'Expected encrypted JSON format'
   end
 
   test 'destroys associated bank_accounts when destroyed' do
+    # Mock Plaid item remove (called on destroy callback)
+    stub_request(:post, 'https://sandbox.plaid.com/item/remove')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: { request_id: 'req-remove' }.to_json
+      )
+
+    user = User.create!(
+      first_name: 'Destroy',
+      last_name: 'User',
+      email_address: 'destroyuser@example.com',
+      password: 'password'
+    )
+
     bank = Bank.create!(
-      user: users(:johndoe),
+      user: user,
       name: 'Test Bank',
       plaid_item_id: 'item_destroy_accounts_test',
       plaid_access_token: 'access_token_destroy_accounts_test',

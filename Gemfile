@@ -99,4 +99,7 @@ group :test do
   # Code coverage reporting
   gem 'simplecov', require: false
   gem 'simplecov-cobertura', require: false
+
+  # Mock HTTP requests [https://github.com/bblimke/webmock]
+  gem 'webmock'
 end

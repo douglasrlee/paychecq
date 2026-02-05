@@ -29,6 +29,18 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'show displays empty state when no banks linked' do
+    # Mock Plaid link token creation
+    stub_request(:post, 'https://sandbox.plaid.com/link/token/create')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          link_token: 'link-sandbox-test-token',
+          expiration: 1.hour.from_now.iso8601,
+          request_id: 'req-link-token'
+        }.to_json
+      )
+
     user_without_banks = User.create!(
       first_name: 'No',
       last_name: 'Banks',

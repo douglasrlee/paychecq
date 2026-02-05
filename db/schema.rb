@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_05_073902) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_082205) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -45,7 +45,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_073902) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["plaid_item_id"], name: "index_banks_on_plaid_item_id", unique: true
-    t.index ["user_id"], name: "index_banks_on_user_id"
+    t.index ["user_id"], name: "index_banks_on_user_id", unique: true
   end
 
   create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

@@ -61,12 +61,20 @@ class BanksController < ApplicationController
     Appsignal.send_error(error)
 
     redirect_to settings_path, alert: 'Failed to link bank account. Please try again.'
+  rescue ActiveRecord::RecordInvalid => error
+    Rails.logger.error("Bank creation error: #{error.message}")
+    Appsignal.send_error(error)
+
+    redirect_to settings_path, alert: 'Failed to link bank account. Please try again.'
   end
 
   def destroy
     bank = Current.user.banks.find(params[:id])
-    bank.destroy
 
-    redirect_to settings_path, notice: 'Bank account deleted successfully.'
+    if bank.destroy
+      redirect_to settings_path, notice: 'Bank account deleted successfully.'
+    else
+      redirect_to settings_path, alert: bank.errors.full_messages.first || 'Failed to delete bank account.'
+    end
   end
 end
