@@ -7,13 +7,17 @@ class PlaidService
       client_name: 'PayChecQ',
       products: [ 'transactions' ],
       country_codes: [ 'US' ],
-      language: 'en'
+      language: 'en',
+      account_filters: {
+        depository: { account_subtypes: [ 'checking' ] }
+      }
     )
 
     response = client.link_token_create(request)
     response.link_token
-  rescue Plaid::ApiError => e
-    Rails.logger.error("Plaid link token error: #{e.response_body}")
+  rescue Plaid::ApiError => error
+    Rails.logger.error("Plaid link token error: #{error.response_body}")
+    Appsignal.send_error(error)
 
     nil
   end
@@ -25,8 +29,9 @@ class PlaidService
     client.item_remove(request)
 
     true
-  rescue Plaid::ApiError => e
-    Rails.logger.error("Plaid remove item error: #{e.response_body}")
+  rescue Plaid::ApiError => error
+    Rails.logger.error("Plaid remove item error: #{error.response_body}")
+    Appsignal.send_error(error)
 
     false
   end

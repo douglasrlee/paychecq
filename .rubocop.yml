@@ -7,7 +7,10 @@ AllCops:
   MigratedSchemaVersion: '20260120060426'
   NewCops: enable
 
-Style/FrozenStringLiteralComment:                                                                                                                        
+Naming/RescuedExceptionsVariableName:
+  PreferredName: error
+
+Style/FrozenStringLiteralComment:
   EnforcedStyle: never
 Style/ClassAndModuleChildren:                                                                                                                            
   Enabled: false
