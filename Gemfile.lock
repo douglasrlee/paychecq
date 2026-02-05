@@ -172,7 +172,7 @@ GEM
       net-imap
       net-pop
       net-smtp
-    mailgun-ruby (1.4.1)
+    mailgun-ruby (1.4.2)
       faraday (~> 2.1)
       faraday-multipart (< 2)
       mini_mime
@@ -429,7 +429,7 @@ DEPENDENCIES
   image_processing (~> 1.2)
   jbuilder
   jsbundling-rails
-  mailgun-ruby (~> 1.4.1)
+  mailgun-ruby (~> 1.4.2)
   mjml-rails
   mrml
   ostruct
@@ -516,7 +516,7 @@ CHECKSUMS
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   loofah (2.25.0) sha256=df5ed7ac3bac6a4ec802df3877ee5cc86d027299f8952e6243b3dac446b060e6
   mail (2.9.0) sha256=6fa6673ecd71c60c2d996260f9ee3dd387d4673b8169b502134659ece6d34941
-  mailgun-ruby (1.4.1) sha256=fe62ecb29f1b7ac76303a5e11eb5fac79203df752d0d2afc550834d52ab25b48
+  mailgun-ruby (1.4.2) sha256=48abc4a75d4290d6d7cbdce923f5c2006a01f51f8d1b08a255737ef0baaf4fbc
   marcel (1.1.0) sha256=fdcfcfa33cc52e93c4308d40e4090a5d4ea279e160a7f6af988260fa970e0bee
   matrix (0.4.3) sha256=a0d5ab7ddcc1973ff690ab361b67f359acbb16958d1dc072b8b956a286564c5b
   mini_magick (5.3.1) sha256=29395dfd76badcabb6403ee5aff6f681e867074f8f28ce08d78661e9e4a351c4

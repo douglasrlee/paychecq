@@ -61,7 +61,7 @@ gem 'appsignal'
 gem 'ostruct'
 
 # Send emails with Mailgun
-gem 'mailgun-ruby', '~>1.4.1'
+gem 'mailgun-ruby', '~>1.4.2'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
