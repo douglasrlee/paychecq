@@ -10,12 +10,43 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_20_223440) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_231555) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
   enable_extension "pgcrypto"
+
+  create_table "bank_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "account_subtype"
+    t.string "account_type", null: false
+    t.decimal "available_balance", precision: 10, scale: 2
+    t.uuid "bank_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "current_balance", precision: 10, scale: 2
+    t.datetime "last_synced_at", null: false
+    t.string "masked_account_number"
+    t.string "name", null: false
+    t.string "official_name"
+    t.string "plaid_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bank_id"], name: "index_bank_accounts_on_bank_id"
+    t.index ["plaid_account_id"], name: "index_bank_accounts_on_plaid_account_id", unique: true
+  end
+
+  create_table "banks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "logo"
+    t.string "name", null: false
+    t.string "plaid_access_token", null: false
+    t.string "plaid_institution_id", null: false
+    t.string "plaid_institution_name", null: false
+    t.string "plaid_item_id", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["plaid_item_id"], name: "index_banks_on_plaid_item_id", unique: true
+    t.index ["user_id"], name: "index_banks_on_user_id", unique: true
+  end
 
   create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -198,6 +229,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_20_223440) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  add_foreign_key "bank_accounts", "banks"
+  add_foreign_key "banks", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

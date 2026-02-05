@@ -1,0 +1,32 @@
+chase_checking:
+  bank: chase
+  name: Chase Checking
+  masked_account_number: "1234"
+  account_type: depository
+  account_subtype: checking
+  plaid_account_id: account_chase_checking_123
+  available_balance: 1000.00
+  current_balance: 1050.00
+  last_synced_at: <%= Time.current %>
+
+chase_savings:
+  bank: chase
+  name: Chase Savings
+  masked_account_number: "5678"
+  account_type: depository
+  account_subtype: savings
+  plaid_account_id: account_chase_savings_456
+  available_balance: 5000.00
+  current_balance: 5000.00
+  last_synced_at: <%= Time.current %>
+
+wells_checking:
+  bank: wells_fargo
+  name: Wells Fargo Checking
+  masked_account_number: "9012"
+  account_type: depository
+  account_subtype: checking
+  plaid_account_id: account_wells_checking_789
+  available_balance: 2500.00
+  current_balance: 2500.00
+  last_synced_at: <%= Time.current %>

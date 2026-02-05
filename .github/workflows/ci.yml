@@ -72,7 +72,9 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: test-primary-key-for-ci-32bytes!
+          ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: test-deterministic-key-ci-32b!
+          ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT: test-key-derivation-salt-ci-32!
         run: bin/rails db:test:prepare test
       - name: Upload coverage to Codecov
         if: github.actor != 'dependabot[bot]'
@@ -107,7 +109,9 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: test-primary-key-for-ci-32bytes!
+          ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: test-deterministic-key-ci-32b!
+          ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT: test-key-derivation-salt-ci-32!
         run: bin/rails db:test:prepare test:system
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v6

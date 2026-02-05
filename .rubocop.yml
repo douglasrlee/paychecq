@@ -4,10 +4,13 @@ plugins:
 
 AllCops:
   TargetRailsVersion: 8.1
-  MigratedSchemaVersion: '20260120060426'
+  MigratedSchemaVersion: '20260205082205'
   NewCops: enable
 
-Style/FrozenStringLiteralComment:                                                                                                                        
+Naming/RescuedExceptionsVariableName:
+  PreferredName: error
+
+Style/FrozenStringLiteralComment:
   EnforcedStyle: never
 Style/ClassAndModuleChildren:                                                                                                                            
   Enabled: false

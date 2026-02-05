@@ -17,6 +17,8 @@ Rails.application.routes.draw do
     get :edit_security
     patch :update_security
   end
+  resource :settings, only: [ :show ]
+  resources :banks, only: [ :create, :destroy ]
 
   # Defines the root path route ("/")
   root 'transactions#index'
