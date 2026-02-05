@@ -395,11 +395,11 @@ class BanksControllerTest < ActionDispatch::IntegrationTest
 
     # Mock Plaid item remove - should be called to clean up
     remove_stub = stub_request(:post, 'https://sandbox.plaid.com/item/remove')
-      .to_return(
-        status: 200,
-        headers: { 'Content-Type' => 'application/json' },
-        body: { request_id: 'req-remove' }.to_json
-      )
+                  .to_return(
+                    status: 200,
+                    headers: { 'Content-Type' => 'application/json' },
+                    body: { request_id: 'req-remove' }.to_json
+                  )
 
     assert_no_difference 'Bank.count' do
       post banks_path, params: {
