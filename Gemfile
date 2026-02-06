@@ -66,6 +66,9 @@ gem 'mailgun-ruby', '~>1.4.2'
 # Plaid API for bank account linking [https://github.com/plaid/plaid-ruby]
 gem 'plaid'
 
+# This gem provides a Rails-based frontend to Active Job adapters. [https://github.com/rails/mission_control-jobs]
+gem 'mission_control-jobs'
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [ :mri, :windows ], require: 'debug/prelude'
