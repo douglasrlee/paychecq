@@ -374,17 +374,4 @@ class PlaidServiceTest < ActiveSupport::TestCase
         }.to_json
       )
   end
-
-  def create_bank(email:, plaid_item_id:)
-    user = User.create!(first_name: 'Plaid', last_name: 'Test', email_address: email, password: 'password')
-
-    Bank.create!(
-      user: user,
-      name: 'Test Bank',
-      plaid_item_id: plaid_item_id,
-      plaid_access_token: 'access_token_test',
-      plaid_institution_id: 'ins_999',
-      plaid_institution_name: 'Test Bank'
-    )
-  end
 end

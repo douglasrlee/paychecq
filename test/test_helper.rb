@@ -14,6 +14,7 @@ require 'rails/test_help'
 require 'webmock/minitest'
 
 require_relative 'test_helpers/session_test_helper'
+require_relative 'test_helpers/bank_test_helper'
 
 # Allow localhost connections for system tests
 WebMock.disable_net_connect!(allow_localhost: true)

@@ -344,12 +344,14 @@ class BankTest < ActiveSupport::TestCase
     assert bank.needs_attention?
   end
 
-  test 'mark_disconnected! sets status' do
+  test 'mark_disconnected! sets status and clears error code' do
     bank = create_bank(email: 'markdisconnected@example.com', plaid_item_id: 'item_mark_disconnected')
+    bank.update!(status: 'error', plaid_error_code: 'ITEM_LOGIN_REQUIRED')
 
     bank.mark_disconnected!
 
     assert_equal 'disconnected', bank.status
+    assert_nil bank.plaid_error_code
     assert bank.disconnected?
     assert bank.needs_attention?
   end
@@ -381,20 +383,5 @@ class BankTest < ActiveSupport::TestCase
     bank.logo = valid_png
 
     assert_equal "data:image/png;base64,#{valid_png}", bank.logo_data_uri
-  end
-
-  private
-
-  def create_bank(email:, plaid_item_id:)
-    user = User.create!(first_name: 'Status', last_name: 'Test', email_address: email, password: 'password')
-
-    Bank.create!(
-      user: user,
-      name: 'Test Bank',
-      plaid_item_id: plaid_item_id,
-      plaid_access_token: 'access_token_test',
-      plaid_institution_id: 'ins_999',
-      plaid_institution_name: 'Test Bank'
-    )
   end
 end

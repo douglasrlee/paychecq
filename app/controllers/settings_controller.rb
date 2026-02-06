@@ -3,7 +3,11 @@ class SettingsController < ApplicationController
     @bank = Current.user.banks.includes(:bank_accounts).first
 
     if @bank
-      @plaid_update_link_token = PlaidService.create_update_link_token(@bank) if @bank.needs_attention? && !@bank.disconnected?
+      if @bank.needs_attention? && !@bank.disconnected?
+        @plaid_update_link_token = PlaidService.create_update_link_token(@bank)
+
+        flash.now[:alert] = 'Unable to initialize bank reconnection. Please try again later.' unless @plaid_update_link_token
+      end
     else
       @plaid_link_token = PlaidService.create_link_token(Current.user)
 
