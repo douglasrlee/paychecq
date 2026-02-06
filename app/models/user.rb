@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   has_paper_trail
   has_secure_password
+
   has_many :sessions, dependent: :destroy
   has_many :banks, dependent: :destroy
   has_many :bank_accounts, through: :banks

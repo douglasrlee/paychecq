@@ -1,5 +1,5 @@
 # Only configure logging when running as a server (not tests, migrations, console, etc.)
-return unless defined?(Rails::Server) || $PROGRAM_NAME.include?('puma')
+return unless defined?(Rails::Server) || $PROGRAM_NAME.include?('puma') || $PROGRAM_NAME.include?('jobs')
 
 if Rails.env.local?
   Rails.application.config.after_initialize do

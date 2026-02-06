@@ -2,3 +2,4 @@ web: env RUBY_DEBUG_OPEN=true bin/rails server
 worker: bin/jobs --mode async
 js: npm run build:watch
 css: npm run build:css:watch
+tunnel: ngrok http 3000 --log stdout

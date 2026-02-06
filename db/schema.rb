@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_06_031239) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_06_063142) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -42,6 +42,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_031239) do
     t.string "plaid_institution_id", null: false
     t.string "plaid_institution_name", null: false
     t.string "plaid_item_id", null: false
+    t.string "transaction_cursor"
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["plaid_item_id"], name: "index_banks_on_plaid_item_id", unique: true
@@ -201,11 +202,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_031239) do
 
   create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "amount", precision: 10, scale: 2, null: false
+    t.date "authorized_date"
+    t.uuid "bank_account_id"
     t.datetime "created_at", null: false
+    t.date "date"
+    t.string "logo_url"
+    t.string "merchant_entity_id"
+    t.string "merchant_name"
     t.string "name", null: false
+    t.string "payment_channel"
     t.boolean "pending", default: false, null: false
+    t.string "personal_finance_category"
+    t.string "personal_finance_category_detailed"
+    t.string "plaid_transaction_id"
     t.datetime "updated_at", null: false
+    t.index ["bank_account_id"], name: "index_transactions_on_bank_account_id"
+    t.index ["date"], name: "index_transactions_on_date"
     t.index ["name"], name: "index_transactions_on_name", opclass: :gin_trgm_ops, using: :gin
+    t.index ["plaid_transaction_id"], name: "index_transactions_on_plaid_transaction_id", unique: true
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -239,4 +253,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_031239) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "transactions", "bank_accounts"
 end

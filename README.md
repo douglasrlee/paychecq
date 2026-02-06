@@ -13,6 +13,7 @@ A _simple_ budgeting application that allows you to take money from each of your
 - Ruby 4.0.1
 - Node.js 24.13.0
 - PostgreSQL 17
+- [ngrok](https://ngrok.com) (for Plaid webhooks in development)
 
 ## Setup
 
@@ -22,7 +23,13 @@ A _simple_ budgeting application that allows you to take money from each of your
 
 3. Install PostgreSQL and ensure it's running
 
-4. Run the setup script:
+4. Install ngrok for Plaid webhook development:
+
+```bash
+brew install ngrok
+```
+
+5. Run the setup script:
 
 ```bash
 bin/setup --skip-server

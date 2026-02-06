@@ -114,6 +114,15 @@ class BankAccountTest < ActiveSupport::TestCase
     assert_includes bank_account.errors[:plaid_account_id], 'has already been taken'
   end
 
+  test 'destroys associated transactions when destroyed' do
+    bank_account = bank_accounts(:chase_checking)
+    Transaction.create!(name: 'Test', amount: 10.00, bank_account: bank_account, plaid_transaction_id: 'txn_dep_test')
+
+    assert_difference 'Transaction.count', -1 do
+      bank_account.destroy!
+    end
+  end
+
   test 'delegates user to bank' do
     bank_account = bank_accounts(:chase_checking)
 
