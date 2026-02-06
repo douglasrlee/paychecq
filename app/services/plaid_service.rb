@@ -6,6 +6,7 @@ class PlaidService
       products: [ 'transactions' ],
       country_codes: [ 'US' ],
       language: 'en',
+      webhook: ENV.fetch('PLAID_WEBHOOK_URL', nil),
       account_filters: {
         depository: { account_subtypes: [ 'checking' ] }
       }
@@ -59,6 +60,60 @@ class PlaidService
     Appsignal.send_error(error)
 
     false
+  end
+
+  def self.sync_transactions(access_token, cursor: nil)
+    added = []
+    modified = []
+    removed = []
+
+    loop do
+      request = Plaid::TransactionsSyncRequest.new(
+        access_token: access_token,
+        cursor: cursor
+      )
+      response = client.transactions_sync(request)
+
+      added.concat(response.added)
+      modified.concat(response.modified)
+      removed.concat(response.removed)
+      cursor = response.next_cursor
+
+      break unless response.has_more
+    end
+
+    { added: added, modified: modified, removed: removed, cursor: cursor }
+  end
+
+  def self.verify_webhook(body, plaid_verification_header)
+    # Decode ::JWT header to get the key ID without verifying signature yet
+    header = ::JWT.decode(plaid_verification_header, nil, false).last
+    key_id = header['kid']
+
+    # Fetch the verification key from Plaid
+    request = Plaid::WebhookVerificationKeyGetRequest.new(key_id: key_id)
+    response = client.webhook_verification_key_get(request)
+    jwk = response.key.to_hash
+
+    # Verify the ::JWT signature using the JWK
+    decoded = ::JWT.decode(
+      plaid_verification_header,
+      nil,
+      true,
+      algorithms: [ 'ES256' ],
+      jwks: { keys: [ jwk ] }
+    ).first
+
+    # Verify the token is not older than 5 minutes
+    issued_at = Time.zone.at(decoded['iat'])
+
+    raise ::JWT::ExpiredSignature, 'Webhook too old' if Time.current - issued_at > 5.minutes
+
+    # Verify the request body hash matches
+    expected_hash = decoded['request_body_sha256']
+    actual_hash = Digest::SHA256.hexdigest(body)
+
+    raise ::JWT::VerificationError, 'Body hash mismatch' unless ActiveSupport::SecurityUtils.secure_compare(expected_hash, actual_hash)
   end
 
   def self.client

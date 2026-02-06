@@ -198,4 +198,75 @@ class PlaidServiceTest < ActiveSupport::TestCase
 
     assert_equal true, result
   end
+
+  test 'sync_transactions returns added, modified, removed and cursor' do
+    stub_request(:post, 'https://sandbox.plaid.com/transactions/sync')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          added: [ { transaction_id: 'txn_1', account_id: 'acc_1', name: 'Coffee', amount: 4.50,
+                      date: '2026-02-01', authorized_date: '2026-02-01', merchant_name: 'Starbucks',
+                      pending: false, payment_channel: 'in store',
+                      personal_finance_category: { primary: 'FOOD_AND_DRINK', detailed: 'COFFEE' },
+                      logo_url: nil, merchant_entity_id: nil, iso_currency_code: 'USD' } ],
+          modified: [],
+          removed: [],
+          next_cursor: 'cursor_abc',
+          has_more: false,
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    result = PlaidService.sync_transactions('access-token')
+
+    assert_equal 1, result[:added].length
+    assert_equal 'txn_1', result[:added].first.transaction_id
+    assert_empty result[:modified]
+    assert_empty result[:removed]
+    assert_equal 'cursor_abc', result[:cursor]
+  end
+
+  test 'sync_transactions paginates when has_more is true' do
+    stub_request(:post, 'https://sandbox.plaid.com/transactions/sync')
+      .to_return(
+        { status: 200, headers: { 'Content-Type' => 'application/json' },
+          body: {
+            added: [ { transaction_id: 'txn_1', account_id: 'acc_1', name: 'Page 1', amount: 1.00,
+                        date: '2026-02-01', pending: false, payment_channel: 'online',
+                        iso_currency_code: 'USD' } ],
+            modified: [], removed: [], next_cursor: 'cursor_page2', has_more: true, request_id: 'req-1'
+          }.to_json },
+        { status: 200, headers: { 'Content-Type' => 'application/json' },
+          body: {
+            added: [ { transaction_id: 'txn_2', account_id: 'acc_1', name: 'Page 2', amount: 2.00,
+                        date: '2026-02-02', pending: false, payment_channel: 'online',
+                        iso_currency_code: 'USD' } ],
+            modified: [], removed: [], next_cursor: 'cursor_final', has_more: false, request_id: 'req-2'
+          }.to_json }
+      )
+
+    result = PlaidService.sync_transactions('access-token')
+
+    assert_equal 2, result[:added].length
+    assert_equal 'cursor_final', result[:cursor]
+  end
+
+  test 'sync_transactions raises on Plaid API error' do
+    stub_request(:post, 'https://sandbox.plaid.com/transactions/sync')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_INPUT',
+          error_code: 'INVALID_ACCESS_TOKEN',
+          error_message: 'Invalid access token',
+          request_id: 'req-error'
+        }.to_json
+      )
+
+    assert_raises(Plaid::ApiError) do
+      PlaidService.sync_transactions('invalid-token')
+    end
+  end
 end

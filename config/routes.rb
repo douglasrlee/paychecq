@@ -22,6 +22,10 @@ Rails.application.routes.draw do
   resource :settings, only: [ :show ]
   resources :banks, only: [ :create, :destroy ]
 
+  namespace :webhooks do
+    resource :plaid, only: [ :create ], controller: 'plaid'
+  end
+
   # Defines the root path route ("/")
   root 'transactions#index'
 end
