@@ -50,6 +50,45 @@ class PlaidServiceTest < ActiveSupport::TestCase
     assert_equal 'link-sandbox-test-token', result
   end
 
+  test 'create_update_link_token returns link token on success' do
+    bank = create_bank(email: 'updatetoken@example.com', plaid_item_id: 'item_update_token')
+
+    stub_request(:post, 'https://sandbox.plaid.com/link/token/create')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          link_token: 'link-sandbox-update-token',
+          expiration: 1.hour.from_now.iso8601,
+          request_id: 'req-update-success'
+        }.to_json
+      )
+
+    result = PlaidService.create_update_link_token(bank)
+
+    assert_equal 'link-sandbox-update-token', result
+  end
+
+  test 'create_update_link_token returns nil on Plaid API error' do
+    bank = create_bank(email: 'updatetokenerr@example.com', plaid_item_id: 'item_update_token_err')
+
+    stub_request(:post, 'https://sandbox.plaid.com/link/token/create')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_REQUEST',
+          error_code: 'INVALID_FIELD',
+          error_message: 'Invalid field',
+          request_id: 'req-update-error'
+        }.to_json
+      )
+
+    result = PlaidService.create_update_link_token(bank)
+
+    assert_nil result
+  end
+
   test 'exchange_public_token returns response on success' do
     stub_request(:post, 'https://sandbox.plaid.com/item/public_token/exchange')
       .to_return(
@@ -334,5 +373,18 @@ class PlaidServiceTest < ActiveSupport::TestCase
           request_id: 'req-jwk'
         }.to_json
       )
+  end
+
+  def create_bank(email:, plaid_item_id:)
+    user = User.create!(first_name: 'Plaid', last_name: 'Test', email_address: email, password: 'password')
+
+    Bank.create!(
+      user: user,
+      name: 'Test Bank',
+      plaid_item_id: plaid_item_id,
+      plaid_access_token: 'access_token_test',
+      plaid_institution_id: 'ins_999',
+      plaid_institution_name: 'Test Bank'
+    )
   end
 end

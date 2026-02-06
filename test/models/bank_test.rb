@@ -302,6 +302,58 @@ class BankTest < ActiveSupport::TestCase
     assert bank.valid?
   end
 
+  test 'is invalid with unknown status' do
+    bank = create_bank(email: 'statusvalidation@example.com', plaid_item_id: 'item_status_validation')
+    bank.status = 'unknown'
+
+    assert_not bank.valid?
+    assert_includes bank.errors[:status], 'is not included in the list'
+  end
+
+  test 'mark_error! sets status and error code' do
+    bank = create_bank(email: 'markerror@example.com', plaid_item_id: 'item_mark_error')
+
+    bank.mark_error!(error_code: 'ITEM_LOGIN_REQUIRED')
+
+    assert_equal 'error', bank.status
+    assert_equal 'ITEM_LOGIN_REQUIRED', bank.plaid_error_code
+    assert bank.error?
+    assert bank.needs_attention?
+  end
+
+  test 'mark_healthy! clears error state' do
+    bank = create_bank(email: 'markhealthy@example.com', plaid_item_id: 'item_mark_healthy')
+    bank.update!(status: 'error', plaid_error_code: 'ITEM_LOGIN_REQUIRED')
+
+    bank.mark_healthy!
+
+    assert_equal 'healthy', bank.status
+    assert_nil bank.plaid_error_code
+    assert bank.healthy?
+    assert_not bank.needs_attention?
+  end
+
+  test 'mark_pending_expiration! sets status and clears error code' do
+    bank = create_bank(email: 'markpending@example.com', plaid_item_id: 'item_mark_pending')
+
+    bank.mark_pending_expiration!
+
+    assert_equal 'pending_expiration', bank.status
+    assert_nil bank.plaid_error_code
+    assert bank.pending_expiration?
+    assert bank.needs_attention?
+  end
+
+  test 'mark_disconnected! sets status' do
+    bank = create_bank(email: 'markdisconnected@example.com', plaid_item_id: 'item_mark_disconnected')
+
+    bank.mark_disconnected!
+
+    assert_equal 'disconnected', bank.status
+    assert bank.disconnected?
+    assert bank.needs_attention?
+  end
+
   test 'logo_data_uri returns nil when logo is blank' do
     bank = banks(:chase)
     bank.logo = nil
@@ -329,5 +381,20 @@ class BankTest < ActiveSupport::TestCase
     bank.logo = valid_png
 
     assert_equal "data:image/png;base64,#{valid_png}", bank.logo_data_uri
+  end
+
+  private
+
+  def create_bank(email:, plaid_item_id:)
+    user = User.create!(first_name: 'Status', last_name: 'Test', email_address: email, password: 'password')
+
+    Bank.create!(
+      user: user,
+      name: 'Test Bank',
+      plaid_item_id: plaid_item_id,
+      plaid_access_token: 'access_token_test',
+      plaid_institution_id: 'ins_999',
+      plaid_institution_name: 'Test Bank'
+    )
   end
 end

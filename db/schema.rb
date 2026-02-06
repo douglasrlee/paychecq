@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_06_063142) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_06_071810) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -39,9 +39,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_06_063142) do
     t.text "logo"
     t.string "name", null: false
     t.string "plaid_access_token", null: false
+    t.string "plaid_error_code"
     t.string "plaid_institution_id", null: false
     t.string "plaid_institution_name", null: false
     t.string "plaid_item_id", null: false
+    t.string "status", default: "healthy", null: false
     t.string "transaction_cursor"
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
