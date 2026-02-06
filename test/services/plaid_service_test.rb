@@ -269,4 +269,70 @@ class PlaidServiceTest < ActiveSupport::TestCase
       PlaidService.sync_transactions('invalid-token')
     end
   end
+
+  test 'verify_webhook succeeds with valid signature, fresh token, and matching body hash' do
+    body = '{"webhook_type":"TRANSACTIONS"}'
+    jwt = build_webhook_jwt(body:)
+
+    stub_webhook_verification_key
+
+    assert_nothing_raised do
+      PlaidService.verify_webhook(body, jwt)
+    end
+  end
+
+  test 'verify_webhook raises when token is older than 5 minutes' do
+    body = '{"webhook_type":"TRANSACTIONS"}'
+    jwt = build_webhook_jwt(body:, iat: 6.minutes.ago.to_i)
+
+    stub_webhook_verification_key
+
+    assert_raises(::JWT::ExpiredSignature) do
+      PlaidService.verify_webhook(body, jwt)
+    end
+  end
+
+  test 'verify_webhook raises when body hash does not match' do
+    body = '{"webhook_type":"TRANSACTIONS"}'
+    jwt = build_webhook_jwt(body:)
+
+    stub_webhook_verification_key
+
+    assert_raises(::JWT::VerificationError) do
+      PlaidService.verify_webhook('{"tampered":"body"}', jwt)
+    end
+  end
+
+  private
+
+  def ec_key
+    @ec_key ||= OpenSSL::PKey::EC.generate('prime256v1')
+  end
+
+  def jwk_hash
+    jwk = ::JWT::JWK.new(ec_key, kid: 'test-key-id')
+    jwk.export.transform_keys(&:to_sym)
+  end
+
+  def build_webhook_jwt(body:, iat: Time.current.to_i)
+    payload = {
+      'iat' => iat,
+      'request_body_sha256' => Digest::SHA256.hexdigest(body)
+    }
+    header = { kid: 'test-key-id' }
+
+    ::JWT.encode(payload, ec_key, 'ES256', header)
+  end
+
+  def stub_webhook_verification_key
+    stub_request(:post, 'https://sandbox.plaid.com/webhook_verification_key/get')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          key: jwk_hash,
+          request_id: 'req-jwk'
+        }.to_json
+      )
+  end
 end
