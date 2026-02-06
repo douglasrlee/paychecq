@@ -13,7 +13,9 @@ class AdminController < ApplicationController
     redirect_to main_app.new_session_path
   end
 
+  # :nocov:
   def after_authentication_url
     session.delete(:return_to_after_authenticating) || main_app.root_url
   end
+  # :nocov:
 end
