@@ -18,6 +18,7 @@ class AddPlaidFieldsToTransactions < ActiveRecord::Migration[8.1]
     add_index :transactions, :bank_account_id, algorithm: :concurrently
     add_index :transactions, :plaid_transaction_id, unique: true, algorithm: :concurrently
     add_index :transactions, :date, algorithm: :concurrently
+
     add_foreign_key :transactions, :bank_accounts, validate: false
   end
   # rubocop:enable Rails/BulkChangeTable
