@@ -106,7 +106,10 @@ class PlaidWebhookJobTest < ActiveJob::TestCase
     bank = create_bank(email: 'item_revoked@example.com', plaid_item_id: 'item_revoked_test')
 
     removed_token = nil
-    PlaidService.define_singleton_method(:remove_item) { |token| removed_token = token; true }
+    PlaidService.define_singleton_method(:remove_item) do |token|
+      removed_token = token
+      true
+    end
 
     PlaidWebhookJob.perform_now(
       'webhook_type' => 'ITEM',

@@ -3,9 +3,7 @@ class SettingsController < ApplicationController
     @bank = Current.user.banks.includes(:bank_accounts).first
 
     if @bank
-      if @bank.needs_attention? && !@bank.disconnected?
-        @plaid_update_link_token = PlaidService.create_update_link_token(@bank)
-      end
+      @plaid_update_link_token = PlaidService.create_update_link_token(@bank) if @bank.needs_attention? && !@bank.disconnected?
     else
       @plaid_link_token = PlaidService.create_link_token(Current.user)
 
