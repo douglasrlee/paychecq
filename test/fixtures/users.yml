@@ -11,3 +11,10 @@ janedoe:
   last_name: Doe
   email_address: janedoe@example.com
   password_digest: <%= password_digest %>
+
+admin:
+  first_name: Admin
+  last_name: User
+  email_address: admin@example.com
+  password_digest: <%= password_digest %>
+  admin: true
