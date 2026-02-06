@@ -1,4 +1,6 @@
 class Bank < ApplicationRecord
+  has_paper_trail
+
   encrypts :plaid_access_token
 
   # Magic bytes for common image formats (binary encoded)

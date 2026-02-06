@@ -11,6 +11,11 @@ module Webhooks
       PlaidWebhookJob.perform_later(JSON.parse(body))
 
       head :ok
+    rescue JSON::ParserError => error
+      Rails.logger.warn("Plaid webhook invalid JSON: #{error.message}")
+      Appsignal.send_error(error)
+
+      head :bad_request
     rescue ::JWT::DecodeError, ::JWT::VerificationError, ::JWT::ExpiredSignature, Plaid::ApiError => error
       Rails.logger.warn("Plaid webhook verification failed: #{error.message}")
       Appsignal.send_error(error)

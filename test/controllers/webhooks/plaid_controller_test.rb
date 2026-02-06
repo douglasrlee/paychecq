@@ -68,6 +68,18 @@ module Webhooks
       PlaidService.singleton_class.remove_method(:verify_webhook)
     end
 
+    test 'returns bad request for malformed JSON body' do
+      PlaidService.define_singleton_method(:verify_webhook) { |_body, _header| nil }
+
+      post webhooks_plaid_path,
+           params: 'not valid json{{{',
+           headers: { 'Content-Type' => 'application/json', 'Plaid-Verification' => 'fake-jwt' }
+
+      assert_response :bad_request
+    ensure
+      PlaidService.singleton_class.remove_method(:verify_webhook)
+    end
+
     test 'does not require authentication' do
       PlaidService.define_singleton_method(:verify_webhook) { |_body, _header| nil }
 
