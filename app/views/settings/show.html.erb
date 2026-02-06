@@ -18,6 +18,57 @@
 
       <div class="mt-6">
         <% if @bank %>
+          <% if @bank.error? %>
+            <div class="alert alert-error mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+
+              <div>
+                <p class="font-medium">Connection Error</p>
+                <p class="text-sm">Your bank credentials need to be updated. Please reconnect your account.</p>
+              </div>
+
+              <% if @plaid_update_link_token %>
+                <div data-controller="plaid-link" data-plaid-link-token-value="<%= @plaid_update_link_token %>" data-plaid-link-mode-value="update">
+                  <button type="button" class="btn btn-sm" data-plaid-link-target="button" data-action="plaid-link#open">
+                    Reconnect
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          <% elsif @bank.pending_expiration? %>
+            <div class="alert alert-warning mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+
+              <div>
+                <p class="font-medium">Consent Expiring Soon</p>
+                <p class="text-sm">Your bank connection will expire soon. Please re-authorize to continue syncing.</p>
+              </div>
+
+              <% if @plaid_update_link_token %>
+                <div data-controller="plaid-link" data-plaid-link-token-value="<%= @plaid_update_link_token %>" data-plaid-link-mode-value="update">
+                  <button type="button" class="btn btn-sm" data-plaid-link-target="button" data-action="plaid-link#open">
+                    Re-authorize
+                  </button>
+                </div>
+              <% end %>
+            </div>
+          <% elsif @bank.disconnected? %>
+            <div class="alert alert-error mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1M3 3l18 18" />
+              </svg>
+
+              <div>
+                <p class="font-medium">Account Disconnected</p>
+                <p class="text-sm">You revoked access at your bank. Please delete this account and link again to resume syncing.</p>
+              </div>
+            </div>
+          <% end %>
+
           <div class="relative">
             <div class="collapse collapse-arrow bg-base-200 pr-12">
               <input type="checkbox" title="<%= @bank.plaid_institution_name %>" />

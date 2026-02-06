@@ -21,6 +21,25 @@ class PlaidService
     nil
   end
 
+  def self.create_update_link_token(bank)
+    request = Plaid::LinkTokenCreateRequest.new(
+      user: { client_user_id: bank.user_id },
+      client_name: 'PayChecQ',
+      country_codes: [ 'US' ],
+      language: 'en',
+      webhook: ENV.fetch('PLAID_WEBHOOK_URL', nil),
+      access_token: bank.plaid_access_token
+    )
+
+    response = client.link_token_create(request)
+    response.link_token
+  rescue Plaid::ApiError => error
+    Rails.logger.error("Plaid update link token error: #{error.response_body}")
+    Appsignal.send_error(error)
+
+    nil
+  end
+
   def self.exchange_public_token(public_token)
     request = Plaid::ItemPublicTokenExchangeRequest.new(public_token: public_token)
 

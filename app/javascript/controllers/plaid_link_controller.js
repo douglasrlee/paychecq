@@ -3,7 +3,8 @@ import { Turbo } from "@hotwired/turbo-rails";
 
 export default class extends Controller {
   static values = {
-    token: String
+    token: String,
+    mode: { type: String, default: "link" }
   };
 
   static targets = ["button"];
@@ -55,6 +56,12 @@ export default class extends Controller {
   }
 
   async onSuccess(publicToken, metadata) {
+    if (this.modeValue === "update") {
+      Turbo.visit("/settings");
+
+      return;
+    }
+
     this.setLoading(true);
 
     try {
@@ -83,7 +90,7 @@ export default class extends Controller {
       console.error("Failed to link bank:", error);
 
       this.setLoading(false);
-      
+
       Turbo.visit("/settings");
     }
   }
