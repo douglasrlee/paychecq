@@ -206,10 +206,10 @@ class PlaidServiceTest < ActiveSupport::TestCase
         headers: { 'Content-Type' => 'application/json' },
         body: {
           added: [ { transaction_id: 'txn_1', account_id: 'acc_1', name: 'Coffee', amount: 4.50,
-                      date: '2026-02-01', authorized_date: '2026-02-01', merchant_name: 'Starbucks',
-                      pending: false, payment_channel: 'in store',
-                      personal_finance_category: { primary: 'FOOD_AND_DRINK', detailed: 'COFFEE' },
-                      logo_url: nil, merchant_entity_id: nil, iso_currency_code: 'USD' } ],
+                     date: '2026-02-01', authorized_date: '2026-02-01', merchant_name: 'Starbucks',
+                     pending: false, payment_channel: 'in store',
+                     personal_finance_category: { primary: 'FOOD_AND_DRINK', detailed: 'COFFEE' },
+                     logo_url: nil, merchant_entity_id: nil, iso_currency_code: 'USD' } ],
           modified: [],
           removed: [],
           next_cursor: 'cursor_abc',
@@ -233,15 +233,15 @@ class PlaidServiceTest < ActiveSupport::TestCase
         { status: 200, headers: { 'Content-Type' => 'application/json' },
           body: {
             added: [ { transaction_id: 'txn_1', account_id: 'acc_1', name: 'Page 1', amount: 1.00,
-                        date: '2026-02-01', pending: false, payment_channel: 'online',
-                        iso_currency_code: 'USD' } ],
+                       date: '2026-02-01', pending: false, payment_channel: 'online',
+                       iso_currency_code: 'USD' } ],
             modified: [], removed: [], next_cursor: 'cursor_page2', has_more: true, request_id: 'req-1'
           }.to_json },
         { status: 200, headers: { 'Content-Type' => 'application/json' },
           body: {
             added: [ { transaction_id: 'txn_2', account_id: 'acc_1', name: 'Page 2', amount: 2.00,
-                        date: '2026-02-02', pending: false, payment_channel: 'online',
-                        iso_currency_code: 'USD' } ],
+                       date: '2026-02-02', pending: false, payment_channel: 'online',
+                       iso_currency_code: 'USD' } ],
             modified: [], removed: [], next_cursor: 'cursor_final', has_more: false, request_id: 'req-2'
           }.to_json }
       )
