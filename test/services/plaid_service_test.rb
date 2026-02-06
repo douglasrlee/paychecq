@@ -50,6 +50,124 @@ class PlaidServiceTest < ActiveSupport::TestCase
     assert_equal 'link-sandbox-test-token', result
   end
 
+  test 'exchange_public_token returns response on success' do
+    stub_request(:post, 'https://sandbox.plaid.com/item/public_token/exchange')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          access_token: 'access-sandbox-123',
+          item_id: 'item-sandbox-456',
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    result = PlaidService.exchange_public_token('public-sandbox-token')
+
+    assert_equal 'access-sandbox-123', result.access_token
+    assert_equal 'item-sandbox-456', result.item_id
+  end
+
+  test 'exchange_public_token raises on Plaid API error' do
+    stub_request(:post, 'https://sandbox.plaid.com/item/public_token/exchange')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_INPUT',
+          error_code: 'INVALID_PUBLIC_TOKEN',
+          error_message: 'The public token is invalid',
+          request_id: 'req-error'
+        }.to_json
+      )
+
+    assert_raises(Plaid::ApiError) do
+      PlaidService.exchange_public_token('invalid-token')
+    end
+  end
+
+  test 'get_institution_logo returns logo on success' do
+    stub_request(:post, 'https://sandbox.plaid.com/institutions/get_by_id')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          institution: {
+            institution_id: 'ins_1',
+            name: 'Test Bank',
+            logo: 'base64logodata'
+          },
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    result = PlaidService.get_institution_logo('ins_1')
+
+    assert_equal 'base64logodata', result
+  end
+
+  test 'get_institution_logo returns nil on Plaid API error' do
+    stub_request(:post, 'https://sandbox.plaid.com/institutions/get_by_id')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_INPUT',
+          error_code: 'INVALID_INSTITUTION',
+          error_message: 'Institution not found',
+          request_id: 'req-error'
+        }.to_json
+      )
+
+    result = PlaidService.get_institution_logo('invalid_ins')
+
+    assert_nil result
+  end
+
+  test 'get_accounts returns accounts on success' do
+    stub_request(:post, 'https://sandbox.plaid.com/accounts/get')
+      .to_return(
+        status: 200,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          accounts: [
+            {
+              account_id: 'acc-123',
+              name: 'Checking',
+              mask: '1234',
+              type: 'depository',
+              subtype: 'checking',
+              balances: { available: 1000.00, current: 1050.00 }
+            }
+          ],
+          request_id: 'req-123'
+        }.to_json
+      )
+
+    result = PlaidService.get_accounts('access-token')
+
+    assert_equal 1, result.length
+    assert_equal 'acc-123', result.first.account_id
+  end
+
+  test 'get_accounts raises on Plaid API error' do
+    stub_request(:post, 'https://sandbox.plaid.com/accounts/get')
+      .to_return(
+        status: 400,
+        headers: { 'Content-Type' => 'application/json' },
+        body: {
+          error_type: 'INVALID_INPUT',
+          error_code: 'INVALID_ACCESS_TOKEN',
+          error_message: 'The access token is invalid',
+          request_id: 'req-error'
+        }.to_json
+      )
+
+    assert_raises(Plaid::ApiError) do
+      PlaidService.get_accounts('invalid-token')
+    end
+  end
+
   test 'remove_item returns false on Plaid API error' do
     stub_request(:post, 'https://sandbox.plaid.com/item/remove')
       .to_return(
