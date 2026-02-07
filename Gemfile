@@ -66,6 +66,9 @@ gem 'mailgun-ruby', '~>1.4.2'
 # Plaid API for bank account linking [https://github.com/plaid/plaid-ruby]
 gem 'plaid'
 
+# Web Push notifications via the VAPID protocol [https://github.com/pushpad/web-push]
+gem 'web-push'
+
 # This gem provides a Rails-based frontend to Active Job adapters. [https://github.com/rails/mission_control-jobs]
 gem 'mission_control-jobs'
 

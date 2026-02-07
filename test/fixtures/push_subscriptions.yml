@@ -1,0 +1,11 @@
+johndoe_desktop:
+  user: johndoe
+  endpoint: "https://fcm.googleapis.com/fcm/send/test-endpoint-1"
+  p256dh_key: "test-p256dh-key-1"
+  auth_key: "test-auth-key-1"
+
+johndoe_mobile:
+  user: johndoe
+  endpoint: "https://fcm.googleapis.com/fcm/send/test-endpoint-2"
+  p256dh_key: "test-p256dh-key-2"
+  auth_key: "test-auth-key-2"

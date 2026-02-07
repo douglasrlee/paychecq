@@ -4,11 +4,13 @@ class TransactionSyncService
 
     account_map = bank.bank_accounts.pluck(:plaid_account_id, :id).to_h
 
-    upsert_transactions(result[:added] + result[:modified], account_map)
+    new_transactions = upsert_transactions(result[:added] + result[:modified], account_map)
     remove_transactions(result[:removed])
 
     bank.update!(transaction_cursor: result[:cursor])
     bank.bank_accounts.find_each { |account| account.update!(last_synced_at: Time.current) }
+
+    SendPushNotificationJob.perform_later(bank.user_id, new_transactions.map(&:id)) if new_transactions.any?
   rescue Plaid::ApiError => error
     Rails.logger.error("Transaction sync error: #{error.response_body}")
     Appsignal.send_error(error)
@@ -17,13 +19,16 @@ class TransactionSyncService
   end
 
   def self.upsert_transactions(plaid_transactions, account_map)
-    return if plaid_transactions.empty?
+    return [] if plaid_transactions.empty?
+
+    new_transactions = []
 
     plaid_transactions.each do |plaid_transaction|
       bank_account_id = account_map[plaid_transaction.account_id]
       next unless bank_account_id
 
       transaction = Transaction.find_or_initialize_by(plaid_transaction_id: plaid_transaction.transaction_id)
+      is_new = transaction.new_record?
       transaction.assign_attributes(
         bank_account_id: bank_account_id,
         name: plaid_transaction.name,
@@ -39,7 +44,10 @@ class TransactionSyncService
         merchant_entity_id: plaid_transaction.merchant_entity_id
       )
       transaction.save!
+      new_transactions << transaction if is_new
     end
+
+    new_transactions
   end
 
   private_class_method :upsert_transactions

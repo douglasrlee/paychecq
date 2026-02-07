@@ -1,6 +1,8 @@
 require 'test_helper'
 
 class TransactionSyncServiceTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   PlaidTransaction = Struct.new(
     :transaction_id, :account_id, :name, :amount, :date, :authorized_date,
     :merchant_name, :pending, :payment_channel, :personal_finance_category,
@@ -138,6 +140,29 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
     PlaidService.define_singleton_method(:sync_transactions) { |*, **| raise error }
 
     assert_raises(Plaid::ApiError) do
+      TransactionSyncService.sync(bank: @bank)
+    end
+  end
+
+  test 'sync enqueues push notification job for new transactions' do
+    stub_sync_response(added: [ build_plaid_transaction('txn_push_1', 'Starbucks', 5.50) ])
+
+    assert_enqueued_with(job: SendPushNotificationJob) do
+      TransactionSyncService.sync(bank: @bank)
+    end
+  end
+
+  test 'sync does not enqueue push notification for modifications only' do
+    Transaction.create!(
+      name: 'Starbucks',
+      amount: 5.50,
+      plaid_transaction_id: 'txn_mod_1',
+      bank_account: @bank_account
+    )
+
+    stub_sync_response(modified: [ build_plaid_transaction('txn_mod_1', 'Starbucks Reserve', 7.00) ])
+
+    assert_no_enqueued_jobs(only: SendPushNotificationJob) do
       TransactionSyncService.sync(bank: @bank)
     end
   end

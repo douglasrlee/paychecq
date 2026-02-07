@@ -1,0 +1,13 @@
+<div class="card card-lg bg-base-100 mt-10 w-full max-w-240 shadow-glow" data-controller="push-notification" data-push-notification-vapid-public-key-value="<%= Rails.application.config.web_push.vapid_public_key %>">
+  <div class="card-body">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="card-title">Notifications</h2>
+
+        <p class="text-sm text-base-content/60 mt-1">Get notified when new transactions are added</p>
+      </div>
+
+      <input type="checkbox" class="toggle toggle-primary" data-push-notification-target="toggle" data-action="push-notification#toggle" <%= "checked" if @push_notifications_enabled %> />
+    </div>
+  </div>
+</div>

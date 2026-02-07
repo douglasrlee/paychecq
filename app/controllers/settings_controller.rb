@@ -1,6 +1,7 @@
 class SettingsController < ApplicationController
   def show
     @bank = Current.user.banks.includes(:bank_accounts).first
+    @push_notifications_enabled = Current.user.push_subscriptions.exists?
 
     if @bank
       if @bank.needs_attention? && !@bank.disconnected?
