@@ -2,16 +2,16 @@
 // Run that command whenever you add a new controller or create them with
 // ./bin/rails generate stimulus controllerName
 
-import { application } from "./application"
+import { application } from "./application";
 
-import AutoDismissController from "./auto_dismiss_controller"
-import LoadingButtonController from "./loading_button_controller"
-import PlaidLinkController from "./plaid_link_controller"
-import PullToRefreshController from "./pull_to_refresh_controller"
-import PushNotificationController from "./push_notification_controller"
+import AutoDismissController from "./auto_dismiss_controller";
+import LoadingButtonController from "./loading_button_controller";
+import PlaidLinkController from "./plaid_link_controller";
+import PullToRefreshController from "./pull_to_refresh_controller";
+import PushNotificationController from "./push_notification_controller";
 
-application.register("auto-dismiss", AutoDismissController)
-application.register("loading-button", LoadingButtonController)
-application.register("plaid-link", PlaidLinkController)
-application.register("pull-to-refresh", PullToRefreshController)
-application.register("push-notification", PushNotificationController)
+application.register("auto-dismiss", AutoDismissController);
+application.register("loading-button", LoadingButtonController);
+application.register("plaid-link", PlaidLinkController);
+application.register("pull-to-refresh", PullToRefreshController);
+application.register("push-notification", PushNotificationController);
