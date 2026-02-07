@@ -10,9 +10,7 @@ class TransactionSyncService
     bank.update!(transaction_cursor: result[:cursor])
     bank.bank_accounts.find_each { |account| account.update!(last_synced_at: Time.current) }
 
-    if new_transactions.any?
-      SendPushNotificationJob.perform_later(bank.user_id, new_transactions.map(&:id))
-    end
+    SendPushNotificationJob.perform_later(bank.user_id, new_transactions.map(&:id)) if new_transactions.any?
   rescue Plaid::ApiError => error
     Rails.logger.error("Transaction sync error: #{error.response_body}")
     Appsignal.send_error(error)

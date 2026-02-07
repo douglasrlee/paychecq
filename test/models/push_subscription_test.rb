@@ -4,9 +4,9 @@ class PushSubscriptionTest < ActiveSupport::TestCase
   test 'valid push subscription' do
     subscription = PushSubscription.new(
       user: users(:johndoe),
-      endpoint: "https://fcm.googleapis.com/fcm/send/unique-endpoint",
-      p256dh_key: "test-p256dh",
-      auth_key: "test-auth"
+      endpoint: 'https://fcm.googleapis.com/fcm/send/unique-endpoint',
+      p256dh_key: 'test-p256dh',
+      auth_key: 'test-auth'
     )
 
     assert subscription.valid?
@@ -15,8 +15,8 @@ class PushSubscriptionTest < ActiveSupport::TestCase
   test 'requires endpoint' do
     subscription = PushSubscription.new(
       user: users(:johndoe),
-      p256dh_key: "test-p256dh",
-      auth_key: "test-auth"
+      p256dh_key: 'test-p256dh',
+      auth_key: 'test-auth'
     )
 
     assert_not subscription.valid?
@@ -26,8 +26,8 @@ class PushSubscriptionTest < ActiveSupport::TestCase
   test 'requires p256dh_key' do
     subscription = PushSubscription.new(
       user: users(:johndoe),
-      endpoint: "https://fcm.googleapis.com/fcm/send/unique-endpoint",
-      auth_key: "test-auth"
+      endpoint: 'https://fcm.googleapis.com/fcm/send/unique-endpoint',
+      auth_key: 'test-auth'
     )
 
     assert_not subscription.valid?
@@ -37,8 +37,8 @@ class PushSubscriptionTest < ActiveSupport::TestCase
   test 'requires auth_key' do
     subscription = PushSubscription.new(
       user: users(:johndoe),
-      endpoint: "https://fcm.googleapis.com/fcm/send/unique-endpoint",
-      p256dh_key: "test-p256dh"
+      endpoint: 'https://fcm.googleapis.com/fcm/send/unique-endpoint',
+      p256dh_key: 'test-p256dh'
     )
 
     assert_not subscription.valid?
@@ -49,12 +49,12 @@ class PushSubscriptionTest < ActiveSupport::TestCase
     subscription = PushSubscription.new(
       user: users(:janedoe),
       endpoint: push_subscriptions(:johndoe_desktop).endpoint,
-      p256dh_key: "test-p256dh",
-      auth_key: "test-auth"
+      p256dh_key: 'test-p256dh',
+      auth_key: 'test-auth'
     )
 
     assert_not subscription.valid?
-    assert_includes subscription.errors[:endpoint], "has already been taken"
+    assert_includes subscription.errors[:endpoint], 'has already been taken'
   end
 
   test 'belongs to user' do
@@ -65,17 +65,17 @@ class PushSubscriptionTest < ActiveSupport::TestCase
 
   test 'destroying user destroys push subscriptions' do
     user = User.create!(
-      first_name: "Push",
-      last_name: "Test",
+      first_name: 'Push',
+      last_name: 'Test',
       email_address: "pushtest_#{SecureRandom.hex(4)}@example.com",
-      password: "password"
+      password: 'password'
     )
 
     subscription = PushSubscription.create!(
       user: user,
-      endpoint: "https://fcm.googleapis.com/fcm/send/destroy-test",
-      p256dh_key: "test-key",
-      auth_key: "test-auth"
+      endpoint: 'https://fcm.googleapis.com/fcm/send/destroy-test',
+      p256dh_key: 'test-key',
+      auth_key: 'test-auth'
     )
 
     user.destroy

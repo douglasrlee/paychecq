@@ -11,7 +11,7 @@ class SendPushNotificationJobTest < ActiveJob::TestCase
   end
 
   test 'calls PushNotificationService with user and transactions' do
-    transaction = Transaction.create!(name: "Test", amount: 10.00)
+    transaction = Transaction.create!(name: 'Test', amount: 10.00)
     notified_user = nil
     notified_transactions = nil
 
