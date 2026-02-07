@@ -59,6 +59,23 @@ class PushSubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test 'create reassigns subscription to current user when endpoint belongs to another user' do
+    sign_in_as users(:janedoe)
+    existing = push_subscriptions(:johndoe_desktop)
+
+    assert_no_difference 'PushSubscription.count' do
+      post push_subscription_path, params: {
+        push_subscription: {
+          endpoint: existing.endpoint,
+          keys: { p256dh: 'jane-p256dh', auth: 'jane-auth' }
+        }
+      }, as: :json
+    end
+
+    assert_response :created
+    assert_equal users(:janedoe).id, existing.reload.user_id
+  end
+
   test 'destroy requires authentication' do
     delete push_subscription_path, params: { endpoint: 'https://example.com' }, as: :json
 

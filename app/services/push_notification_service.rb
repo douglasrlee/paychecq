@@ -3,6 +3,7 @@ class PushNotificationService
 
   def self.notify_new_transactions(user:, transactions:)
     return if transactions.empty?
+    return unless vapid_configured?
 
     subscriptions = user.push_subscriptions
 
@@ -65,4 +66,11 @@ class PushNotificationService
   end
 
   private_class_method :send_push
+
+  def self.vapid_configured?
+    Rails.application.config.web_push.vapid_public_key.present? &&
+      Rails.application.config.web_push.vapid_private_key.present?
+  end
+
+  private_class_method :vapid_configured?
 end

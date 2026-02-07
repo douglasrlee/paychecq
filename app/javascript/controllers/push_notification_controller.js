@@ -49,7 +49,12 @@ export default class extends Controller {
         applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKeyValue)
       });
 
-      await this.saveSubscription(subscription);
+      const saved = await this.saveSubscription(subscription);
+
+      if (!saved) {
+        await subscription.unsubscribe();
+        this.toggleTarget.checked = false;
+      }
     } catch (error) {
       console.error("Push subscription failed:", error);
 
@@ -63,8 +68,13 @@ export default class extends Controller {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        await subscription.unsubscribe();
-        await this.deleteSubscription(subscription.endpoint);
+        const deleted = await this.deleteSubscription(subscription.endpoint);
+
+        if (deleted) {
+          await subscription.unsubscribe();
+        } else {
+          this.toggleTarget.checked = true;
+        }
       }
     } catch (error) {
       console.error("Push unsubscribe failed:", error);
@@ -76,7 +86,7 @@ export default class extends Controller {
   async saveSubscription(subscription) {
     const csrfToken = document.querySelector("meta[name='csrf-token']")?.content;
 
-    await fetch("/push_subscription", {
+    const response = await fetch("/push_subscription", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,12 +94,14 @@ export default class extends Controller {
       },
       body: JSON.stringify({ push_subscription: subscription.toJSON() })
     });
+
+    return response.ok;
   }
 
   async deleteSubscription(endpoint) {
     const csrfToken = document.querySelector("meta[name='csrf-token']")?.content;
 
-    await fetch("/push_subscription", {
+    const response = await fetch("/push_subscription", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -97,6 +109,8 @@ export default class extends Controller {
       },
       body: JSON.stringify({ endpoint })
     });
+
+    return response.ok;
   }
 
   urlBase64ToUint8Array(base64String) {
