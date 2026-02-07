@@ -6,10 +6,16 @@ class PushNotificationServiceTest < ActiveSupport::TestCase
   setup do
     @user = users(:johndoe)
     @original_payload_send = WebPush.method(:payload_send)
+    @original_vapid_public_key = Rails.application.config.web_push.vapid_public_key
+    @original_vapid_private_key = Rails.application.config.web_push.vapid_private_key
+    Rails.application.config.web_push.vapid_public_key = 'test-public-key'
+    Rails.application.config.web_push.vapid_private_key = 'test-private-key'
   end
 
   teardown do
     WebPush.define_singleton_method(:payload_send, @original_payload_send)
+    Rails.application.config.web_push.vapid_public_key = @original_vapid_public_key
+    Rails.application.config.web_push.vapid_private_key = @original_vapid_private_key
   end
 
   test 'does nothing with empty transactions' do
