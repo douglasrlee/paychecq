@@ -8,11 +8,14 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'index shows transactions' do
+    Transaction.create!(name: 'Starbucks', amount: 4.33, date: Date.current, bank_account: bank_accounts(:chase_checking))
     sign_in_as(users(:johndoe))
 
     get transactions_url
 
     assert_response :success
+    assert_select 'p', text: 'Starbucks'
+    assert_select 'p', text: '$4.33'
   end
 
   test 'index shows empty state when no bank linked' do

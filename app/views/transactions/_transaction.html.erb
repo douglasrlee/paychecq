@@ -1,8 +1,8 @@
 <div id="<%= dom_id transaction %>" class="flex items-center justify-between gap-4 px-5 py-4 <%= 'opacity-60' if transaction.pending? %>">
   <% display_name = transaction.merchant_name.presence || transaction.name %>
   <div class="flex items-center gap-3 min-w-0">
-    <% if transaction.logo_url.present? %>
-      <img src="<%= transaction.logo_url %>" alt="<%= display_name %>" class="h-10 w-10 rounded-full shrink-0" />
+    <% if transaction.safe_logo_url %>
+      <img src="<%= transaction.safe_logo_url %>" alt="<%= display_name %>" class="h-10 w-10 rounded-full shrink-0" referrerpolicy="no-referrer" loading="lazy" />
     <% else %>
       <div class="h-10 w-10 rounded-full bg-base-200 flex items-center justify-center shrink-0">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
