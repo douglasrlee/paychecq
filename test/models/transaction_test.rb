@@ -56,4 +56,34 @@ class TransactionTest < ActiveSupport::TestCase
 
     assert_equal bank_account, transaction.bank_account
   end
+
+  test 'safe_logo_url returns https url' do
+    transaction = Transaction.new(name: 'Test', amount: 10, logo_url: 'https://example.com/logo.png')
+
+    assert_equal 'https://example.com/logo.png', transaction.safe_logo_url
+  end
+
+  test 'safe_logo_url returns http url' do
+    transaction = Transaction.new(name: 'Test', amount: 10, logo_url: 'http://example.com/logo.png')
+
+    assert_equal 'http://example.com/logo.png', transaction.safe_logo_url
+  end
+
+  test 'safe_logo_url rejects non-http schemes' do
+    transaction = Transaction.new(name: 'Test', amount: 10, logo_url: 'javascript:alert(1)')
+
+    assert_nil transaction.safe_logo_url
+  end
+
+  test 'safe_logo_url returns nil for blank url' do
+    transaction = Transaction.new(name: 'Test', amount: 10, logo_url: '')
+
+    assert_nil transaction.safe_logo_url
+  end
+
+  test 'safe_logo_url returns nil for invalid url' do
+    transaction = Transaction.new(name: 'Test', amount: 10, logo_url: '://bad')
+
+    assert_nil transaction.safe_logo_url
+  end
 end

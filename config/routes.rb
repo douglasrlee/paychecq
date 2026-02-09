@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   resource :session
   resources :passwords, param: :token
   resources :users, only: [ :new, :create ]
-  resources :transactions
+  resources :transactions, only: [ :index ]
   resource :profile, only: [ :show, :edit, :update ] do
     get :edit_security
     patch :update_security

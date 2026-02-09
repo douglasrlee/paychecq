@@ -1,17 +1,30 @@
-<div id="<%= dom_id transaction %>">
-  <div>
-    <strong>Name:</strong>
-    <%= transaction.name %>
+<div id="<%= dom_id transaction %>" class="flex items-center justify-between gap-4 px-5 py-4 <%= 'opacity-60' if transaction.pending? %>">
+  <% display_name = transaction.merchant_name.presence || transaction.name %>
+  <div class="flex items-center gap-3 min-w-0">
+    <% if transaction.safe_logo_url %>
+      <img src="<%= transaction.safe_logo_url %>" alt="<%= display_name %>" class="h-10 w-10 rounded-full shrink-0" referrerpolicy="no-referrer" loading="lazy" />
+    <% else %>
+      <div class="h-10 w-10 rounded-full bg-base-200 flex items-center justify-center shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      </div>
+    <% end %>
+
+    <div class="min-w-0 flex items-center gap-1.5">
+      <p class="font-medium truncate"><%= display_name %></p>
+
+      <% if transaction.pending? %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      <% end %>
+    </div>
   </div>
 
-  <div>
-    <strong>Amount:</strong>
-    <%= transaction.amount %>
+  <div class="text-right shrink-0">
+    <p class="font-medium <%= transaction.amount.negative? ? 'text-success' : 'text-error' %>">
+      <%= transaction.amount.negative? ? "+" : "" %><%= number_to_currency(transaction.amount.abs) %>
+    </p>
   </div>
-
-  <div>
-    <strong>Pending:</strong>
-    <%= transaction.pending %>
-  </div>
-
 </div>

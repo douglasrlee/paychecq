@@ -1,69 +1,39 @@
 require 'test_helper'
 
 class TransactionsControllerTest < ActionDispatch::IntegrationTest
-  setup do
-    @transaction = transactions(:crest)
+  test 'index requires authentication' do
+    get transactions_url
 
-    sign_in_as(users(:johndoe))
+    assert_redirected_to new_session_path
   end
 
-  test 'should get index' do
+  test 'index shows transactions' do
+    Transaction.create!(name: 'Starbucks', amount: 4.33, date: Date.current, bank_account: bank_accounts(:chase_checking))
+    sign_in_as(users(:johndoe))
+
     get transactions_url
 
     assert_response :success
+    assert_select 'p', text: 'Starbucks'
+    assert_select 'p', text: '$4.33'
   end
 
-  test 'should get new' do
-    get new_transaction_url
+  test 'index shows empty state when no bank linked' do
+    sign_in_as(users(:admin))
+
+    get transactions_url
 
     assert_response :success
+    assert_select 'p', text: 'No bank account linked'
+    assert_select 'a', text: 'Link Account'
   end
 
-  test 'should create transaction' do
-    assert_difference('Transaction.count') do
-      post transactions_url, params: { transaction: { amount: @transaction.amount, name: @transaction.name, pending: @transaction.pending } }
-    end
+  test 'index shows empty state when bank linked but no transactions' do
+    sign_in_as(users(:johndoe))
 
-    assert_redirected_to transaction_url(Transaction.order(:created_at).last)
-  end
-
-  test 'should not create transaction with invalid params' do
-    assert_no_difference('Transaction.count') do
-      post transactions_url, params: { transaction: { amount: nil, name: nil } }
-    end
-
-    assert_response :unprocessable_entity
-  end
-
-  test 'should show transaction' do
-    get transaction_url(@transaction)
+    get transactions_url
 
     assert_response :success
-  end
-
-  test 'should get edit' do
-    get edit_transaction_url(@transaction)
-
-    assert_response :success
-  end
-
-  test 'should update transaction' do
-    patch transaction_url(@transaction), params: { transaction: { amount: @transaction.amount, name: @transaction.name, pending: @transaction.pending } }
-
-    assert_redirected_to transaction_url(@transaction)
-  end
-
-  test 'should not update transaction with invalid params' do
-    patch transaction_url(@transaction), params: { transaction: { amount: nil, name: nil } }
-
-    assert_response :unprocessable_entity
-  end
-
-  test 'should destroy transaction' do
-    assert_difference('Transaction.count', -1) do
-      delete transaction_url(@transaction)
-    end
-
-    assert_redirected_to transactions_url
+    assert_select 'p', text: 'No transactions yet'
   end
 end
