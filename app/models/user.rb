@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :banks, dependent: :destroy
   has_many :bank_accounts, through: :banks
+  has_many :transactions, through: :bank_accounts
   has_many :push_subscriptions, dependent: :destroy
 
   validates :first_name, :last_name, :email_address, presence: true
