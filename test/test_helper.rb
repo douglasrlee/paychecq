@@ -1,4 +1,5 @@
 ENV['RAILS_ENV'] ||= 'test'
+ENV['ALLOWED_EMAILS'] = nil
 
 if ENV['CI']
   require 'simplecov'
