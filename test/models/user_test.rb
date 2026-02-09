@@ -102,6 +102,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'is valid when email is on the allowlist' do
+    original = ENV.fetch('ALLOWED_EMAILS', nil)
     ENV['ALLOWED_EMAILS'] = 'allowed@example.com, other@example.com'
 
     user = User.new(
@@ -113,10 +114,11 @@ class UserTest < ActiveSupport::TestCase
 
     assert user.valid?
   ensure
-    ENV.delete('ALLOWED_EMAILS')
+    ENV['ALLOWED_EMAILS'] = original
   end
 
   test 'is invalid when email is not on the allowlist' do
+    original = ENV.fetch('ALLOWED_EMAILS', nil)
     ENV['ALLOWED_EMAILS'] = 'allowed@example.com'
 
     user = User.new(
@@ -129,11 +131,12 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.valid?
     assert_includes user.errors[:email_address], 'is not authorized to sign up'
   ensure
-    ENV.delete('ALLOWED_EMAILS')
+    ENV['ALLOWED_EMAILS'] = original
   end
 
   test 'is valid with any email when ALLOWED_EMAILS is unset' do
-    ENV.delete('ALLOWED_EMAILS')
+    original = ENV.fetch('ALLOWED_EMAILS', nil)
+    ENV['ALLOWED_EMAILS'] = nil
 
     user = User.new(
       first_name: 'Test',
@@ -143,5 +146,7 @@ class UserTest < ActiveSupport::TestCase
     )
 
     assert user.valid?
+  ensure
+    ENV['ALLOWED_EMAILS'] = original
   end
 end

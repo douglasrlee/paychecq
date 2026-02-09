@@ -11,7 +11,7 @@ class User < ApplicationRecord
   validates :first_name, :last_name, :email_address, presence: true
   validates :email_address, uniqueness: { case_sensitive: false }
   validates :email_address, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validate :email_on_allowlist
+  validate :email_on_allowlist, on: :create
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
