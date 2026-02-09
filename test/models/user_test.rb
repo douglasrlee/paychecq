@@ -100,4 +100,53 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal('downcased@example.com', user.email_address)
   end
+
+  test 'is valid when email is on the allowlist' do
+    original = ENV.fetch('ALLOWED_EMAILS', nil)
+    ENV['ALLOWED_EMAILS'] = 'allowed@example.com, other@example.com'
+
+    user = User.new(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'allowed@example.com',
+      password: 'password'
+    )
+
+    assert user.valid?
+  ensure
+    ENV['ALLOWED_EMAILS'] = original
+  end
+
+  test 'is invalid when email is not on the allowlist' do
+    original = ENV.fetch('ALLOWED_EMAILS', nil)
+    ENV['ALLOWED_EMAILS'] = 'allowed@example.com'
+
+    user = User.new(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'rejected@example.com',
+      password: 'password'
+    )
+
+    assert_not user.valid?
+    assert_includes user.errors[:email_address], 'is not authorized to sign up'
+  ensure
+    ENV['ALLOWED_EMAILS'] = original
+  end
+
+  test 'is valid with any email when ALLOWED_EMAILS is unset' do
+    original = ENV.fetch('ALLOWED_EMAILS', nil)
+    ENV['ALLOWED_EMAILS'] = nil
+
+    user = User.new(
+      first_name: 'Test',
+      last_name: 'User',
+      email_address: 'anyone@example.com',
+      password: 'password'
+    )
+
+    assert user.valid?
+  ensure
+    ENV['ALLOWED_EMAILS'] = original
+  end
 end

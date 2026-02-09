@@ -11,6 +11,19 @@ class User < ApplicationRecord
   validates :first_name, :last_name, :email_address, presence: true
   validates :email_address, uniqueness: { case_sensitive: false }
   validates :email_address, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validate :email_on_allowlist, on: :create
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+
+  private
+
+  def email_on_allowlist
+    allowed = ENV.fetch('ALLOWED_EMAILS', nil)
+
+    return if allowed.blank? || email_address.blank?
+
+    emails = allowed.split(',').map { |e| e.strip.downcase }
+
+    errors.add(:email_address, 'is not authorized to sign up') unless emails.include?(email_address)
+  end
 end
