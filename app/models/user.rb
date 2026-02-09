@@ -20,7 +20,7 @@ class User < ApplicationRecord
   def email_on_allowlist
     allowed = ENV.fetch('ALLOWED_EMAILS', nil)
 
-    return if allowed.blank?
+    return if allowed.blank? || email_address.blank?
 
     emails = allowed.split(',').map { |e| e.strip.downcase }
 
