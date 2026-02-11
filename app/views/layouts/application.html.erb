@@ -46,13 +46,21 @@
   </head>
 
   <body class="h-dvh flex flex-col overflow-hidden">
-    <%= render "components/navigation" unless authentication_page? %>
+    <%= render "components/top_navigation" unless authentication_page? %>
 
-    <main class="relative flex-1 overflow-y-auto overscroll-contain"<% if pull_to_refresh? %> data-controller="pull-to-refresh"<% end %>>
+    <main class="relative flex-1 overflow-y-auto overscroll-contain <%= 'touch-action-pan-y' if swipe_nav? %>"
+      <% controllers = [] %>
+      <% controllers << "pull-to-refresh" if pull_to_refresh? %>
+      <% controllers << "swipe-nav" if swipe_nav? %>
+      <% if controllers.any? %>data-controller="<%= controllers.join(" ") %>"<% end %>
+      <% if swipe_nav? %>data-swipe-nav-paths-value="<%= swipe_nav_paths.to_json %>" data-swipe-nav-current-value="<%= swipe_nav_current_index %>"<% end %>
+    >
       <%= render "components/toast", type: "error", message: flash[:alert] if flash[:alert] %>
       <%= render "components/toast", type: "success", message: flash[:notice] if flash[:notice] %>
 
       <%= yield %>
     </main>
+
+    <%= render "components/bottom_navigation" unless authentication_page? %>
   </body>
 </html>

@@ -9,9 +9,11 @@ import LoadingButtonController from "./loading_button_controller";
 import PlaidLinkController from "./plaid_link_controller";
 import PullToRefreshController from "./pull_to_refresh_controller";
 import PushNotificationController from "./push_notification_controller";
+import SwipeNavController from "./swipe_nav_controller";
 
 application.register("auto-dismiss", AutoDismissController);
 application.register("loading-button", LoadingButtonController);
 application.register("plaid-link", PlaidLinkController);
 application.register("pull-to-refresh", PullToRefreshController);
 application.register("push-notification", PushNotificationController);
+application.register("swipe-nav", SwipeNavController);
