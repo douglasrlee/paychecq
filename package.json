@@ -15,7 +15,7 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.23",
-    "daisyui": "^5.5.17"
+    "daisyui": "^5.5.18"
   },
   "devDependencies": {
     "@codecov/bundle-analyzer": "^1.9.1",
