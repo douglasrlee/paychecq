@@ -1,5 +1,5 @@
 <%# Top navbar — always visible, nav links only on desktop %>
-<div class="navbar shadow-lg">
+<div class="navbar shadow-lg lg:cursor-default" data-controller="scroll-to-top" data-action="click->scroll-to-top#scroll">
   <div class="navbar-start">
     <div>
       <%= image_tag "light/logo.svg", alt: "PayChecQ Logo", class: "ml-2 h-8 dark:hidden" %>
