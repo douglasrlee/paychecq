@@ -117,3 +117,43 @@
   to { transform: rotate(360deg); }
 }
 /* #endregion */
+
+@utility touch-action-pan-y {
+  touch-action: pan-y;
+}
+
+/* #region Swipe navigation */
+.slide-out-left {
+  animation: slideOutLeft 0.2s ease-in forwards;
+}
+
+.slide-out-right {
+  animation: slideOutRight 0.2s ease-in forwards;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.2s ease-out forwards;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.2s ease-out forwards;
+}
+
+@keyframes slideOutLeft {
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes slideOutRight {
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+/* #endregion */

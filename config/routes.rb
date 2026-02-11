@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   resources :users, only: [ :new, :create ]
   resources :transactions, only: [ :index ]
+  resources :expenses, only: [ :index ]
+  resources :goals, only: [ :index ]
   resource :profile, only: [ :show, :edit, :update ] do
     get :edit_security
     patch :update_security

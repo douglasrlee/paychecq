@@ -15,11 +15,27 @@ module ApplicationHelper
     pull_to_refresh_pages.include?("#{controller_name}##{action_name}")
   end
 
+  def swipe_nav?
+    swipe_nav_pages.include?(controller_name)
+  end
+
+  def swipe_nav_paths
+    %w[/transactions /expenses /goals]
+  end
+
+  def swipe_nav_current_index
+    swipe_nav_pages.index(controller_name) || 0
+  end
+
   private
 
   def pull_to_refresh_pages
     %w[
       transactions#index
     ]
+  end
+
+  def swipe_nav_pages
+    %w[transactions expenses goals]
   end
 end
