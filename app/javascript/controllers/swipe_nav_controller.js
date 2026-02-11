@@ -11,7 +11,7 @@ export default class extends Controller {
   };
 
   connect() {
-    this.startX = 0;
+    this.startX = null;
     this.startY = 0;
     this.tracking = false;  // true once we've determined this is a horizontal gesture
     this.locked = false;    // true once we've determined this is a vertical gesture (scroll)
@@ -45,7 +45,7 @@ export default class extends Controller {
   }
 
   onPointerMove(e) {
-    if (this.swiping || this.locked || !this.startX) return;
+    if (this.swiping || this.locked || this.startX === null) return;
 
     const dx = e.touches[0].clientX - this.startX;
     const dy = e.touches[0].clientY - this.startY;
@@ -66,7 +66,7 @@ export default class extends Controller {
   }
 
   onPointerEnd(e) {
-    if (this.swiping || this.locked || !this.startX) { this.startX = 0; return; }
+    if (this.swiping || this.locked || this.startX === null) { this.startX = null; return; }
     const dx = e.changedTouches[0].clientX - this.startX;
     this.resolve(dx);
   }
@@ -88,7 +88,7 @@ export default class extends Controller {
 
   // On release: commit navigation or spring back
   resolve(dx) {
-    this.startX = 0;
+    this.startX = null;
     const direction = dx < 0 ? 1 : -1;
     const targetIndex = this.currentValue + direction;
     const hasTarget = targetIndex >= 0 && targetIndex < this.pathsValue.length;

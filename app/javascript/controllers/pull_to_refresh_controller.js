@@ -19,7 +19,9 @@ export default class extends Controller {
   // If a refresh was in progress before Turbo replaced the page,
   // continues showing the spinner for the remaining duration.
   connect() {
-    this.startY = 0;
+    this.startX = null;
+    this.startY = null;
+    this.locked = false; // true once gesture is determined to be horizontal
     this.hideTimeout = null;
     this.transitionTimeout = null;
 
@@ -77,20 +79,35 @@ export default class extends Controller {
   // and no refresh is currently in progress.
   onStart(e) {
     if (Date.now() < refreshUntil) return; // Refresh already in progress
-    if (this.element.scrollTop === 0) this.startY = e.touches[0].clientY;
+    if (this.element.scrollTop === 0) {
+      this.startX = e.touches[0].clientX;
+      this.startY = e.touches[0].clientY;
+      this.locked = false;
+    }
   }
 
   // Handles touch move. Calculates pull distance and updates the indicator
   // height/opacity proportionally. Prevents default scrolling while pulling
   // down to avoid conflicting scroll behavior.
   onMove(e) {
-    if (!this.startY) return;
+    if (this.startY === null || this.locked) return;
     if (this.element.scrollTop > 0) {
-      this.startY = 0;
+      this.startY = null;
       this.hideIndicator();
       return;
     }
-    const dist = (e.touches[0].clientY - this.startY) * PULL_RESISTANCE;
+
+    const dx = e.touches[0].clientX - this.startX;
+    const dy = e.touches[0].clientY - this.startY;
+
+    // On first significant movement, determine if this is a horizontal gesture
+    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+      this.locked = true; // Horizontal swipe — let swipe-nav handle it
+      this.hideIndicator();
+      return;
+    }
+
+    const dist = dy * PULL_RESISTANCE;
     if (dist > 0) {
       e.preventDefault();
       this.indicator.style.height = `${Math.min(dist, MAX_PULL_HEIGHT)}px`;
@@ -105,7 +122,8 @@ export default class extends Controller {
   // Note: This does not check for unsaved form data before refreshing.
   onEnd() {
     const dist = this.indicator.offsetHeight;
-    this.startY = 0;
+    this.startX = null;
+    this.startY = null;
     if (dist >= this.thresholdValue) {
       this.showSpinner(REFRESH_DURATION);
       refreshUntil = Date.now() + REFRESH_DURATION;
