@@ -20,7 +20,7 @@ module ApplicationHelper
   end
 
   def swipe_nav_paths
-    %w[/transactions /expenses /goals]
+    [ transactions_path, expenses_path, goals_path ]
   end
 
   def swipe_nav_current_index

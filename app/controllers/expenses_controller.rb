@@ -1,3 +1,3 @@
 class ExpensesController < ApplicationController
-  def index = nil
+  def index; end
 end
