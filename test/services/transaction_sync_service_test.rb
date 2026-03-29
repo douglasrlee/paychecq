@@ -6,11 +6,11 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
   PlaidTransaction = Struct.new(
     :transaction_id, :account_id, :name, :amount, :date, :authorized_date,
     :merchant_name, :pending, :payment_channel, :personal_finance_category,
-    :logo_url, :merchant_entity_id, keyword_init: true
+    :logo_url, :merchant_entity_id
   )
 
-  PlaidCategory = Struct.new(:primary, :detailed, keyword_init: true)
-  PlaidRemoved = Struct.new(:transaction_id, keyword_init: true)
+  PlaidCategory = Struct.new(:primary, :detailed)
+  PlaidRemoved = Struct.new(:transaction_id)
 
   setup do
     @user = User.create!(
