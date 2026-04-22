@@ -81,8 +81,10 @@ GEM
       logger
       rack (>= 2.0.0)
     ast (2.4.3)
-    barnes (0.0.9)
-      multi_json (~> 1)
+    barnes (0.1.0)
+      json
+      logger
+      ostruct
       statsd-ruby (~> 1.1)
     base64 (0.3.0)
     bcrypt (3.1.22)
@@ -215,7 +217,6 @@ GEM
     mrml (1.10.0-x86_64-linux)
     mrml (1.10.0-x86_64-linux-musl)
     msgpack (1.8.0)
-    multi_json (1.19.1)
     multipart-post (2.4.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
@@ -506,7 +507,7 @@ CHECKSUMS
   addressable (2.8.9) sha256=cc154fcbe689711808a43601dee7b980238ce54368d23e127421753e46895485
   appsignal (4.8.4) sha256=5c708a41c2913383d19ae581140da1904dbf642b974220d6c1bc4c7fdb1cf667
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
-  barnes (0.0.9) sha256=c2148c3f50a5f2eec0b0d85b00e4cc990fe802b39edb6de0a825dde9cc42649b
+  barnes (0.1.0) sha256=b79b7991ff8492a898f3e933b1521143640f9ff00da12fe3db2ce74555d7f421
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bcrypt (3.1.22) sha256=1f0072e88c2d705d94aff7f2c5cb02eb3f1ec4b8368671e19112527489f29032
   bigdecimal (4.1.0) sha256=6dc07767aa3dc456ccd48e7ae70a07b474e9afd7c5bc576f80bd6da5c8dd6cae
@@ -573,7 +574,6 @@ CHECKSUMS
   mrml (1.10.0-x86_64-linux) sha256=4c4740121fd25440019ee72e48f021c35b5176e1011b86543bed5ba5f6951a4b
   mrml (1.10.0-x86_64-linux-musl) sha256=909e39241451194cef5c50dddaaaaa938a47e755596c8a2fc4502882b3707672
   msgpack (1.8.0) sha256=e64ce0212000d016809f5048b48eb3a65ffb169db22238fb4b72472fecb2d732
-  multi_json (1.19.1) sha256=7aefeff8f2c854bf739931a238e4aea64592845e0c0395c8a7d2eea7fdd631b7
   multipart-post (2.4.1) sha256=9872d03a8e552020ca096adadbf5e3cb1cd1cdd6acd3c161136b8a5737cdb4a8
   net-http (0.9.1) sha256=25ba0b67c63e89df626ed8fac771d0ad24ad151a858af2cc8e6a716ca4336996
   net-imap (0.6.3) sha256=9bab75f876596d09ee7bf911a291da478e0cd6badc54dfb82874855ccc82f2ad
