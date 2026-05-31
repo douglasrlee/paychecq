@@ -206,7 +206,7 @@ GEM
       railties (>= 7.1)
       stimulus-rails
       turbo-rails
-    mjml-rails (4.16.0)
+    mjml-rails (5.0.0)
     mrml (1.10.0-aarch64-linux)
     mrml (1.10.0-aarch64-linux-musl)
     mrml (1.10.0-arm-linux)
@@ -564,7 +564,7 @@ CHECKSUMS
   mini_mime (1.1.5) sha256=8681b7e2e4215f2a159f9400b5816d85e9d8c6c6b491e96a12797e798f8bccef
   minitest (6.0.5) sha256=f007d7246bf4feea549502842cd7c6aba8851cdc9c90ba06de9c476c0d01155c
   mission_control-jobs (1.1.0) sha256=b13da9cde3344fec7c744b79d2a34c3ecd454f45d4d593d4c968ba762315e84c
-  mjml-rails (4.16.0) sha256=9da65572f8edca05091e6ab1d81b3ae0800ddcf1a10dbfff29265fbb53d75630
+  mjml-rails (5.0.0) sha256=93efdd03a0ca2865e777ec151c88a159f72d1b393a70de6477c93b04cf639bfb
   mrml (1.10.0-aarch64-linux) sha256=04f19d6afb5a05e24f46b86eea915f01bc523bcad4cf2facd6789d1a5f8a1734
   mrml (1.10.0-aarch64-linux-musl) sha256=b1d4c12283f8c49806a6a47ac26a55cd947d4dace174f0ca124ec338d41f7cfe
   mrml (1.10.0-arm-linux) sha256=b466262e26720764043c241a82ea562094f5305b655dc811d146f85518c3642e
