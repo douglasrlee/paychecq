@@ -61,7 +61,7 @@ gem 'appsignal'
 gem 'ostruct'
 
 # Send emails with Mailgun
-gem 'mailgun-ruby', '~>1.4.2'
+gem 'mailgun-ruby', '~>1.4.4'
 
 # Plaid API for bank account linking [https://github.com/plaid/plaid-ruby]
 gem 'plaid'
