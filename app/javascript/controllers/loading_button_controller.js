@@ -14,12 +14,14 @@ export default class extends Controller {
   }
 
   showLoading = () => {
-    this.originalContent = this.element.innerHTML;
-    this.element.innerHTML = `<span class="loading loading-spinner loading-sm"></span> ${this.textValue}`;
     this.element.classList.add("pointer-events-none", "opacity-70");
 
-    if (this.element.tagName === "BUTTON") {
-      this.element.disabled = true;
-    }
+    setTimeout(() => {
+      this.originalContent = this.element.innerHTML;
+      this.element.innerHTML = `<span class="loading loading-spinner loading-sm"></span> ${this.textValue}`;
+      if (this.element.tagName === "BUTTON") {
+        this.element.disabled = true;
+      }
+    }, 0);
   };
 }

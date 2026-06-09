@@ -2,6 +2,7 @@ class SettingsController < ApplicationController
   def show
     @bank = Current.user.banks.includes(:bank_accounts).first
     @push_notifications_enabled = Current.user.push_subscriptions.exists?
+    @transaction_name_overrides = Current.user.transaction_name_overrides.order(:match_type, :match_text).to_a
 
     if @bank
       if @bank.needs_attention? && !@bank.disconnected?

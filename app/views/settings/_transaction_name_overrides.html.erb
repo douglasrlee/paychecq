@@ -1,0 +1,15 @@
+<div class="card card-lg bg-base-100 mt-6 w-full max-w-240 shadow-glow">
+  <div class="card-body">
+    <h2 class="card-title">Transaction Name Overrides</h2>
+    <p class="text-sm text-base-content/60 mt-1">Automatically rename transactions based on matching rules. Exact match takes priority over contains.</p>
+
+    <div class="space-y-2 mt-2">
+      <% @transaction_name_overrides.each do |override| %>
+        <%= render override %>
+      <% end %>
+      <p data-empty-state class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if @transaction_name_overrides.any? %>">
+        No overrides yet. Edit a transaction name to add one.
+      </p>
+    </div>
+  </div>
+</div>

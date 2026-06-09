@@ -1,0 +1,15 @@
+<% @matching_transactions.each do |transaction| %>
+  <%= turbo_stream.replace transaction do %>
+    <%= render transaction, transaction_name_overrides: @transaction_name_overrides %>
+  <% end %>
+<% end %>
+
+<% if @transaction %>
+  <%= turbo_stream.replace "transaction_detail" do %>
+    <%= turbo_frame_tag "transaction_detail" do %>
+      <%= render "transactions/transaction_detail",
+          transaction: @transaction,
+          transaction_name_override: @transaction_name_override %>
+    <% end %>
+  <% end %>
+<% end %>

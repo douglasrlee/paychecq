@@ -7,6 +7,19 @@ class Transaction < ApplicationRecord
   validates :amount, numericality: true
   validates :plaid_transaction_id, uniqueness: true, allow_nil: true
 
+  def display_name(transaction_name_overrides = [])
+    applied_override(transaction_name_overrides)&.replacement_name || name
+  end
+
+  def display_label(transaction_name_overrides = [])
+    applied_override(transaction_name_overrides)&.replacement_name || merchant_name.presence || name
+  end
+
+  def applied_override(transaction_name_overrides)
+    transaction_name_overrides.find { |o| o.match_type == 'exact' && name.casecmp?(o.match_text) } ||
+      transaction_name_overrides.find { |o| o.match_type == 'contains' && name.downcase.include?(o.match_text.downcase) }
+  end
+
   def safe_logo_url
     return nil if logo_url.blank?
 
