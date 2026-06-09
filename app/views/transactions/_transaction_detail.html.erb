@@ -1,0 +1,146 @@
+<%# locals: (transaction:, transaction_name_override:) %>
+<% main_name = transaction_name_override ? transaction_name_override.replacement_name : (transaction.merchant_name.presence || transaction.name) %>
+<% show_original = main_name != transaction.name %>
+
+<div class="flex flex-col h-full">
+  <%# Header %>
+  <div class="flex items-center justify-between px-5 py-4 border-b border-base-300 shrink-0">
+    <h2 class="font-semibold text-base">Transaction Details</h2>
+    <%= link_to transactions_path, class: "btn btn-ghost btn-sm btn-circle", data: { action: "click->drawer#close", turbo_frame: "_top" } do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    <% end %>
+  </div>
+
+  <div class="overflow-y-auto flex-1 p-5 space-y-6">
+    <%# Identity %>
+    <div class="flex items-start gap-4">
+      <% if transaction.safe_logo_url %>
+        <img src="<%= transaction.safe_logo_url %>" alt="<%= main_name %>" class="h-14 w-14 rounded-full shrink-0" referrerpolicy="no-referrer" loading="lazy" />
+      <% else %>
+        <div class="h-14 w-14 rounded-full bg-base-200 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        </div>
+      <% end %>
+
+      <div class="min-w-0 flex-1" data-controller="toggle" data-toggle-delay-frame-value="transaction_detail">
+        <div class="flex items-center gap-1.5">
+          <h3 class="text-xl font-bold leading-tight truncate"><%= main_name %></h3>
+          <button data-action="toggle#toggle" class="btn btn-ghost btn-xs btn-circle shrink-0 text-primary hover:text-primary" title="Edit name">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+        </div>
+        <% if show_original %>
+          <p class="text-sm text-base-content/50 mt-0.5 truncate"><%= transaction.name %></p>
+        <% end %>
+
+        <div data-toggle-target="content" class="hidden mt-3">
+          <% if transaction_name_override %>
+            <div class="bg-base-200 rounded-xl p-3">
+              <div class="flex items-center justify-between gap-3">
+                <div class="text-sm">
+                  <span class="badge badge-sm <%= transaction_name_override.match_type == "exact" ? "badge-primary" : "badge-secondary" %> mr-1">
+                    <%= transaction_name_override.match_type == "exact" ? "Exact" : "Contains" %>
+                  </span>
+                  "<%= transaction_name_override.match_text %>"
+                  <span class="text-base-content/40 mx-1">→</span>
+                  "<%= transaction_name_override.replacement_name %>"
+                </div>
+                <%= button_to transaction_name_override_path(transaction_name_override),
+                    method: :delete,
+                    params: { transaction_id: transaction.id },
+                    class: "btn btn-ghost btn-sm text-error shrink-0",
+                    data: { controller: "loading-button", loading_button_text_value: "" },
+                    form: { data: { action: "submit->toggle#close" } } do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                <% end %>
+              </div>
+            </div>
+          <% else %>
+            <% if transaction.merchant_name.present? %>
+              <p class="text-xs text-base-content/50 mb-3">"<%= transaction.merchant_name %>" was automatically set by your bank. Set an override below to rename it.</p>
+            <% end %>
+
+            <%= form_with url: transaction_name_overrides_path, scope: :transaction_name_override, data: { action: "submit->toggle#close" } do |f| %>
+              <%= hidden_field_tag :transaction_id, transaction.id %>
+
+              <div class="flex gap-4 mb-3">
+                <%= render "components/radio_button", form: f, field: :match_type, value: "exact", label: "Exact match", checked: true %>
+                <%= render "components/radio_button", form: f, field: :match_type, value: "contains", label: "Contains" %>
+              </div>
+
+              <div class="space-y-2 mb-3">
+                <div>
+                  <label class="label py-0 mb-1"><span class="label-text text-xs text-base-content/60">Match text</span></label>
+                  <%= f.text_field :match_text, value: transaction.name, class: "input input-bordered input-sm w-full" %>
+                </div>
+                <div>
+                  <label class="label py-0 mb-1"><span class="label-text text-xs text-base-content/60">Rename to</span></label>
+                  <%= f.text_field :replacement_name, class: "input input-bordered input-sm w-full", placeholder: "New display name" %>
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <%= f.button "Save", type: "submit", class: "btn btn-primary btn-sm flex-1", data: { controller: "loading-button", loading_button_text_value: "Saving..." } %>
+                <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Amount %>
+    <div class="text-3xl font-bold <%= transaction.amount.negative? ? 'text-success' : 'text-error' %>">
+      <%= transaction.amount.negative? ? "+" : "" %><%= number_to_currency(transaction.amount.abs) %>
+      <% if transaction.pending? %>
+        <span class="text-base font-normal text-base-content/50 ml-1">Pending</span>
+      <% end %>
+    </div>
+
+    <%# Details %>
+    <div class="space-y-3 text-sm">
+      <% if transaction.date %>
+        <div class="flex justify-between gap-4">
+          <span class="text-base-content/50">Date</span>
+          <span class="font-medium text-right"><%= transaction.date.strftime("%B %-d, %Y") %></span>
+        </div>
+      <% end %>
+
+      <% if transaction.merchant_name.present? && transaction.merchant_name != transaction.name %>
+        <div class="flex justify-between gap-4">
+          <span class="text-base-content/50">Merchant</span>
+          <span class="font-medium text-right"><%= transaction.merchant_name %></span>
+        </div>
+      <% end %>
+
+      <% if transaction.personal_finance_category.present? %>
+        <div class="flex justify-between gap-4">
+          <span class="text-base-content/50">Category</span>
+          <span class="font-medium text-right"><%= transaction.personal_finance_category.gsub("_", " ").titleize %></span>
+        </div>
+      <% end %>
+
+      <% if transaction.payment_channel.present? %>
+        <div class="flex justify-between gap-4">
+          <span class="text-base-content/50">Channel</span>
+          <span class="font-medium text-right"><%= transaction.payment_channel.gsub("_", " ").titleize %></span>
+        </div>
+      <% end %>
+
+      <% if transaction.bank_account %>
+        <div class="flex justify-between gap-4">
+          <span class="text-base-content/50">Account</span>
+          <span class="font-medium text-right"><%= transaction.bank_account.name %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

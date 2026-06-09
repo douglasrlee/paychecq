@@ -1,6 +1,6 @@
 <% content_for :title, "Transactions" %>
 
-<div class="flex flex-col items-center pb-10">
+<div class="flex flex-col items-center pb-10" data-controller="drawer">
   <h2 class="text-2xl font-bold mt-10 w-full max-w-240 px-4">Transactions</h2>
 
   <% if @transactions.any? %>
@@ -22,7 +22,7 @@
           <div class="card bg-base-100 shadow-glow">
             <div class="card-body p-0 gap-0 divide-y divide-base-300">
               <% transactions.each do |transaction| %>
-                <%= render transaction %>
+                <%= render transaction, transaction_name_overrides: @transaction_name_overrides %>
               <% end %>
             </div>
           </div>
@@ -60,4 +60,17 @@
       </div>
     </div>
   <% end %>
+
+  <%# Drawer overlay %>
+  <div data-drawer-target="overlay"
+       class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300"
+       data-action="click->drawer#close">
+  </div>
+
+  <%# Drawer panel %>
+  <div data-drawer-target="panel"
+       class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-base-100 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+    <%= turbo_frame_tag "transaction_detail" do %>
+    <% end %>
+  </div>
 </div>

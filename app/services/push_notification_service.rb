@@ -10,17 +10,18 @@ class PushNotificationService
     return if subscriptions.empty?
 
     if transactions.size <= MAX_INDIVIDUAL_NOTIFICATIONS
-      send_individual_notifications(subscriptions, transactions)
+      transaction_name_overrides = user.transaction_name_overrides.to_a
+      send_individual_notifications(subscriptions, transactions, transaction_name_overrides)
     else
       send_summary_notification(subscriptions, transactions.size)
     end
   end
 
-  def self.send_individual_notifications(subscriptions, transactions)
+  def self.send_individual_notifications(subscriptions, transactions, transaction_name_overrides)
     transactions.each do |transaction|
       payload = {
         title: 'New Transaction',
-        body: "#{transaction.name} — #{ActiveSupport::NumberHelper.number_to_currency(transaction.amount)}",
+        body: "#{transaction.display_label(transaction_name_overrides)} — #{ActiveSupport::NumberHelper.number_to_currency(transaction.amount)}",
         path: '/',
         tag: "transaction-#{transaction.id}"
       }.to_json

@@ -14,7 +14,8 @@ Rails.application.routes.draw do
   resource :session
   resources :passwords, param: :token
   resources :users, only: [ :new, :create ]
-  resources :transactions, only: [ :index ]
+  resources :transactions, only: [ :index, :show ]
+  resources :transaction_name_overrides, only: [ :create, :destroy ]
   resources :expenses, only: [ :index ]
   resources :goals, only: [ :index ]
   resource :profile, only: [ :show, :edit, :update ] do

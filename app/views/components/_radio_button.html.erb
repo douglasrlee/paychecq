@@ -1,0 +1,6 @@
+<%# locals: (form:, field:, value:, label:, checked: false) %>
+
+<label class="flex items-center gap-2 cursor-pointer">
+  <%= form.radio_button field, value, checked: checked, class: "radio radio-sm radio-primary" %>
+  <span class="text-sm"><%= label %></span>
+</label>
