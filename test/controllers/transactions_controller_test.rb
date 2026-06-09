@@ -65,6 +65,16 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'h3', text: 'ExactRenamed'
   end
 
+  test 'show close button links back to transactions index' do
+    transaction = Transaction.create!(name: 'Standalone', amount: 5.00, bank_account: bank_accounts(:chase_checking))
+    sign_in_as(users(:johndoe))
+
+    get transaction_url(transaction)
+
+    assert_response :success
+    assert_select "a[href=\"#{transactions_path}\"][data-action='click->drawer#close']"
+  end
+
   test 'show only finds transactions belonging to the current user' do
     other_user_account = bank_accounts(:wells_checking)
     transaction = Transaction.create!(name: 'Private', amount: 10.00, bank_account: other_user_account)

@@ -92,7 +92,10 @@ class TransactionNameOverridesControllerTest < ActionDispatch::IntegrationTest
     matching = Transaction.create!(name: 'a freshmatch transaction', amount: 12.50, bank_account: bank_accounts(:chase_checking))
 
     post transaction_name_overrides_url,
-         params: { transaction_name_override: { match_type: 'contains', match_text: 'freshmatch', replacement_name: 'Renamed' } },
+         params: {
+           transaction_name_override: { match_type: 'contains', match_text: 'freshmatch', replacement_name: 'Renamed' },
+           transaction_id: matching.id
+         },
          headers: { Accept: 'text/vnd.turbo-stream.html' }
 
     assert_response :success

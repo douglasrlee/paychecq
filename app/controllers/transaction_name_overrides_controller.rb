@@ -26,7 +26,7 @@ class TransactionNameOverridesController < ApplicationController
   end
 
   def destroy
-    @matching_transactions = matching_transactions(@override)
+    @matching_transactions = matching_transactions(@override) if params[:transaction_id].present?
     @override.destroy
     @transaction_name_overrides = Current.user.transaction_name_overrides.to_a
     load_transaction_for_drawer

@@ -6,11 +6,11 @@
   <%# Header %>
   <div class="flex items-center justify-between px-5 py-4 border-b border-base-300 shrink-0">
     <h2 class="font-semibold text-base">Transaction Details</h2>
-    <button class="btn btn-ghost btn-sm btn-circle" data-action="click->drawer#close">
+    <%= link_to transactions_path, class: "btn btn-ghost btn-sm btn-circle", data: { action: "click->drawer#close", turbo_frame: "_top" } do %>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
-    </button>
+    <% end %>
   </div>
 
   <div class="overflow-y-auto flex-1 p-5 space-y-6">

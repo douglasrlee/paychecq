@@ -16,8 +16,11 @@ class Transaction < ApplicationRecord
   end
 
   def applied_override(transaction_name_overrides)
-    transaction_name_overrides.find { |o| o.match_type == 'exact' && name.casecmp?(o.match_text) } ||
-      transaction_name_overrides.find { |o| o.match_type == 'contains' && name.downcase.include?(o.match_text.downcase) }
+    exact = transaction_name_overrides.find { |o| o.match_type == 'exact' && name.casecmp?(o.match_text) }
+    return exact if exact
+
+    downcased_name = name.downcase
+    transaction_name_overrides.find { |o| o.match_type == 'contains' && downcased_name.include?(o.match_text.downcase) }
   end
 
   def safe_logo_url

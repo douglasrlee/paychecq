@@ -13,7 +13,8 @@ export default class extends Controller {
     document.addEventListener("keydown", this.handleEscape)
   }
 
-  close() {
+  close(event) {
+    if (event) event.preventDefault()
     this.overlayTarget.classList.add("opacity-0", "pointer-events-none")
     this.panelTarget.classList.add("translate-x-full")
     document.removeEventListener("keydown", this.handleEscape)
