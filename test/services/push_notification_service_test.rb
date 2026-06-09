@@ -58,6 +58,45 @@ class PushNotificationServiceTest < ActiveSupport::TestCase
     assert_includes first_payload['body'], '$5.50'
   end
 
+  test 'uses override replacement_name in notification body when an override matches' do
+    payloads = []
+    WebPush.define_singleton_method(:payload_send) { |**args| payloads << args }
+
+    transactions = [ build_transaction('a testcontains transaction', 12.50) ]
+    PushNotificationService.notify_new_transactions(user: @user, transactions: transactions)
+
+    body = JSON.parse(payloads.first[:message])['body']
+    assert_includes body, 'ContainsRenamed'
+    assert_not_includes body, 'testcontains transaction'
+  end
+
+  test 'exact-match override takes priority over contains-match override' do
+    @user.transaction_name_overrides.create!(match_type: 'contains', match_text: 'priority', replacement_name: 'WrongPriority')
+    @user.transaction_name_overrides.create!(match_type: 'exact', match_text: 'PRIORITY', replacement_name: 'RightPriority')
+
+    payloads = []
+    WebPush.define_singleton_method(:payload_send) { |**args| payloads << args }
+
+    transactions = [ build_transaction('PRIORITY', 5.50) ]
+    PushNotificationService.notify_new_transactions(user: @user, transactions: transactions)
+
+    body = JSON.parse(payloads.first[:message])['body']
+    assert_includes body, 'RightPriority'
+    assert_not_includes body, 'WrongPriority'
+  end
+
+  test 'falls back to merchant_name when no override matches' do
+    payloads = []
+    WebPush.define_singleton_method(:payload_send) { |**args| payloads << args }
+
+    transactions = [ Transaction.new(id: SecureRandom.uuid, name: 'WHOLEFDS MKT #10', merchant_name: 'Whole Foods', amount: 50.00) ]
+    PushNotificationService.notify_new_transactions(user: @user, transactions: transactions)
+
+    body = JSON.parse(payloads.first[:message])['body']
+    assert_includes body, 'Whole Foods'
+    assert_not_includes body, 'WHOLEFDS'
+  end
+
   test 'sends summary notification for 6+ transactions' do
     payloads = []
     WebPush.define_singleton_method(:payload_send) { |**args| payloads << args }

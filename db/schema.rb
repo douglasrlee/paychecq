@@ -215,7 +215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_120000) do
 
   create_table "transaction_name_overrides", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "match_text", null: false
+    t.citext "match_text", null: false
     t.string "match_type", null: false
     t.string "replacement_name", null: false
     t.datetime "updated_at", null: false

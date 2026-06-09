@@ -65,7 +65,7 @@ class TransactionNameOverridesController < ApplicationController
   end
 
   def safe_return_path
-    return_to = params[:return_to]
-    return_to&.start_with?('/') ? return_to : settings_path
+    return_to = params[:return_to].to_s
+    return_to.start_with?('/') && !return_to.start_with?('//') ? return_to : settings_path
   end
 end

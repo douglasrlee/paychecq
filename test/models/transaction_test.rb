@@ -86,4 +86,60 @@ class TransactionTest < ActiveSupport::TestCase
 
     assert_nil transaction.safe_logo_url
   end
+
+  test 'display_name returns raw name when no overrides match' do
+    transaction = Transaction.new(name: 'AMAZON', amount: 10)
+    overrides = [ build_override('exact', 'STARBUCKS', 'Coffee') ]
+
+    assert_equal 'AMAZON', transaction.display_name(overrides)
+  end
+
+  test 'display_name returns override replacement on exact match (case-insensitive)' do
+    transaction = Transaction.new(name: 'starbucks', amount: 10)
+    overrides = [ build_override('exact', 'STARBUCKS', 'Coffee') ]
+
+    assert_equal 'Coffee', transaction.display_name(overrides)
+  end
+
+  test 'display_name returns override replacement on contains match (case-insensitive)' do
+    transaction = Transaction.new(name: 'Uber 072515 SF**POOL**', amount: 10)
+    overrides = [ build_override('contains', 'uber', 'Rideshare') ]
+
+    assert_equal 'Rideshare', transaction.display_name(overrides)
+  end
+
+  test 'applied_override prefers exact over contains when both match' do
+    transaction = Transaction.new(name: 'STARBUCKS Coffee', amount: 10)
+    contains_override = build_override('contains', 'starbucks', 'CoffeeShop')
+    exact_override = build_override('exact', 'STARBUCKS Coffee', 'Morning Coffee')
+    overrides = [ contains_override, exact_override ]
+
+    assert_equal exact_override, transaction.applied_override(overrides)
+    assert_equal 'Morning Coffee', transaction.display_name(overrides)
+  end
+
+  test 'display_label falls back to merchant_name when no override matches' do
+    transaction = Transaction.new(name: 'WHOLEFDS MKT #10', merchant_name: 'Whole Foods', amount: 10)
+
+    assert_equal 'Whole Foods', transaction.display_label([])
+  end
+
+  test 'display_label falls back to raw name when no override or merchant_name' do
+    transaction = Transaction.new(name: 'CASH WITHDRAWAL', amount: 10)
+
+    assert_equal 'CASH WITHDRAWAL', transaction.display_label([])
+  end
+
+  test 'display_label prefers override over merchant_name' do
+    transaction = Transaction.new(name: 'UBER', merchant_name: 'Uber', amount: 10)
+    overrides = [ build_override('exact', 'UBER', 'Rideshare') ]
+
+    assert_equal 'Rideshare', transaction.display_label(overrides)
+  end
+
+  private
+
+  def build_override(match_type, match_text, replacement_name)
+    TransactionNameOverride.new(match_type: match_type, match_text: match_text, replacement_name: replacement_name)
+  end
 end

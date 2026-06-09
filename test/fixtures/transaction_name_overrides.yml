@@ -1,0 +1,11 @@
+test_exact:
+  user: johndoe
+  match_type: exact
+  match_text: TESTEXACT
+  replacement_name: ExactRenamed
+
+test_contains:
+  user: johndoe
+  match_type: contains
+  match_text: testcontains
+  replacement_name: ContainsRenamed
