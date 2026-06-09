@@ -87,6 +87,19 @@ class TransactionNameOverridesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to settings_path
   end
 
+  test 'create with contains match type updates matching transaction rows' do
+    sign_in_as(@user)
+    matching = Transaction.create!(name: 'a freshmatch transaction', amount: 12.50, bank_account: bank_accounts(:chase_checking))
+
+    post transaction_name_overrides_url,
+         params: { transaction_name_override: { match_type: 'contains', match_text: 'freshmatch', replacement_name: 'Renamed' } },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/#{ActionView::RecordIdentifier.dom_id(matching)}/, response.body)
+    assert_match(/Renamed/, response.body)
+  end
+
   test 'safe_return_path rejects scheme-relative URLs' do
     sign_in_as(@user)
 
