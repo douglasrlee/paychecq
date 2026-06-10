@@ -8,7 +8,7 @@ class TransactionSyncService
     remove_transactions(result[:removed])
 
     bank.update!(transaction_cursor: result[:cursor])
-    bank.bank_accounts.find_each { |account| account.update!(last_synced_at: Time.current) }
+    refresh_bank_accounts(bank, result[:accounts])
 
     SendPushNotificationJob.perform_later(bank.user_id, new_transactions.map(&:id)) if new_transactions.any?
   rescue Plaid::ApiError => error
@@ -71,4 +71,24 @@ class TransactionSyncService
   end
 
   private_class_method :remove_transactions
+
+  # Bump `last_synced_at` on every bank_account, and refresh balances for any
+  # account included in the Plaid sync response.
+  def self.refresh_bank_accounts(bank, plaid_accounts)
+    balances_by_plaid_id = (plaid_accounts || []).index_by(&:account_id)
+    synced_at = Time.current
+
+    bank.bank_accounts.find_each do |account|
+      attrs = { last_synced_at: synced_at }
+
+      if (plaid_account = balances_by_plaid_id[account.plaid_account_id])
+        attrs[:available_balance] = plaid_account.balances.available
+        attrs[:current_balance] = plaid_account.balances.current
+      end
+
+      account.update!(attrs)
+    end
+  end
+
+  private_class_method :refresh_bank_accounts
 end

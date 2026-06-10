@@ -238,7 +238,7 @@ class PlaidServiceTest < ActiveSupport::TestCase
     assert_equal true, result
   end
 
-  test 'sync_transactions returns added, modified, removed and cursor' do
+  test 'sync_transactions returns added, modified, removed, accounts, and cursor' do
     stub_request(:post, 'https://sandbox.plaid.com/transactions/sync')
       .to_return(
         status: 200,
@@ -251,6 +251,8 @@ class PlaidServiceTest < ActiveSupport::TestCase
                      logo_url: nil, merchant_entity_id: nil, iso_currency_code: 'USD' } ],
           modified: [],
           removed: [],
+          accounts: [ { account_id: 'acc_1', name: 'Checking', type: 'depository', subtype: 'checking',
+                        balances: { available: 250.25, current: 275.50, iso_currency_code: 'USD' } } ],
           next_cursor: 'cursor_abc',
           has_more: false,
           request_id: 'req-123'
@@ -263,6 +265,10 @@ class PlaidServiceTest < ActiveSupport::TestCase
     assert_equal 'txn_1', result[:added].first.transaction_id
     assert_empty result[:modified]
     assert_empty result[:removed]
+    assert_equal 1, result[:accounts].length
+    assert_equal 'acc_1', result[:accounts].first.account_id
+    assert_equal 250.25, result[:accounts].first.balances.available
+    assert_equal 275.50, result[:accounts].first.balances.current
     assert_equal 'cursor_abc', result[:cursor]
   end
 
