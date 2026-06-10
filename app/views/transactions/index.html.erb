@@ -29,6 +29,10 @@
         </div>
       <% end %>
     </div>
+
+    <div class="w-full max-w-240 px-4">
+      <%= render "components/pagination", pagy: @transactions_pagy %>
+    </div>
   <% elsif !@has_bank %>
     <div class="card card-lg bg-base-100 mt-4 w-full max-w-240 shadow-glow">
       <div class="card-body">

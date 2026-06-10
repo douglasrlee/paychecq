@@ -1,7 +1,10 @@
 class TransactionsController < ApplicationController
   def index
     @transaction_name_overrides = Current.user.transaction_name_overrides.to_a
-    @transactions = Current.user.transactions.order(Arel.sql('date DESC NULLS LAST, created_at DESC')).load
+    @transactions_pagy, @transactions = pagy(
+      Current.user.transactions.order(Arel.sql('date DESC NULLS LAST, created_at DESC')),
+      limit: 25
+    )
     @has_bank = Current.user.banks.exists? if @transactions.empty?
   end
 
