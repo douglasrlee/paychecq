@@ -5,7 +5,8 @@ class TransactionsController < ApplicationController
       Current.user.transactions.order(Arel.sql('date DESC NULLS LAST, created_at DESC')),
       limit: 25
     )
-    @has_bank = Current.user.banks.exists? if @transactions.empty?
+    @has_bank = Current.user.banks.exists?
+    @available_balance = Current.user.bank_accounts.sum(:available_balance) if @has_bank
   end
 
   def show

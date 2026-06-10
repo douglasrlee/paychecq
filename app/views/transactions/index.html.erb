@@ -3,6 +3,13 @@
 <div class="flex flex-col items-center pb-10">
   <h2 class="text-2xl font-bold mt-10 w-full max-w-240 px-4">Transactions</h2>
 
+  <% if @available_balance %>
+    <div class="w-full max-w-240 px-4 mt-3">
+      <p class="text-sm text-base-content/60">Available Balance</p>
+      <p class="text-3xl font-bold tabular-nums"><%= number_to_currency(@available_balance) %></p>
+    </div>
+  <% end %>
+
   <% if @transactions.any? %>
     <div class="w-full max-w-240 mt-4 space-y-6">
       <% @transactions.group_by(&:date).each do |date, transactions| %>
