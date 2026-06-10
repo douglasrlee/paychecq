@@ -3,7 +3,7 @@
   <% transaction_name_overrides.each do |override| %>
     <%= render override, current_page: transaction_name_overrides_pagy.page %>
   <% end %>
-  <p data-empty-state class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if transaction_name_overrides_pagy.count.positive? %>">
+  <p data-empty-state class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if transaction_name_overrides.any? %>">
     No overrides yet. Edit a transaction name to add one.
   </p>
 </div>
