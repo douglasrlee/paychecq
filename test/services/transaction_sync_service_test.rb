@@ -6,10 +6,11 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
   PlaidTransaction = Struct.new(
     :transaction_id, :account_id, :name, :amount, :date, :authorized_date,
     :merchant_name, :pending, :payment_channel, :personal_finance_category,
-    :logo_url, :merchant_entity_id
+    :logo_url, :merchant_entity_id, :counterparties
   )
 
   PlaidCategory = Struct.new(:primary, :detailed)
+  PlaidCounterparty = Struct.new(:name, :type, :logo_url, :entity_id)
   PlaidRemoved = Struct.new(:transaction_id)
 
   setup do
@@ -60,6 +61,60 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
     assert_equal 'Starbucks', txn.name
     assert_equal 5.50, txn.amount.to_f
     assert_equal @bank_account.id, txn.bank_account_id
+  end
+
+  test 'sync falls back to first counterparty logo_url and merchant_entity_id when top-level fields are nil' do
+    counterparty = PlaidCounterparty.new(
+      name: 'Apple Card',
+      type: 'financial_institution',
+      logo_url: 'https://plaid-counterparty-logos.plaid.com/apple_card_336.png',
+      entity_id: 'entity_apple_card'
+    )
+
+    txn_input = build_plaid_transaction(
+      'txn_fi_1',
+      'WITHDRAWAL ACH APPLECARD GSBANK',
+      122.50,
+      logo_url: nil,
+      merchant_entity_id: nil,
+      counterparties: [ counterparty ]
+    )
+
+    stub_sync_response(added: [ txn_input ])
+
+    TransactionSyncService.sync(bank: @bank)
+
+    txn = Transaction.find_by(plaid_transaction_id: 'txn_fi_1')
+
+    assert_equal 'https://plaid-counterparty-logos.plaid.com/apple_card_336.png', txn.logo_url
+    assert_equal 'entity_apple_card', txn.merchant_entity_id
+  end
+
+  test 'sync prefers top-level logo_url and merchant_entity_id over counterparty values' do
+    counterparty = PlaidCounterparty.new(
+      name: 'Other',
+      type: 'merchant',
+      logo_url: 'https://example.com/counterparty.png',
+      entity_id: 'counterparty_entity'
+    )
+
+    txn_input = build_plaid_transaction(
+      'txn_toplevel_1',
+      'Starbucks',
+      5.50,
+      logo_url: 'https://example.com/top.png',
+      merchant_entity_id: 'top_entity',
+      counterparties: [ counterparty ]
+    )
+
+    stub_sync_response(added: [ txn_input ])
+
+    TransactionSyncService.sync(bank: @bank)
+
+    txn = Transaction.find_by(plaid_transaction_id: 'txn_toplevel_1')
+
+    assert_equal 'https://example.com/top.png', txn.logo_url
+    assert_equal 'top_entity', txn.merchant_entity_id
   end
 
   test 'sync updates existing transactions from modified results' do
@@ -183,10 +238,17 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
 
   private
 
-  def build_plaid_transaction(id, name, amount, account_id: nil)
+  def build_plaid_transaction(id, name, amount, **overrides)
+    attrs = {
+      account_id: @bank_account.plaid_account_id,
+      logo_url: 'https://example.com/logo.png',
+      merchant_entity_id: 'merchant_123',
+      counterparties: nil
+    }.merge(overrides)
+
     PlaidTransaction.new(
       transaction_id: id,
-      account_id: account_id || @bank_account.plaid_account_id,
+      account_id: attrs[:account_id],
       name: name,
       amount: amount,
       date: Date.current,
@@ -195,8 +257,9 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
       pending: false,
       payment_channel: 'in store',
       personal_finance_category: PlaidCategory.new(primary: 'FOOD_AND_DRINK', detailed: 'FOOD_AND_DRINK_COFFEE'),
-      logo_url: 'https://example.com/logo.png',
-      merchant_entity_id: 'merchant_123'
+      logo_url: attrs[:logo_url],
+      merchant_entity_id: attrs[:merchant_entity_id],
+      counterparties: attrs[:counterparties]
     )
   end
 
