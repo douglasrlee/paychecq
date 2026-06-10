@@ -85,8 +85,8 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     get transactions_url
 
     assert_response :success
-    assert_select 'p', text: 'Available Balance'
-    assert_select 'p', text: '$6,000.00'
+    assert_select 'span', text: 'Available Balance:'
+    assert_select 'span', text: '$6,000.00'
   end
 
   test 'index does not render an available balance when no bank is linked' do
@@ -95,7 +95,7 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     get transactions_url
 
     assert_response :success
-    assert_select 'p', text: 'Available Balance', count: 0
+    assert_select 'span', text: 'Available Balance:', count: 0
   end
 
   test 'show requires authentication' do
