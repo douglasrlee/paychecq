@@ -29,20 +29,7 @@ class TransactionSyncService
 
       transaction = Transaction.find_or_initialize_by(plaid_transaction_id: plaid_transaction.transaction_id)
       is_new = transaction.new_record?
-      transaction.assign_attributes(
-        bank_account_id: bank_account_id,
-        name: plaid_transaction.name,
-        amount: plaid_transaction.amount,
-        date: plaid_transaction.date,
-        authorized_date: plaid_transaction.authorized_date,
-        merchant_name: plaid_transaction.merchant_name,
-        pending: plaid_transaction.pending,
-        payment_channel: plaid_transaction.payment_channel,
-        personal_finance_category: plaid_transaction.personal_finance_category&.primary,
-        personal_finance_category_detailed: plaid_transaction.personal_finance_category&.detailed,
-        logo_url: plaid_transaction.logo_url,
-        merchant_entity_id: plaid_transaction.merchant_entity_id
-      )
+      transaction.assign_attributes(attributes_from_plaid(plaid_transaction, bank_account_id))
       transaction.save!
       new_transactions << transaction if is_new
     end
@@ -51,6 +38,29 @@ class TransactionSyncService
   end
 
   private_class_method :upsert_transactions
+
+  # Top-level `logo_url` / `merchant_entity_id` are nil for transactions whose primary counterparty
+  # is a financial institution (e.g. credit-card payments). Fall back to the first counterparty.
+  def self.attributes_from_plaid(plaid_transaction, bank_account_id)
+    counterparty = plaid_transaction.counterparties&.first
+
+    {
+      bank_account_id: bank_account_id,
+      name: plaid_transaction.name,
+      amount: plaid_transaction.amount,
+      date: plaid_transaction.date,
+      authorized_date: plaid_transaction.authorized_date,
+      merchant_name: plaid_transaction.merchant_name,
+      pending: plaid_transaction.pending,
+      payment_channel: plaid_transaction.payment_channel,
+      personal_finance_category: plaid_transaction.personal_finance_category&.primary,
+      personal_finance_category_detailed: plaid_transaction.personal_finance_category&.detailed,
+      logo_url: plaid_transaction.logo_url || counterparty&.logo_url,
+      merchant_entity_id: plaid_transaction.merchant_entity_id || counterparty&.entity_id
+    }
+  end
+
+  private_class_method :attributes_from_plaid
 
   def self.remove_transactions(removed)
     return if removed.empty?
