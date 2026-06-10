@@ -47,6 +47,38 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'p', text: 'ExactRenamed'
   end
 
+  test 'index paginates transactions at 25 per page' do
+    account = bank_accounts(:chase_checking)
+    30.times do |i|
+      Transaction.create!(name: "Txn #{i}", amount: 1.00 + i, date: Date.current - i.days, bank_account: account)
+    end
+    sign_in_as(users(:johndoe))
+
+    get transactions_url
+
+    assert_response :success
+    assert_select 'p', text: 'Txn 0'
+    assert_select 'p', text: 'Txn 24'
+    assert_select 'p', text: 'Txn 25', count: 0
+    assert_select 'a', text: /Next/
+  end
+
+  test 'index second page shows the next batch of transactions' do
+    account = bank_accounts(:chase_checking)
+    30.times do |i|
+      Transaction.create!(name: "Txn #{i}", amount: 1.00 + i, date: Date.current - i.days, bank_account: account)
+    end
+    sign_in_as(users(:johndoe))
+
+    get transactions_url(page: 2)
+
+    assert_response :success
+    assert_select 'p', text: 'Txn 25'
+    assert_select 'p', text: 'Txn 29'
+    assert_select 'p', text: 'Txn 0', count: 0
+    assert_select 'a', text: /Prev/
+  end
+
   test 'show requires authentication' do
     transaction = Transaction.create!(name: 'TESTEXACT', amount: 5.50, bank_account: bank_accounts(:chase_checking))
 
