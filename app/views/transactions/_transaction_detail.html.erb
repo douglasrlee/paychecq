@@ -101,7 +101,7 @@
     <div class="text-3xl font-bold <%= transaction.amount.negative? ? 'text-success' : 'text-error' %>">
       <%= transaction.amount.negative? ? "+" : "" %><%= number_to_currency(transaction.amount.abs) %>
       <% if transaction.pending? %>
-        <span class="text-base font-normal text-base-content/50 ml-1">Pending</span>
+        <span class="badge badge-ghost badge-sm ml-2 align-middle">Pending</span>
       <% end %>
     </div>
 
