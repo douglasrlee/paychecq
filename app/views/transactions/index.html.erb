@@ -3,7 +3,7 @@
 <div class="flex flex-col items-center pb-10">
   <div class="w-full max-w-240 mt-10 px-4 flex items-baseline justify-between gap-3">
     <h2 class="text-2xl font-bold">Transactions</h2>
-    <% if @available_balance %>
+    <% if @has_bank %>
       <div class="text-sm text-right">
         <span class="text-base-content/60">Available Balance:</span>
         <span class="font-semibold tabular-nums ml-1"><%= number_to_currency(@available_balance) %></span>
