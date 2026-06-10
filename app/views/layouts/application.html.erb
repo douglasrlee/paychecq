@@ -45,7 +45,7 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body class="h-dvh flex flex-col overflow-hidden">
+  <body class="h-dvh flex flex-col overflow-hidden" data-controller="drawer">
     <%= render "components/top_navigation" unless authentication_page? %>
 
     <main class="relative flex-1 overflow-y-auto overscroll-contain <%= 'touch-action-pan-y' if swipe_nav? %>"
@@ -62,5 +62,19 @@
     </main>
 
     <%= render "components/bottom_navigation" unless authentication_page? %>
+
+    <%# Drawer overlay (slide-over for transaction detail and similar) %>
+    <div data-drawer-target="overlay"
+         class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 cursor-pointer"
+         data-action="click->drawer#close">
+    </div>
+
+    <%# Drawer panel %>
+    <div data-drawer-target="panel"
+         class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-base-100 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+      <% unless content_for?(:drawer_frame_provided) %>
+        <%= turbo_frame_tag "drawer_content" %>
+      <% end %>
+    </div>
   </body>
 </html>
