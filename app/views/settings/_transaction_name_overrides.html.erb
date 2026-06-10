@@ -4,17 +4,9 @@
     <p class="text-sm text-base-content/60 mt-1">Automatically rename transactions based on matching rules. Exact match takes priority over contains.</p>
 
     <%= turbo_frame_tag "transaction_name_overrides" do %>
-      <% multi_page = @transaction_name_overrides_pagy.pages > 1 %>
-      <div class="space-y-2 mt-2">
-        <% @transaction_name_overrides.each do |override| %>
-          <%= render override %>
-        <% end %>
-        <p data-empty-state <%= 'data-multi-page=true'.html_safe if multi_page %> class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if @transaction_name_overrides_pagy.count.positive? %>">
-          No overrides yet. Edit a transaction name to add one.
-        </p>
-      </div>
-
-      <%= render "components/pagination", pagy: @transaction_name_overrides_pagy %>
+      <%= render "transaction_name_overrides/list",
+          transaction_name_overrides: @transaction_name_overrides,
+          transaction_name_overrides_pagy: @transaction_name_overrides_pagy %>
     <% end %>
   </div>
 </div>

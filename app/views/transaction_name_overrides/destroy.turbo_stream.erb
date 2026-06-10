@@ -13,5 +13,11 @@
     <% end %>
   <% end %>
 <% else %>
-  <%= turbo_stream.remove @override %>
+  <%= turbo_stream.replace "transaction_name_overrides" do %>
+    <%= turbo_frame_tag "transaction_name_overrides" do %>
+      <%= render "transaction_name_overrides/list",
+          transaction_name_overrides: @transaction_name_overrides,
+          transaction_name_overrides_pagy: @transaction_name_overrides_pagy %>
+    <% end %>
+  <% end %>
 <% end %>
