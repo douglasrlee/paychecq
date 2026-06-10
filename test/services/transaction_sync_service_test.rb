@@ -63,7 +63,7 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
     assert_equal @bank_account.id, txn.bank_account_id
   end
 
-  test 'sync falls back to first counterparty logo_url and entity_id when top-level fields are nil' do
+  test 'sync falls back to first counterparty logo_url and merchant_entity_id when top-level fields are nil' do
     counterparty = PlaidCounterparty.new(
       name: 'Apple Card',
       type: 'financial_institution',
@@ -90,7 +90,7 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
     assert_equal 'entity_apple_card', txn.merchant_entity_id
   end
 
-  test 'sync prefers top-level logo_url and entity_id over counterparty values' do
+  test 'sync prefers top-level logo_url and merchant_entity_id over counterparty values' do
     counterparty = PlaidCounterparty.new(
       name: 'Other',
       type: 'merchant',
@@ -238,10 +238,17 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
 
   private
 
-  def build_plaid_transaction(id, name, amount, account_id: nil, logo_url: 'https://example.com/logo.png', merchant_entity_id: 'merchant_123', counterparties: nil) # rubocop:disable Metrics/ParameterLists
+  def build_plaid_transaction(id, name, amount, **overrides)
+    attrs = {
+      account_id: @bank_account.plaid_account_id,
+      logo_url: 'https://example.com/logo.png',
+      merchant_entity_id: 'merchant_123',
+      counterparties: nil
+    }.merge(overrides)
+
     PlaidTransaction.new(
       transaction_id: id,
-      account_id: account_id || @bank_account.plaid_account_id,
+      account_id: attrs[:account_id],
       name: name,
       amount: amount,
       date: Date.current,
@@ -250,9 +257,9 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
       pending: false,
       payment_channel: 'in store',
       personal_finance_category: PlaidCategory.new(primary: 'FOOD_AND_DRINK', detailed: 'FOOD_AND_DRINK_COFFEE'),
-      logo_url: logo_url,
-      merchant_entity_id: merchant_entity_id,
-      counterparties: counterparties
+      logo_url: attrs[:logo_url],
+      merchant_entity_id: attrs[:merchant_entity_id],
+      counterparties: attrs[:counterparties]
     )
   end
 
