@@ -65,6 +65,25 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'h3', text: 'ExactRenamed'
   end
 
+  test 'show does not render a duplicate drawer_content frame in the layout' do
+    transaction = Transaction.create!(name: 'Solo', amount: 10.00, bank_account: bank_accounts(:chase_checking))
+    sign_in_as(users(:johndoe))
+
+    get transaction_url(transaction)
+
+    assert_response :success
+    assert_select 'turbo-frame[id=drawer_content]', count: 1
+  end
+
+  test 'index renders an empty drawer_content frame in the layout' do
+    sign_in_as(users(:johndoe))
+
+    get transactions_url
+
+    assert_response :success
+    assert_select 'turbo-frame[id=drawer_content]', count: 1
+  end
+
   test 'show close button links back to transactions index' do
     transaction = Transaction.create!(name: 'Standalone', amount: 5.00, bank_account: bank_accounts(:chase_checking))
     sign_in_as(users(:johndoe))
