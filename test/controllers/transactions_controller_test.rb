@@ -79,6 +79,25 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'a', text: /Prev/
   end
 
+  test 'index shows aggregated available balance when a bank is linked' do
+    sign_in_as(users(:johndoe))
+
+    get transactions_url
+
+    assert_response :success
+    assert_select 'span', text: 'Available Balance:'
+    assert_select 'span', text: '$6,000.00'
+  end
+
+  test 'index does not render an available balance when no bank is linked' do
+    sign_in_as(users(:admin))
+
+    get transactions_url
+
+    assert_response :success
+    assert_select 'span', text: 'Available Balance:', count: 0
+  end
+
   test 'show requires authentication' do
     transaction = Transaction.create!(name: 'TESTEXACT', amount: 5.50, bank_account: bank_accounts(:chase_checking))
 

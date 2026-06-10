@@ -1,7 +1,15 @@
 <% content_for :title, "Transactions" %>
 
 <div class="flex flex-col items-center pb-10">
-  <h2 class="text-2xl font-bold mt-10 w-full max-w-240 px-4">Transactions</h2>
+  <div class="w-full max-w-240 mt-10 px-4 flex items-baseline justify-between gap-3">
+    <h2 class="text-2xl font-bold">Transactions</h2>
+    <% if @has_bank %>
+      <div class="text-sm text-right">
+        <span class="text-base-content/60">Available Balance:</span>
+        <span class="font-semibold tabular-nums ml-1"><%= number_to_currency(@available_balance) %></span>
+      </div>
+    <% end %>
+  </div>
 
   <% if @transactions.any? %>
     <div class="w-full max-w-240 mt-4 space-y-6">
