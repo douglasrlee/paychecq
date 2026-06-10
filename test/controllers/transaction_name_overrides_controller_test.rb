@@ -67,7 +67,7 @@ class TransactionNameOverridesControllerTest < ActionDispatch::IntegrationTest
            headers: { Accept: 'text/vnd.turbo-stream.html' }
 
     assert_response :success
-    assert_match(/transaction_detail/, response.body)
+    assert_match(/drawer_content/, response.body)
   end
 
   test 'destroy with missing record returns no_content for turbo_stream' do

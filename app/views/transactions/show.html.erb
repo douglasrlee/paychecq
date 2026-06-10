@@ -1,6 +1,6 @@
 <% content_for :title, "Transaction" %>
 
-<%= turbo_frame_tag "transaction_detail" do %>
+<%= turbo_frame_tag "drawer_content" do %>
   <%= render "transactions/transaction_detail",
       transaction: @transaction,
       transaction_name_override: @transaction_name_override %>

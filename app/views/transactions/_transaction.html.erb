@@ -3,7 +3,7 @@
 <%= link_to transaction_path(transaction),
     id: dom_id(transaction),
     class: "flex items-center justify-between gap-4 px-5 py-4 hover:bg-base-200 transition-colors #{transaction.pending? ? 'opacity-60' : ''}",
-    data: { turbo_frame: "transaction_detail", action: "click->drawer#open" } do %>
+    data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
   <div class="flex items-center gap-3 min-w-0">
     <% if transaction.safe_logo_url %>
       <img src="<%= transaction.safe_logo_url %>" alt="<%= label %>" class="h-10 w-10 rounded-full shrink-0" referrerpolicy="no-referrer" loading="lazy" />
