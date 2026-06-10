@@ -120,8 +120,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
   test 'show paginates transaction name overrides to 5 per page' do
     sign_in_as(@user)
-    # johndoe already has 2 fixture overrides; add 5 more so we have 7 total
-    5.times { |i| @user.transaction_name_overrides.create!(match_type: 'exact', match_text: "EXTRA#{i}", replacement_name: "Extra #{i}") }
+    seed_overrides(7)
 
     get settings_path
 
@@ -133,7 +132,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
   test 'show navigates to a later page of transaction name overrides' do
     sign_in_as(@user)
-    5.times { |i| @user.transaction_name_overrides.create!(match_type: 'exact', match_text: "EXTRA#{i}", replacement_name: "Extra #{i}") }
+    seed_overrides(7)
 
     get settings_path(page: 2)
 
@@ -145,7 +144,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
   test 'show clamps out-of-range page parameter to last available page' do
     sign_in_as(@user)
-    5.times { |i| @user.transaction_name_overrides.create!(match_type: 'exact', match_text: "EXTRA#{i}", replacement_name: "Extra #{i}") }
+    seed_overrides(7)
 
     get settings_path(page: 99)
 
@@ -155,6 +154,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
   test 'show does not render pagination when overrides fit in a single page' do
     sign_in_as(@user)
+    seed_overrides(3)
 
     get settings_path
 
@@ -187,5 +187,12 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'p', text: 'No linked account yet'
+  end
+
+  private
+
+  def seed_overrides(total)
+    @user.transaction_name_overrides.destroy_all
+    total.times { |i| @user.transaction_name_overrides.create!(match_type: 'exact', match_text: "SEED#{i}", replacement_name: "Seeded #{i}") }
   end
 end

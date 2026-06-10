@@ -34,7 +34,8 @@ export default class extends Controller {
       .filter(el => el !== this.element)
     if (remaining.length === 0) {
       const empty = parent.querySelector("[data-empty-state]")
-      if (empty) empty.classList.remove("hidden")
+      // Skip if there are other pages — the local DOM count doesn't reflect the global state
+      if (empty && empty.dataset.multiPage !== "true") empty.classList.remove("hidden")
     }
   }
 
