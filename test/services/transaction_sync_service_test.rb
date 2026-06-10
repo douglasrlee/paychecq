@@ -12,6 +12,8 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
   PlaidCategory = Struct.new(:primary, :detailed)
   PlaidCounterparty = Struct.new(:name, :type, :logo_url, :entity_id)
   PlaidRemoved = Struct.new(:transaction_id)
+  PlaidBalances = Struct.new(:available, :current)
+  PlaidAccount = Struct.new(:account_id, :balances)
 
   setup do
     @user = User.create!(
@@ -222,6 +224,49 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test 'sync refreshes balances on bank_accounts present in the response' do
+    @bank_account.update!(available_balance: 100.00, current_balance: 100.00)
+
+    plaid_account = build_plaid_account(@bank_account.plaid_account_id, available: 250.25, current: 275.50)
+
+    stub_sync_response(accounts: [ plaid_account ])
+
+    TransactionSyncService.sync(bank: @bank)
+
+    @bank_account.reload
+
+    assert_equal 250.25, @bank_account.available_balance.to_f
+    assert_equal 275.50, @bank_account.current_balance.to_f
+  end
+
+  test 'sync leaves balances untouched for accounts not in the response' do
+    @bank_account.update!(available_balance: 100.00, current_balance: 100.00)
+
+    stub_sync_response(accounts: [])
+
+    TransactionSyncService.sync(bank: @bank)
+
+    @bank_account.reload
+
+    assert_equal 100.00, @bank_account.available_balance.to_f
+    assert_equal 100.00, @bank_account.current_balance.to_f
+  end
+
+  test 'sync ignores plaid accounts that do not correspond to a bank_account' do
+    @bank_account.update!(available_balance: 100.00, current_balance: 100.00)
+
+    plaid_account = build_plaid_account('unknown_plaid_account_id', available: 999.00, current: 999.00)
+
+    stub_sync_response(accounts: [ plaid_account ])
+
+    TransactionSyncService.sync(bank: @bank)
+
+    @bank_account.reload
+
+    assert_equal 100.00, @bank_account.available_balance.to_f
+    assert_equal 100.00, @bank_account.current_balance.to_f
+  end
+
   test 'sync passes existing cursor to PlaidService' do
     @bank.update!(transaction_cursor: 'existing_cursor')
 
@@ -263,8 +308,12 @@ class TransactionSyncServiceTest < ActiveSupport::TestCase
     )
   end
 
-  def stub_sync_response(added: [], modified: [], removed: [], cursor: 'cursor_abc')
-    result = { added: added, modified: modified, removed: removed, cursor: cursor }
+  def stub_sync_response(added: [], modified: [], removed: [], accounts: [], cursor: 'cursor_abc')
+    result = { added: added, modified: modified, removed: removed, accounts: accounts, cursor: cursor }
     PlaidService.define_singleton_method(:sync_transactions) { |*, **| result }
+  end
+
+  def build_plaid_account(plaid_account_id, available:, current:)
+    PlaidAccount.new(account_id: plaid_account_id, balances: PlaidBalances.new(available: available, current: current))
   end
 end

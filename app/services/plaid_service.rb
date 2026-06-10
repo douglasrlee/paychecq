@@ -85,6 +85,7 @@ class PlaidService
     added = []
     modified = []
     removed = []
+    accounts = []
 
     loop do
       request = Plaid::TransactionsSyncRequest.new(
@@ -96,12 +97,13 @@ class PlaidService
       added.concat(response.added)
       modified.concat(response.modified)
       removed.concat(response.removed)
+      accounts = response.accounts
       cursor = response.next_cursor
 
       break unless response.has_more
     end
 
-    { added: added, modified: modified, removed: removed, cursor: cursor }
+    { added: added, modified: modified, removed: removed, accounts: accounts, cursor: cursor }
   end
 
   def self.verify_webhook(body, plaid_verification_header)
