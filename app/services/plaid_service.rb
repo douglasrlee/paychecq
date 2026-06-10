@@ -97,7 +97,7 @@ class PlaidService
       added.concat(response.added)
       modified.concat(response.modified)
       removed.concat(response.removed)
-      accounts = response.accounts
+      accounts = response.accounts || []
       cursor = response.next_cursor
 
       break unless response.has_more

@@ -76,9 +76,10 @@ class TransactionSyncService
   # account included in the Plaid sync response.
   def self.refresh_bank_accounts(bank, plaid_accounts)
     balances_by_plaid_id = (plaid_accounts || []).index_by(&:account_id)
+    synced_at = Time.current
 
     bank.bank_accounts.find_each do |account|
-      attrs = { last_synced_at: Time.current }
+      attrs = { last_synced_at: synced_at }
 
       if (plaid_account = balances_by_plaid_id[account.plaid_account_id])
         attrs[:available_balance] = plaid_account.balances.available
