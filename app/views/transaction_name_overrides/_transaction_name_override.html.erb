@@ -1,3 +1,4 @@
+<%# locals: (transaction_name_override:, current_page: nil) %>
 <div id="<%= dom_id(transaction_name_override) %>" data-controller="dismissible" class="flex items-center justify-between px-4 py-3 gap-3 bg-base-200 rounded-xl">
   <div class="flex items-center gap-2 min-w-0 flex-1 text-sm">
     <span class="badge badge-sm <%= transaction_name_override.match_type == "exact" ? "badge-primary" : "badge-secondary" %> shrink-0">
@@ -8,7 +9,8 @@
     <span class="font-medium truncate">"<%= transaction_name_override.replacement_name %>"</span>
   </div>
 
-  <%= button_to transaction_name_override_path(transaction_name_override),
+  <% delete_url_params = current_page ? { page: current_page, return_to: settings_path(page: current_page) } : {} %>
+  <%= button_to transaction_name_override_path(transaction_name_override, delete_url_params),
       method: :delete,
       class: "btn btn-ghost btn-sm text-error shrink-0",
       data: { controller: "loading-button", loading_button_text_value: "" } do %>

@@ -28,8 +28,17 @@ class TransactionNameOverridesController < ApplicationController
   def destroy
     @matching_transactions = matching_transactions(@override) if params[:transaction_id].present?
     @override.destroy
-    @transaction_name_overrides = Current.user.transaction_name_overrides.to_a
-    load_transaction_for_drawer
+
+    if params[:transaction_id].present?
+      @transaction_name_overrides = Current.user.transaction_name_overrides.to_a
+      load_transaction_for_drawer
+    else
+      @transaction_name_overrides_pagy, @transaction_name_overrides = pagy(
+        Current.user.transaction_name_overrides.order(:match_type, :match_text),
+        limit: 5,
+        request_path: settings_path
+      )
+    end
 
     respond_to do |format|
       format.turbo_stream

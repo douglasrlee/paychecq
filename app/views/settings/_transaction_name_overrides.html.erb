@@ -3,13 +3,10 @@
     <h2 class="card-title">Transaction Name Overrides</h2>
     <p class="text-sm text-base-content/60 mt-1">Automatically rename transactions based on matching rules. Exact match takes priority over contains.</p>
 
-    <div class="space-y-2 mt-2">
-      <% @transaction_name_overrides.each do |override| %>
-        <%= render override %>
-      <% end %>
-      <p data-empty-state class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if @transaction_name_overrides.any? %>">
-        No overrides yet. Edit a transaction name to add one.
-      </p>
-    </div>
+    <%= turbo_frame_tag "transaction_name_overrides" do %>
+      <%= render "transaction_name_overrides/list",
+          transaction_name_overrides: @transaction_name_overrides,
+          transaction_name_overrides_pagy: @transaction_name_overrides_pagy %>
+    <% end %>
   </div>
 </div>

@@ -70,6 +70,21 @@ class TransactionNameOverridesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/drawer_content/, response.body)
   end
 
+  test 'destroy from settings replaces the transaction_name_overrides frame with the current page' do
+    sign_in_as(@user)
+    @user.transaction_name_overrides.destroy_all
+    overrides = 7.times.map { |i| @user.transaction_name_overrides.create!(match_type: 'exact', match_text: "SEED#{i}", replacement_name: "Seeded #{i}") }
+    target = overrides.last
+
+    delete transaction_name_override_url(target, page: 2),
+           headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/turbo-stream action="replace" target="transaction_name_overrides"/, response.body)
+    assert_match(/Page 2 of 2/, response.body)
+    assert_match(%r{href="/settings\?page=1"}, response.body)
+  end
+
   test 'destroy with missing record returns no_content for turbo_stream' do
     sign_in_as(@user)
 

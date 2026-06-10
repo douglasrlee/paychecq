@@ -118,6 +118,50 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Unable to initialize bank reconnection. Please try again later.', flash[:alert]
   end
 
+  test 'show paginates transaction name overrides to 5 per page' do
+    sign_in_as(@user)
+    seed_overrides(7)
+
+    get settings_path
+
+    assert_response :success
+    assert_select 'div[id^=transaction_name_override_]', count: 5
+    assert_select 'span', text: 'Page 1 of 2'
+    assert_select "a[href='#{settings_path(page: 2)}']"
+  end
+
+  test 'show navigates to a later page of transaction name overrides' do
+    sign_in_as(@user)
+    seed_overrides(7)
+
+    get settings_path(page: 2)
+
+    assert_response :success
+    assert_select 'div[id^=transaction_name_override_]', count: 2
+    assert_select 'span', text: 'Page 2 of 2'
+    assert_select "a[href='#{settings_path(page: 1)}']"
+  end
+
+  test 'show clamps out-of-range page parameter to last available page' do
+    sign_in_as(@user)
+    seed_overrides(7)
+
+    get settings_path(page: 99)
+
+    assert_response :success
+    assert_select 'span', text: 'Page 2 of 2'
+  end
+
+  test 'show does not render pagination when overrides fit in a single page' do
+    sign_in_as(@user)
+    seed_overrides(3)
+
+    get settings_path
+
+    assert_response :success
+    assert_select 'span', text: /Page \d+ of/, count: 0
+  end
+
   test 'show displays empty state when no banks linked' do
     # Mock Plaid link token creation
     stub_request(:post, 'https://sandbox.plaid.com/link/token/create')
@@ -143,5 +187,12 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'p', text: 'No linked account yet'
+  end
+
+  private
+
+  def seed_overrides(total)
+    @user.transaction_name_overrides.destroy_all
+    total.times { |i| @user.transaction_name_overrides.create!(match_type: 'exact', match_text: "SEED#{i}", replacement_name: "Seeded #{i}") }
   end
 end
