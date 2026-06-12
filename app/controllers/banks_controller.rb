@@ -15,7 +15,7 @@ class BanksController < ApplicationController
   end
 
   def destroy
-    bank = Current.user.banks.find(params[:id])
+    bank = Current.user.banks.find(params.expect(:id))
 
     if bank.destroy
       redirect_to settings_path, notice: 'Bank account deleted successfully.'

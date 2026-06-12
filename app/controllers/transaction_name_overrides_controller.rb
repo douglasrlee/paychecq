@@ -49,7 +49,7 @@ class TransactionNameOverridesController < ApplicationController
   private
 
   def set_override
-    @override = Current.user.transaction_name_overrides.find(params[:id])
+    @override = Current.user.transaction_name_overrides.find(params.expect(:id))
   end
 
   def override_params
@@ -59,7 +59,7 @@ class TransactionNameOverridesController < ApplicationController
   def load_transaction_for_drawer
     return if params[:transaction_id].blank?
 
-    @transaction = Current.user.transactions.includes(:bank_account).find(params[:transaction_id])
+    @transaction = Current.user.transactions.includes(:bank_account).find(params.expect(:transaction_id))
     @transaction_name_override = @transaction.applied_override(@transaction_name_overrides)
   end
 
