@@ -10,7 +10,7 @@ class TransactionsController < ApplicationController
   end
 
   def show
-    @transaction = Current.user.transactions.includes(:bank_account).find(params[:id])
+    @transaction = Current.user.transactions.includes(:bank_account).find(params.expect(:id))
     @transaction_name_overrides = Current.user.transaction_name_overrides.to_a
     @transaction_name_override = @transaction.applied_override(@transaction_name_overrides)
   end
