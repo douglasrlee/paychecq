@@ -36,7 +36,7 @@ class TransactionNameOverridesController < ApplicationController
       @transaction_name_overrides_pagy, @transaction_name_overrides = pagy(
         Current.user.transaction_name_overrides.order(:match_type, :match_text),
         limit: 5,
-        request_path: settings_path
+        path: settings_path
       )
     end
 

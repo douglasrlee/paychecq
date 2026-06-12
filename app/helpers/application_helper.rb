@@ -1,6 +1,4 @@
 module ApplicationHelper
-  include Pagy::Frontend
-
   def authentication_page?
     controller_name == 'sessions' ||
       (controller_name == 'users' && action_name == 'new') ||
