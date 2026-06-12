@@ -64,14 +64,17 @@
     <%= render "components/bottom_navigation" unless authentication_page? %>
 
     <%# Drawer overlay (slide-over for transaction detail and similar) %>
+    <%# Hidden when the drawer is full-width (viewport ≤ max-w-md), since there's nothing %>
+    <%# behind the drawer to tint and the iOS PWA safe-area inset would leak through. %>
     <div data-drawer-target="overlay"
-         class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 cursor-pointer"
+         class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 cursor-pointer max-[28rem]:hidden"
          data-action="click->drawer#close">
     </div>
 
-    <%# Drawer panel %>
+    <%# Drawer panel — bg matches <html> so iOS PWA doesn't tint the safe area %>
+    <%# with a different shade when the drawer fills the viewport. %>
     <div data-drawer-target="panel"
-         class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-base-100 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+         class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-base-100 dark:bg-base-300 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
       <% unless content_for?(:drawer_frame_provided) %>
         <%= turbo_frame_tag "drawer_content" %>
       <% end %>

@@ -128,19 +128,6 @@
         </div>
       <% end %>
 
-      <% if transaction.payment_channel.present? %>
-        <div class="flex justify-between gap-4">
-          <span class="text-base-content/50">Channel</span>
-          <span class="font-medium text-right"><%= transaction.payment_channel.gsub("_", " ").titleize %></span>
-        </div>
-      <% end %>
-
-      <% if transaction.bank_account %>
-        <div class="flex justify-between gap-4">
-          <span class="text-base-content/50">Account</span>
-          <span class="font-medium text-right"><%= transaction.bank_account.name %></span>
-        </div>
-      <% end %>
     </div>
   </div>
 </div>
