@@ -1,0 +1,18 @@
+paycheck:
+  user: johndoe
+  name: Paycheck
+  cadence: biweekly
+  start_date: 2026-01-01
+
+side_gig:
+  user: johndoe
+  name: Side gig
+  cadence: monthly
+  start_date: 2026-01-15
+
+janes_paycheck:
+  user: janedoe
+  name: Janes paycheck
+  cadence: semimonthly
+  start_date: 2026-01-01
+  second_day_of_month: 15

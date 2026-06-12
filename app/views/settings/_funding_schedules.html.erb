@@ -1,0 +1,33 @@
+<div class="card card-lg bg-base-100 mt-6 w-full max-w-240 shadow-glow">
+  <div class="card-body">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h2 class="card-title">Funding schedules</h2>
+        <p class="text-sm text-base-content/60 mt-1">When your paychecks land. Expenses will fund automatically from these.</p>
+      </div>
+      <%= link_to "New", new_funding_schedule_path, class: "btn btn-primary btn-sm" %>
+    </div>
+
+    <% if @funding_schedules.any? %>
+      <ul class="divide-y divide-base-300 mt-4">
+        <% @funding_schedules.each do |schedule| %>
+          <li class="py-3 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <p class="font-medium truncate"><%= schedule.name %></p>
+              <p class="text-sm text-base-content/60">
+                <%= schedule.cadence.titleize %> · Next:
+                <%= schedule.next_occurrences(count: 2).map { |d| d.strftime("%b %-d") }.join(", ") %>
+              </p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <%= link_to "Edit", edit_funding_schedule_path(schedule), class: "btn btn-ghost btn-sm" %>
+              <%= button_to "Delete", funding_schedule_path(schedule), method: :delete, class: "btn btn-ghost btn-sm text-error", form: { data: { turbo_confirm: "Delete this funding schedule?" } } %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-sm text-base-content/50 mt-4 italic">No funding schedules yet.</p>
+    <% end %>
+  </div>
+</div>

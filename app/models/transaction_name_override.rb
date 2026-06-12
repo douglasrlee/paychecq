@@ -1,4 +1,5 @@
 class TransactionNameOverride < ApplicationRecord
+  has_paper_trail
   belongs_to :user
 
   MATCH_TYPES = %w[exact contains].freeze

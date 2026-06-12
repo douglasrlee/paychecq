@@ -1,0 +1,103 @@
+require 'test_helper'
+
+class FundingScheduleTest < ActiveSupport::TestCase
+  setup { @user = users(:johndoe) }
+
+  def build(**attrs)
+    @user.funding_schedules.new(name: 'Paycheck', cadence: 'biweekly', start_date: Date.new(2026, 1, 1), **attrs)
+  end
+
+  test 'is valid with required fields' do
+    assert build.valid?
+  end
+
+  test 'requires name' do
+    schedule = build(name: nil)
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:name], "can't be blank"
+  end
+
+  test 'requires cadence in allowed set' do
+    schedule = build(cadence: 'fortnightly')
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:cadence], 'is not included in the list'
+  end
+
+  test 'requires start_date' do
+    schedule = build(start_date: nil)
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:start_date], "can't be blank"
+  end
+
+  test 'semimonthly requires second_day_of_month' do
+    schedule = build(cadence: 'semimonthly')
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:second_day_of_month], "can't be blank"
+  end
+
+  test 'semimonthly second_day_of_month must be in 1..31' do
+    schedule = build(cadence: 'semimonthly', second_day_of_month: 32)
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:second_day_of_month], 'is not included in the list'
+  end
+
+  test 'non-semimonthly cadences reject second_day_of_month' do
+    schedule = build(cadence: 'monthly', second_day_of_month: 15)
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:second_day_of_month], 'must be blank'
+  end
+
+  test 'weekly next_occurrences advances by 7 days' do
+    schedule = build(cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+
+    dates = schedule.next_occurrences(count: 3, after: Date.new(2026, 1, 1))
+
+    assert_equal [ Date.new(2026, 1, 1), Date.new(2026, 1, 8), Date.new(2026, 1, 15) ], dates
+  end
+
+  test 'biweekly next_occurrences advances by 14 days' do
+    schedule = build(cadence: 'biweekly', start_date: Date.new(2026, 1, 1))
+
+    dates = schedule.next_occurrences(count: 3, after: Date.new(2026, 1, 15))
+
+    assert_equal [ Date.new(2026, 1, 15), Date.new(2026, 1, 29), Date.new(2026, 2, 12) ], dates
+  end
+
+  test 'monthly next_occurrences clamps to last day of short months' do
+    schedule = build(cadence: 'monthly', start_date: Date.new(2026, 1, 31))
+
+    dates = schedule.next_occurrences(count: 4, after: Date.new(2026, 1, 31))
+
+    assert_equal [ Date.new(2026, 1, 31), Date.new(2026, 2, 28), Date.new(2026, 3, 31), Date.new(2026, 4, 30) ], dates
+  end
+
+  test 'semimonthly next_occurrences alternates between the two days' do
+    schedule = build(cadence: 'semimonthly', start_date: Date.new(2026, 1, 1), second_day_of_month: 15)
+
+    dates = schedule.next_occurrences(count: 4, after: Date.new(2026, 1, 1))
+
+    assert_equal [ Date.new(2026, 1, 1), Date.new(2026, 1, 15), Date.new(2026, 2, 1), Date.new(2026, 2, 15) ], dates
+  end
+
+  test 'semimonthly clamps the late day to last of month in February' do
+    schedule = build(cadence: 'semimonthly', start_date: Date.new(2026, 1, 15), second_day_of_month: 31)
+
+    dates = schedule.next_occurrences(count: 4, after: Date.new(2026, 1, 15))
+
+    assert_equal [ Date.new(2026, 1, 15), Date.new(2026, 1, 31), Date.new(2026, 2, 15), Date.new(2026, 2, 28) ], dates
+  end
+
+  test 'next_occurrences skips past dates and starts at first occurrence on or after after' do
+    schedule = build(cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+
+    dates = schedule.next_occurrences(count: 2, after: Date.new(2026, 2, 1))
+
+    assert_equal [ Date.new(2026, 2, 5), Date.new(2026, 2, 12) ], dates
+  end
+end
