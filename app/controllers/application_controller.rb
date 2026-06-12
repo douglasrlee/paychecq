@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   include Authentication
-  include Pagy::Backend
+  include Pagy::Method
 
   before_action :set_paper_trail_whodunnit
 
@@ -12,4 +12,15 @@ class ApplicationController < ActionController::Base
     Current.user&.id
   end
   # :nocov:
+
+  protected
+
+  # Preserve the pagy 9.x `overflow: :last_page` behavior by clamping
+  # an out-of-range page request back to the last available page.
+  def pagy(collection, **options)
+    pagy, records = super
+    return [ pagy, records ] unless pagy.respond_to?(:last) && pagy.page > pagy.last
+
+    super(collection, **options.merge(page: pagy.last))
+  end
 end
