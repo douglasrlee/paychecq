@@ -33,6 +33,18 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_equal Date.new(2026, 2, 5), schedule.start_date
   end
 
+  test 'create responds with turbo_stream that replaces the settings list' do
+    sign_in_as(@user)
+
+    post funding_schedules_url,
+         params: { funding_schedule: { name: 'Paycheck 2', cadence: 'biweekly', start_date: '2026-02-05' } },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/turbo-stream action="replace" target="funding_schedules"/, response.body)
+    assert_match(/Paycheck 2/, response.body)
+  end
+
   test 'create persists a semimonthly schedule with second day' do
     sign_in_as(@user)
 
@@ -98,6 +110,19 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to settings_path
     assert_equal 'Renamed', schedule.reload.name
+  end
+
+  test 'update responds with turbo_stream that replaces the settings list' do
+    sign_in_as(@user)
+    schedule = funding_schedules(:paycheck)
+
+    patch funding_schedule_url(schedule),
+          params: { funding_schedule: { name: 'Renamed', cadence: 'biweekly', start_date: '2026-01-01' } },
+          headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/turbo-stream action="replace" target="funding_schedules"/, response.body)
+    assert_match(/Renamed/, response.body)
   end
 
   test 'update re-renders edit on invalid input' do

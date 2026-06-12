@@ -5,10 +5,11 @@ class FundingSchedule < ApplicationRecord
   CADENCES = %w[weekly biweekly semimonthly monthly].freeze
 
   validates :name, presence: true, length: { maximum: 100 }
-  validates :cadence, inclusion: { in: CADENCES }
+  validates :cadence, inclusion: { in: CADENCES, message: 'must be selected' }
   validates :start_date, presence: true
   validates :second_day_of_month,
-            presence: true, inclusion: { in: 1..31 },
+            presence: true,
+            inclusion: { in: 1..31, message: 'must be a day from 1 to 31' },
             if: :semimonthly?
   validates :second_day_of_month, absence: true, unless: :semimonthly?
 

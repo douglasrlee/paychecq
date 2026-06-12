@@ -22,7 +22,7 @@ class FundingScheduleTest < ActiveSupport::TestCase
     schedule = build(cadence: 'fortnightly')
 
     assert_not schedule.valid?
-    assert_includes schedule.errors[:cadence], 'is not included in the list'
+    assert_includes schedule.errors[:cadence], 'must be selected'
   end
 
   test 'requires start_date' do
@@ -43,7 +43,7 @@ class FundingScheduleTest < ActiveSupport::TestCase
     schedule = build(cadence: 'semimonthly', second_day_of_month: 32)
 
     assert_not schedule.valid?
-    assert_includes schedule.errors[:second_day_of_month], 'is not included in the list'
+    assert_includes schedule.errors[:second_day_of_month], 'must be a day from 1 to 31'
   end
 
   test 'non-semimonthly cadences reject second_day_of_month' do

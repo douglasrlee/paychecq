@@ -6,7 +6,7 @@ class FundingSchedulesController < ApplicationController
   end
 
   def new
-    @funding_schedule = Current.user.funding_schedules.new
+    @funding_schedule = Current.user.funding_schedules.new(start_date: Date.current)
   end
 
   def edit; end
@@ -15,7 +15,11 @@ class FundingSchedulesController < ApplicationController
     @funding_schedule = Current.user.funding_schedules.new(funding_schedule_params)
 
     if @funding_schedule.save
-      redirect_to settings_path, notice: 'Funding schedule created'
+      load_schedules_for_settings
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to settings_path, notice: 'Funding schedule created' }
+      end
     else
       render :new, status: :unprocessable_content
     end
@@ -23,7 +27,11 @@ class FundingSchedulesController < ApplicationController
 
   def update
     if @funding_schedule.update(funding_schedule_params)
-      redirect_to settings_path, notice: 'Funding schedule updated'
+      load_schedules_for_settings
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to settings_path, notice: 'Funding schedule updated' }
+      end
     else
       render :edit, status: :unprocessable_content
     end
@@ -38,6 +46,10 @@ class FundingSchedulesController < ApplicationController
 
   def set_funding_schedule
     @funding_schedule = Current.user.funding_schedules.find(params.expect(:id))
+  end
+
+  def load_schedules_for_settings
+    @funding_schedules = Current.user.funding_schedules.order(:name)
   end
 
   def funding_schedule_params

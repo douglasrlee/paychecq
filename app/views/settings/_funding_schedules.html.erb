@@ -1,33 +1,69 @@
-<div class="card card-lg bg-base-100 mt-6 w-full max-w-240 shadow-glow">
-  <div class="card-body">
-    <div class="flex items-center justify-between gap-4">
-      <div>
-        <h2 class="card-title">Funding schedules</h2>
-        <p class="text-sm text-base-content/60 mt-1">When your paychecks land. Expenses will fund automatically from these.</p>
-      </div>
-      <%= link_to "New", new_funding_schedule_path, class: "btn btn-primary btn-sm" %>
-    </div>
-
-    <% if @funding_schedules.any? %>
-      <ul class="divide-y divide-base-300 mt-4">
-        <% @funding_schedules.each do |schedule| %>
-          <li class="py-3 flex items-center justify-between gap-4">
-            <div class="min-w-0">
-              <p class="font-medium truncate"><%= schedule.name %></p>
-              <p class="text-sm text-base-content/60">
-                <%= schedule.cadence.titleize %> · Next:
-                <%= schedule.next_occurrences(count: 2).map { |d| d.strftime("%b %-d") }.join(", ") %>
-              </p>
-            </div>
-            <div class="flex gap-2 shrink-0">
-              <%= link_to "Edit", edit_funding_schedule_path(schedule), class: "btn btn-ghost btn-sm" %>
-              <%= button_to "Delete", funding_schedule_path(schedule), method: :delete, class: "btn btn-ghost btn-sm text-error", form: { data: { turbo_confirm: "Delete this funding schedule?" } } %>
-            </div>
-          </li>
+<%= turbo_frame_tag "funding_schedules", class: "block w-full max-w-240 mt-6" do %>
+  <div class="card card-lg bg-base-100 shadow-glow">
+    <div class="card-body">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h2 class="card-title">Funding schedules</h2>
+          <p class="text-sm text-base-content/60 mt-1">When your paychecks land. Expenses will fund automatically from these.</p>
+        </div>
+        <%= link_to new_funding_schedule_path,
+              class: "btn btn-primary btn-sm btn-circle",
+              "aria-label": "New funding schedule",
+              data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
         <% end %>
-      </ul>
-    <% else %>
-      <p class="text-sm text-base-content/50 mt-4 italic">No funding schedules yet.</p>
-    <% end %>
+      </div>
+
+      <div class="space-y-2 mt-2">
+        <% @funding_schedules.each do |schedule| %>
+          <div class="relative">
+            <div class="flex items-center px-4 py-3 gap-3 bg-base-200 rounded-xl pr-24">
+              <div class="min-w-0 flex-1">
+                <p class="font-medium truncate"><%= schedule.name %></p>
+                <p class="text-sm text-base-content/60 truncate">
+                  <%= schedule.cadence.titleize %> · Next:
+                  <%= schedule.next_occurrences(count: 2).map { |d| d.strftime("%b %-d") }.join(", ") %>
+                </p>
+              </div>
+            </div>
+            <%= link_to edit_funding_schedule_path(schedule),
+                  class: "btn btn-ghost btn-sm text-primary absolute right-12 top-1/2 -translate-y-1/2",
+                  "aria-label": "Edit #{schedule.name}",
+                  data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            <% end %>
+            <label for="delete_funding_schedule_<%= schedule.id %>"
+                   class="btn btn-ghost btn-sm text-error absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
+                   aria-label="Delete <%= schedule.name %>">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </label>
+
+            <input type="checkbox" id="delete_funding_schedule_<%= schedule.id %>" class="modal-toggle" />
+            <div class="modal modal-bottom sm:modal-middle">
+              <div class="modal-box">
+                <h3 class="text-lg font-bold">Delete funding schedule</h3>
+                <p class="py-4">Are you sure you want to delete "<%= schedule.name %>"?</p>
+                <div class="modal-action">
+                  <label for="delete_funding_schedule_<%= schedule.id %>" class="btn">Cancel</label>
+                  <%= link_to "Delete", funding_schedule_path(schedule),
+                        data: { turbo_method: :delete, controller: "loading-button", loading_button_text_value: "Deleting..." },
+                        class: "btn btn-error" %>
+                </div>
+              </div>
+              <label class="modal-backdrop" for="delete_funding_schedule_<%= schedule.id %>">Close</label>
+            </div>
+          </div>
+        <% end %>
+        <p class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if @funding_schedules.any? %>">
+          No funding schedules yet.
+        </p>
+      </div>
+    </div>
   </div>
-</div>
+<% end %>

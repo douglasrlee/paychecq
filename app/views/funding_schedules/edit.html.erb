@@ -1,6 +1,6 @@
 <% content_for :title, "Edit funding schedule" %>
+<% content_for :drawer_frame_provided, true %>
 
-<div class="max-w-md mx-auto p-6">
-  <h1 class="text-2xl font-bold mb-6">Edit funding schedule</h1>
+<%= turbo_frame_tag "drawer_content" do %>
   <%= render "form", funding_schedule: @funding_schedule %>
-</div>
+<% end %>
