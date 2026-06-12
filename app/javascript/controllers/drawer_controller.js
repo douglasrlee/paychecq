@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 const LOADING_TEMPLATE = `
-  <div class="flex items-center justify-center h-full p-12">
+  <div class="absolute inset-0 flex items-center justify-center">
     <span class="loading loading-spinner loading-lg text-base-content/40"></span>
   </div>
 `
