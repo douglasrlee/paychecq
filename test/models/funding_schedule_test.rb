@@ -53,6 +53,13 @@ class FundingScheduleTest < ActiveSupport::TestCase
     assert_includes schedule.errors[:second_day_of_month], 'must be blank'
   end
 
+  test 'semimonthly rejects second_day_of_month equal to start_date day' do
+    schedule = build(cadence: 'semimonthly', start_date: Date.new(2026, 1, 15), second_day_of_month: 15)
+
+    assert_not schedule.valid?
+    assert_includes schedule.errors[:second_day_of_month], "must be different from the first occurrence's day"
+  end
+
   test 'weekly next_occurrences advances by 7 days' do
     schedule = build(cadence: 'weekly', start_date: Date.new(2026, 1, 1))
 

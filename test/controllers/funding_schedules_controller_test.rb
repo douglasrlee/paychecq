@@ -61,10 +61,13 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
   test 'create strips second_day_of_month when cadence is not semimonthly' do
     sign_in_as(@user)
 
-    post funding_schedules_url, params: {
-      funding_schedule: { name: 'Weekly', cadence: 'weekly', start_date: '2026-02-05', second_day_of_month: '15' }
-    }
+    assert_difference '@user.funding_schedules.count', 1 do
+      post funding_schedules_url, params: {
+        funding_schedule: { name: 'Weekly', cadence: 'weekly', start_date: '2026-02-05', second_day_of_month: '15' }
+      }
+    end
 
+    assert_redirected_to settings_path
     schedule = @user.funding_schedules.order(:created_at).last
     assert_nil schedule.second_day_of_month
   end

@@ -12,6 +12,7 @@ class FundingSchedule < ApplicationRecord
             inclusion: { in: 1..31, message: 'must be a day from 1 to 31' },
             if: :semimonthly?
   validates :second_day_of_month, absence: true, unless: :semimonthly?
+  validate :second_day_differs_from_start_day, if: :semimonthly?
 
   def semimonthly? = cadence == 'semimonthly'
 
@@ -28,6 +29,13 @@ class FundingSchedule < ApplicationRecord
   end
 
   private
+
+  def second_day_differs_from_start_day
+    return if second_day_of_month.blank? || start_date.blank?
+    return if start_date.day != second_day_of_month
+
+    errors.add(:second_day_of_month, "must be different from the first occurrence's day")
+  end
 
   def first_occurrence_on_or_after(target)
     cursor = start_date
