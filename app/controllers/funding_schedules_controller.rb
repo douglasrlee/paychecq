@@ -21,7 +21,7 @@ class FundingSchedulesController < ApplicationController
         format.html { redirect_to settings_path, notice: 'Funding schedule created' }
       end
     else
-      render :new, status: :unprocessable_content
+      render :new, status: :unprocessable_content, formats: [ :html ]
     end
   end
 
@@ -33,7 +33,7 @@ class FundingSchedulesController < ApplicationController
         format.html { redirect_to settings_path, notice: 'Funding schedule updated' }
       end
     else
-      render :edit, status: :unprocessable_content
+      render :edit, status: :unprocessable_content, formats: [ :html ]
     end
   end
 

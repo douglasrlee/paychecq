@@ -84,6 +84,17 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
+  test 'create with turbo_stream accept and invalid input returns html form' do
+    sign_in_as(@user)
+
+    post funding_schedules_url,
+         params: { funding_schedule: { name: '', cadence: 'biweekly', start_date: '2026-02-05' } },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :unprocessable_content
+    assert_select 'form'
+  end
+
   test 'edit renders the form for the user-owned schedule' do
     sign_in_as(@user)
     schedule = funding_schedules(:paycheck)
@@ -137,6 +148,18 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_content
+  end
+
+  test 'update with turbo_stream accept and invalid input returns html form' do
+    sign_in_as(@user)
+    schedule = funding_schedules(:paycheck)
+
+    patch funding_schedule_url(schedule),
+          params: { funding_schedule: { name: '', cadence: 'biweekly', start_date: '2026-01-01' } },
+          headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :unprocessable_content
+    assert_select 'form'
   end
 
   test 'destroy removes the schedule' do
