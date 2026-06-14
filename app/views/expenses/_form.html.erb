@@ -27,7 +27,7 @@
           <%= f.number_field :amount,
                 value: expense.amount,
                 step: 0.01,
-                min: 0,
+                min: 0.01,
                 class: "input w-full #{expense.errors[:amount].any? ? 'input-error' : ''}" %>
           <% if expense.errors[:amount].any? %>
             <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:amount).first %></p>

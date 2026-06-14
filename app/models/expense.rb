@@ -14,7 +14,7 @@ class Expense < ApplicationRecord
   # Returns the next date this expense is due on or after `after`.
   # Not used by the index in Phase 2 — kept for the allocation engine.
   def next_due_on(after: Date.current)
-    return nil if due_on.blank? || cadence.blank?
+    return nil if due_on.blank? || CADENCES.exclude?(cadence)
 
     cursor = due_on
     cursor = advance(cursor) while cursor < after
