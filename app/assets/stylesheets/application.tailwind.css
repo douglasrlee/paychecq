@@ -78,6 +78,39 @@
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Match the drawer overlay's tint and 300ms fade so confirm-modals
+   feel consistent with the slide-over drawer (bg-black/50). daisyUI's
+   default opacity transition is 100ms which reads as a flash. */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+  opacity: 0;
+  transition: visibility 0.3s allow-discrete, background-color 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.modal-toggle:checked + .modal {
+  opacity: 1;
+  transition: visibility 0s allow-discrete, background-color 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Make native date / time inputs inherit text color so the format
+   placeholder isn't rendered in Safari's default blue under dark theme. */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color-scheme: light dark;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: inherit;
+}
+
 /* #region Pull-to-refresh */
 .pull-to-refresh-indicator {
   height: 0;

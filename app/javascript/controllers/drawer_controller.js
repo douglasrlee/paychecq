@@ -32,6 +32,12 @@ export default class extends Controller {
     if (event.key === "Escape") this.close()
   }
 
+  // Opt-in via data-action="turbo:submit-end->drawer#closeOnSuccess" on forms
+  // inside the drawer that should dismiss the panel after a successful save.
+  closeOnSuccess(event) {
+    if (event.detail.success) this.close()
+  }
+
   // Clear stale content and show a loading state before Turbo fetches the new frame.
   // Runs synchronously in the click handler, so it lands before Turbo's navigation.
   resetContent() {

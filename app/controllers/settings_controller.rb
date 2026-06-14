@@ -8,6 +8,8 @@ class SettingsController < ApplicationController
       limit: 5
     )
 
+    @funding_schedules = Current.user.funding_schedules.order(:name)
+
     if @bank
       if @bank.needs_attention? && !@bank.disconnected?
         @plaid_update_link_token = PlaidService.create_update_link_token(@bank)

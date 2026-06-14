@@ -1,0 +1,82 @@
+<%# locals: (funding_schedule:) %>
+
+<div class="flex flex-col h-full" data-controller="funding-schedule-form">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-base-300 shrink-0">
+    <h2 class="font-semibold text-base">
+      <%= funding_schedule.persisted? ? "Edit funding schedule" : "New funding schedule" %>
+    </h2>
+    <button type="button" class="btn btn-ghost btn-sm btn-circle" data-action="click->drawer#close" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <%= form_with model: funding_schedule,
+        html: { novalidate: true },
+        class: "flex flex-col flex-1 min-h-0",
+        data: { action: "turbo:submit-end->drawer#closeOnSuccess" } do |f| %>
+    <div class="overflow-y-auto flex-1 p-5 space-y-6">
+      <%= render "components/text_input", form: f, resource: funding_schedule, field: :name, required: true, autofocus: true %>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend justify-start gap-0">
+          Cadence<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <div class="relative">
+          <div class="flex flex-col gap-2">
+            <% FundingSchedule::CADENCES.each do |cadence| %>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <%= f.radio_button :cadence, cadence,
+                      checked: funding_schedule.cadence == cadence,
+                      class: "radio radio-sm radio-primary",
+                      data: { action: "change->funding-schedule-form#cadenceChanged", funding_schedule_form_target: "cadenceInput" } %>
+                <span class="text-sm"><%= cadence.titleize %></span>
+              </label>
+            <% end %>
+          </div>
+          <% if funding_schedule.errors[:cadence].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= funding_schedule.errors.full_messages_for(:cadence).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend justify-start gap-0">
+          First occurrence<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <div class="relative">
+          <%= f.date_field :start_date,
+                value: funding_schedule.start_date,
+                class: "input w-full #{funding_schedule.errors[:start_date].any? ? 'input-error' : ''}" %>
+          <% if funding_schedule.errors[:start_date].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= funding_schedule.errors.full_messages_for(:start_date).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="fieldset hidden" data-funding-schedule-form-target="secondDayField">
+        <legend class="fieldset-legend justify-start gap-0">
+          Second day of month<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <p class="text-xs text-base-content/60 mb-2">For schedules that pay twice a month, the other day (e.g., 15 for a 1st-and-15th schedule).</p>
+        <div class="relative">
+          <%= f.number_field :second_day_of_month,
+                value: funding_schedule.second_day_of_month,
+                min: 1, max: 31,
+                class: "input w-full #{funding_schedule.errors[:second_day_of_month].any? ? 'input-error' : ''}" %>
+          <% if funding_schedule.errors[:second_day_of_month].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= funding_schedule.errors.full_messages_for(:second_day_of_month).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="border-t border-base-300 p-5 shrink-0">
+      <div class="flex gap-2">
+        <%= f.submit class: "btn btn-primary flex-1", data: { controller: "loading-button" } %>
+        <button type="button" class="btn btn-ghost flex-1" data-action="click->drawer#close">Cancel</button>
+      </div>
+    </div>
+  <% end %>
+</div>

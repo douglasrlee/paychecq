@@ -162,6 +162,28 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'span', text: /Page \d+ of/, count: 0
   end
 
+  test 'show renders funding schedules section' do
+    sign_in_as(@user)
+
+    get settings_path
+
+    assert_response :success
+    assert_select 'h2.card-title', text: 'Funding schedules'
+    # johndoe has two fixture schedules
+    assert_select 'p', text: 'Paycheck'
+    assert_select 'p', text: 'Side gig'
+  end
+
+  test 'show shows empty state when user has no funding schedules' do
+    sign_in_as(@user)
+    @user.funding_schedules.destroy_all
+
+    get settings_path
+
+    assert_response :success
+    assert_select 'p', text: 'No funding schedules yet.'
+  end
+
   test 'show displays empty state when no banks linked' do
     # Mock Plaid link token creation
     stub_request(:post, 'https://sandbox.plaid.com/link/token/create')
