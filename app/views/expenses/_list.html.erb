@@ -14,14 +14,23 @@
         </div>
       </div>
     </div>
-  <% else %>
+  <% elsif expenses.any? %>
     <div class="space-y-2">
       <% expenses.each do |expense| %>
         <%= render expense %>
       <% end %>
-      <p class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if expenses.any? %>">
-        No expenses yet.
-      </p>
+    </div>
+  <% else %>
+    <div class="card card-lg bg-base-100 shadow-glow">
+      <div class="card-body">
+        <div class="text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <p class="mt-4 text-base-content/60">No expenses yet</p>
+          <p class="mt-1 text-sm text-base-content/40">Tap + to add your first one.</p>
+        </div>
+      </div>
     </div>
   <% end %>
 <% end %>

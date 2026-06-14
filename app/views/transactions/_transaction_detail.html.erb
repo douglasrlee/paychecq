@@ -1,4 +1,4 @@
-<%# locals: (transaction:, transaction_name_override:) %>
+<%# locals: (transaction:, transaction_name_override:, failed_override: nil) %>
 <% main_name = transaction_name_override ? transaction_name_override.replacement_name : (transaction.merchant_name.presence || transaction.name) %>
 <% show_original = main_name != transaction.name %>
 
@@ -42,8 +42,8 @@
           <p class="text-sm text-base-content/50 mt-0.5 truncate"><%= transaction.name %></p>
         <% end %>
 
-        <div data-toggle-target="content" class="hidden mt-3">
-          <% if transaction_name_override %>
+        <div data-toggle-target="content" class="<%= 'hidden' unless failed_override %> mt-3">
+          <% if transaction_name_override&.persisted? %>
             <div class="bg-base-200 rounded-xl p-3">
               <div class="flex items-center justify-between gap-3">
                 <div class="text-sm">
@@ -71,22 +71,34 @@
               <p class="text-xs text-base-content/50 mb-3">"<%= transaction.merchant_name %>" was automatically set by your bank. Set an override below to rename it.</p>
             <% end %>
 
-            <%= form_with url: transaction_name_overrides_path, scope: :transaction_name_override, data: { action: "submit->toggle#close" } do |f| %>
+            <% match_type_value = failed_override&.match_type || "exact" %>
+            <%= form_with url: transaction_name_overrides_path, scope: :transaction_name_override, html: { novalidate: true }, data: { action: "turbo:submit-end->toggle#closeOnSuccess" } do |f| %>
               <%= hidden_field_tag :transaction_id, transaction.id %>
 
               <div class="flex gap-4 mb-3">
-                <%= render "components/radio_button", form: f, field: :match_type, value: "exact", label: "Exact match", checked: true %>
-                <%= render "components/radio_button", form: f, field: :match_type, value: "contains", label: "Contains" %>
+                <%= render "components/radio_button", form: f, field: :match_type, value: "exact", label: "Exact match", checked: match_type_value == "exact" %>
+                <%= render "components/radio_button", form: f, field: :match_type, value: "contains", label: "Contains", checked: match_type_value == "contains" %>
               </div>
 
               <div class="space-y-2 mb-3">
                 <div>
                   <label class="label py-0 mb-1"><span class="label-text text-xs text-base-content/60">Match text</span></label>
-                  <%= f.text_field :match_text, value: transaction.name, class: "input input-bordered input-sm w-full" %>
+                  <%= f.text_field :match_text,
+                        value: failed_override&.match_text || transaction.name,
+                        class: "input input-bordered input-sm w-full #{'input-error' if failed_override&.errors&.[](:match_text)&.any?}" %>
+                  <% if failed_override&.errors&.[](:match_text)&.any? %>
+                    <p class="text-error text-xs mt-1"><%= failed_override.errors.full_messages_for(:match_text).first %></p>
+                  <% end %>
                 </div>
                 <div>
                   <label class="label py-0 mb-1"><span class="label-text text-xs text-base-content/60">Rename to</span></label>
-                  <%= f.text_field :replacement_name, class: "input input-bordered input-sm w-full", placeholder: "New display name" %>
+                  <%= f.text_field :replacement_name,
+                        value: failed_override&.replacement_name,
+                        class: "input input-bordered input-sm w-full #{'input-error' if failed_override&.errors&.[](:replacement_name)&.any?}",
+                        placeholder: "New display name" %>
+                  <% if failed_override&.errors&.[](:replacement_name)&.any? %>
+                    <p class="text-error text-xs mt-1"><%= failed_override.errors.full_messages_for(:replacement_name).first %></p>
+                  <% end %>
                 </div>
               </div>
 

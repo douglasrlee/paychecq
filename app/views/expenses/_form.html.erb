@@ -40,25 +40,33 @@
           Funding schedule<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
         </legend>
         <div class="relative">
-          <%= f.collection_select :funding_schedule_id, funding_schedules, :id, :name,
-                { prompt: 'Select a funding schedule' },
-                class: "select w-full #{expense.errors[:funding_schedule_id].any? ? 'select-error' : ''}" %>
+          <div class="flex flex-col gap-2">
+            <% funding_schedules.each do |schedule| %>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <%= f.radio_button :funding_schedule_id, schedule.id, checked: expense.funding_schedule_id == schedule.id, class: "radio radio-sm radio-primary" %>
+                <span class="text-sm"><%= schedule.name %></span>
+              </label>
+            <% end %>
+            <%= link_to "Manage funding schedules", settings_path, class: "link link-primary text-sm mt-1 self-start", data: { turbo_frame: "_top" } %>
+          </div>
           <% if expense.errors[:funding_schedule_id].any? %>
             <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:funding_schedule_id).first %></p>
           <% end %>
         </div>
       </fieldset>
 
+      <% cadence_hints = { 'monthly' => 'Every month', 'quarterly' => 'Every 3 months', 'semiannual' => 'Every 6 months', 'yearly' => 'Every 12 months' } %>
+      <% cadence_labels = { 'monthly' => 'Monthly', 'quarterly' => 'Quarterly', 'semiannual' => 'Semiannually', 'yearly' => 'Yearly' } %>
       <fieldset class="fieldset">
         <legend class="fieldset-legend justify-start gap-0">
           Cadence<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
         </legend>
         <div class="relative">
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col items-start gap-2">
             <% Expense::CADENCES.each do |cadence| %>
-              <label class="flex items-center gap-2 cursor-pointer">
+              <label class="flex items-center gap-2 cursor-pointer tooltip tooltip-right" data-tip="<%= cadence_hints[cadence] %>">
                 <%= f.radio_button :cadence, cadence, checked: expense.cadence == cadence, class: "radio radio-sm radio-primary" %>
-                <span class="text-sm"><%= cadence == 'semiannual' ? 'Semiannually (every 6 months)' : cadence.titleize %></span>
+                <span class="text-sm"><%= cadence_labels[cadence] %></span>
               </label>
             <% end %>
           </div>
