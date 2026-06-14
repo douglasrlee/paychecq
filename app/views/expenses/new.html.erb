@@ -1,0 +1,6 @@
+<% content_for :title, "New expense" %>
+<% content_for :drawer_frame_provided, true %>
+
+<%= turbo_frame_tag "drawer_content" do %>
+  <%= render "form", expense: @expense, funding_schedules: @funding_schedules %>
+<% end %>

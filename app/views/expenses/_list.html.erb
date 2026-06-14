@@ -1,0 +1,36 @@
+<%# locals: (expenses:, funding_schedules:) %>
+
+<%= turbo_frame_tag "expenses", class: "block w-full max-w-240 mt-4 px-4" do %>
+  <% if funding_schedules.none? %>
+    <div class="card card-lg bg-base-100 shadow-glow">
+      <div class="card-body">
+        <div class="text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="mt-4 text-base-content/60">Add a funding schedule first</p>
+          <p class="mt-1 text-sm text-base-content/40">Expenses are funded by your paychecks — set one up to get started.</p>
+          <%= link_to "Go to settings", settings_path, class: "btn btn-primary btn-sm mt-4", data: { turbo_frame: "_top" } %>
+        </div>
+      </div>
+    </div>
+  <% elsif expenses.any? %>
+    <div class="space-y-2">
+      <% expenses.each do |expense| %>
+        <%= render expense %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card card-lg bg-base-100 shadow-glow">
+      <div class="card-body">
+        <div class="text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <p class="mt-4 text-base-content/60">No expenses yet</p>
+          <p class="mt-1 text-sm text-base-content/40">Tap + to add your first one.</p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

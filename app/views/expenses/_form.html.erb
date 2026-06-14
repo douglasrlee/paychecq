@@ -1,0 +1,101 @@
+<%# locals: (expense:, funding_schedules:) %>
+
+<div class="flex flex-col h-full">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-base-300 shrink-0">
+    <h2 class="font-semibold text-base">
+      <%= expense.persisted? ? "Edit expense" : "New expense" %>
+    </h2>
+    <button type="button" class="btn btn-ghost btn-sm btn-circle" data-action="click->drawer#close" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <%= form_with model: expense,
+        html: { novalidate: true },
+        class: "flex flex-col flex-1 min-h-0",
+        data: { action: "turbo:submit-end->drawer#closeOnSuccess" } do |f| %>
+    <div class="overflow-y-auto flex-1 p-5 space-y-6">
+      <%= render "components/text_input", form: f, resource: expense, field: :name, required: true, autofocus: true %>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend justify-start gap-0">
+          Amount<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <div class="relative">
+          <%= f.number_field :amount,
+                value: expense.amount,
+                step: 0.01,
+                min: 0.01,
+                class: "input w-full #{expense.errors[:amount].any? ? 'input-error' : ''}" %>
+          <% if expense.errors[:amount].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:amount).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend justify-start gap-0">
+          Funding schedule<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <div class="relative">
+          <div class="flex flex-col gap-2">
+            <% funding_schedules.each do |schedule| %>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <%= f.radio_button :funding_schedule_id, schedule.id, checked: expense.funding_schedule_id == schedule.id, class: "radio radio-sm radio-primary" %>
+                <span class="text-sm"><%= schedule.name %></span>
+              </label>
+            <% end %>
+            <%= link_to "Manage funding schedules", settings_path, class: "link link-primary text-sm mt-1 self-start", data: { turbo_frame: "_top" } %>
+          </div>
+          <% if expense.errors[:funding_schedule_id].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:funding_schedule_id).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <% cadence_hints = { 'monthly' => 'Every month', 'quarterly' => 'Every 3 months', 'semiannual' => 'Every 6 months', 'yearly' => 'Every 12 months' } %>
+      <% cadence_labels = { 'monthly' => 'Monthly', 'quarterly' => 'Quarterly', 'semiannual' => 'Semiannually', 'yearly' => 'Yearly' } %>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend justify-start gap-0">
+          Cadence<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <div class="relative">
+          <div class="flex flex-col items-start gap-2">
+            <% Expense::CADENCES.each do |cadence| %>
+              <label class="flex items-center gap-2 cursor-pointer tooltip tooltip-right" data-tip="<%= cadence_hints[cadence] %>">
+                <%= f.radio_button :cadence, cadence, checked: expense.cadence == cadence, class: "radio radio-sm radio-primary" %>
+                <span class="text-sm"><%= cadence_labels[cadence] %></span>
+              </label>
+            <% end %>
+          </div>
+          <% if expense.errors[:cadence].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:cadence).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend justify-start gap-0">
+          Next due<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+        </legend>
+        <div class="relative">
+          <%= f.date_field :due_on,
+                value: expense.due_on,
+                class: "input w-full #{expense.errors[:due_on].any? ? 'input-error' : ''}" %>
+          <% if expense.errors[:due_on].any? %>
+            <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:due_on).first %></p>
+          <% end %>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="border-t border-base-300 p-5 shrink-0">
+      <div class="flex gap-2">
+        <%= f.submit class: "btn btn-primary flex-1", data: { controller: "loading-button" } %>
+        <button type="button" class="btn btn-ghost flex-1" data-action="click->drawer#close">Cancel</button>
+      </div>
+    </div>
+  <% end %>
+</div>

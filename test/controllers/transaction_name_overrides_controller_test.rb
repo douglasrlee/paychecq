@@ -45,6 +45,24 @@ class TransactionNameOverridesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/can't be blank/, flash[:alert])
   end
 
+  test 'create with turbo_stream accept and invalid input replaces drawer_content with form errors' do
+    sign_in_as(@user)
+    transaction = Transaction.create!(name: 'NETFLIX', amount: 5.50, bank_account: bank_accounts(:chase_checking))
+
+    assert_no_difference '@user.transaction_name_overrides.count' do
+      post transaction_name_overrides_url,
+           params: {
+             transaction_id: transaction.id,
+             transaction_name_override: { match_type: 'exact', match_text: '', replacement_name: 'Amazon' }
+           },
+           headers: { Accept: 'text/vnd.turbo-stream.html' }
+    end
+
+    assert_response :unprocessable_content
+    assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
+    assert_match(/Match text can&#39;t be blank/, response.body)
+  end
+
   test 'destroy removes the override' do
     sign_in_as(@user)
     override = transaction_name_overrides(:test_exact)

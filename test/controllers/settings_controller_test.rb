@@ -176,6 +176,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
 
   test 'show shows empty state when user has no funding schedules' do
     sign_in_as(@user)
+    @user.expenses.destroy_all
     @user.funding_schedules.destroy_all
 
     get settings_path
