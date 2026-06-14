@@ -29,6 +29,12 @@ export default class extends Controller {
     }
   }
 
+  // Used by forms inside the toggle so the toggle only collapses on a
+  // successful submit; on validation errors the form stays open.
+  closeOnSuccess(event) {
+    if (event.detail.success) this.close()
+  }
+
   // Delay stream renders targeting our frame so the close animation finishes first
   handleStreamRender(event) {
     if (!this.delayFrameValue) return

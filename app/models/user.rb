@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :push_subscriptions, dependent: :destroy
   has_many :transaction_name_overrides, dependent: :destroy
   has_many :funding_schedules, dependent: :destroy
+  has_many :expenses, dependent: :destroy
 
   validates :first_name, :last_name, :email_address, presence: true
   validates :email_address, uniqueness: { case_sensitive: false }

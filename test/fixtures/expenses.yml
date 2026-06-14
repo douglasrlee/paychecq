@@ -1,0 +1,23 @@
+netflix:
+  user: johndoe
+  funding_schedule: paycheck
+  name: Netflix
+  amount: 15.99
+  cadence: monthly
+  due_on: 2026-02-14
+
+car_insurance:
+  user: johndoe
+  funding_schedule: paycheck
+  name: Car insurance
+  amount: 480.00
+  cadence: semiannual
+  due_on: 2026-04-01
+
+janes_rent:
+  user: janedoe
+  funding_schedule: janes_paycheck
+  name: Rent
+  amount: 1500.00
+  cadence: monthly
+  due_on: 2026-02-01

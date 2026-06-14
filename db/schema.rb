@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_12_033429) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_14_025740) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -49,6 +49,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_033429) do
     t.uuid "user_id", null: false
     t.index ["plaid_item_id"], name: "index_banks_on_plaid_item_id", unique: true
     t.index ["user_id"], name: "index_banks_on_user_id", unique: true
+  end
+
+  create_table "expenses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.string "cadence", null: false
+    t.datetime "created_at", null: false
+    t.date "due_on", null: false
+    t.uuid "funding_schedule_id", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["funding_schedule_id"], name: "index_expenses_on_funding_schedule_id"
+    t.index ["user_id"], name: "index_expenses_on_user_id"
   end
 
   create_table "funding_schedules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -281,6 +294,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_033429) do
 
   add_foreign_key "bank_accounts", "banks"
   add_foreign_key "banks", "users"
+  add_foreign_key "expenses", "funding_schedules"
+  add_foreign_key "expenses", "users"
   add_foreign_key "funding_schedules", "users"
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "sessions", "users"

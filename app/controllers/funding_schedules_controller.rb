@@ -38,8 +38,15 @@ class FundingSchedulesController < ApplicationController
   end
 
   def destroy
-    @funding_schedule.destroy
-    redirect_to settings_path, notice: 'Funding schedule deleted', status: :see_other
+    if @funding_schedule.destroy
+      load_schedules_for_settings
+      respond_to do |format|
+        format.turbo_stream { render :update }
+        format.html { redirect_to settings_path, status: :see_other }
+      end
+    else
+      redirect_to settings_path, alert: @funding_schedule.errors.full_messages.to_sentence, status: :see_other
+    end
   end
 
   private

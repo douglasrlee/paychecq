@@ -21,7 +21,15 @@ class TransactionNameOverridesController < ApplicationController
         format.html { redirect_to transactions_path, status: :see_other }
       end
     else
-      redirect_to safe_return_path, status: :see_other, alert: @override.errors.full_messages.to_sentence
+      message = @override.errors.full_messages.to_sentence
+      # Filter out the unsaved @override that .new added to the association cache,
+      # otherwise applied_override would resolve to it and main_name goes blank.
+      @transaction_name_overrides = Current.user.transaction_name_overrides.to_a.select(&:persisted?)
+      load_transaction_for_drawer
+      respond_to do |format|
+        format.turbo_stream { render :create_failed, status: :unprocessable_content }
+        format.html { redirect_to safe_return_path, status: :see_other, alert: message }
+      end
     end
   end
 

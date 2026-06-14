@@ -71,6 +71,10 @@
          data-action="click->drawer#close">
     </div>
 
+    <%# Toast container — outside any turbo-frame so turbo_stream actions can %>
+    <%# prepend toasts that aren't discarded by frame-scoped responses. %>
+    <div id="toasts" class="contents"></div>
+
     <%# Drawer panel — bg matches <html> so iOS PWA doesn't tint the safe area %>
     <%# with a different shade when the drawer fills the viewport. %>
     <div data-drawer-target="panel"

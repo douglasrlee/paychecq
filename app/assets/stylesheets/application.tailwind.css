@@ -78,21 +78,53 @@
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Match the drawer overlay's tint and 300ms fade so confirm-modals
-   feel consistent with the slide-over drawer (bg-black/50). daisyUI's
-   default opacity transition is 100ms which reads as a flash. */
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
+/* daisyUI swaps :root's background to a tinted gradient when a modal opens
+   (--page-scroll-bg-on). With our layout's bg-base-300 dark page, that
+   "tinted" variant is actually LIGHTER than the page itself — so the user
+   sees the page brighten before darkening. Disable that swap. */
+:root, [data-theme] {
+  --page-scroll-bg-on: var(--root-bg);
 }
 
+/* Backdrop behaves exactly like the drawer overlay: opacity 0→1 over 300ms
+   with Tailwind's default ease, constant bg-black/50. The modal-box is held
+   invisible until the backdrop finishes fading in, then it appears — same
+   spirit as the drawer where the panel arrives after / alongside its overlay
+   rather than ghosting through it. */
 .modal {
+  background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transition: visibility 0.3s allow-discrete, background-color 0.3s ease-out, opacity 0.3s ease-out;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s allow-discrete;
 }
 
 .modal-toggle:checked + .modal {
+  background-color: rgba(0, 0, 0, 0.5);
   opacity: 1;
-  transition: visibility 0s allow-discrete, background-color 0.3s ease-out, opacity 0.3s ease-out;
+  pointer-events: auto;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s allow-discrete;
+}
+
+.modal-backdrop {
+  background-color: transparent;
+}
+
+.modal-box {
+  translate: 0;
+  scale: 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0s, visibility 0s;
+}
+
+.modal-toggle:checked + .modal .modal-box {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease-out 0.3s, visibility 0s 0.3s;
+}
+
+.modal-bottom .modal-box {
+  translate: 0;
 }
 
 /* Make native date / time inputs inherit text color so the format
