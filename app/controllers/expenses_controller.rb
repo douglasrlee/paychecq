@@ -53,7 +53,11 @@ class ExpensesController < ApplicationController
 
   def destroy
     @expense.destroy
-    redirect_to expenses_path, notice: 'Expense deleted', status: :see_other
+    load_expenses_for_index
+    respond_to do |format|
+      format.turbo_stream { render :update }
+      format.html { redirect_to expenses_path, status: :see_other }
+    end
   end
 
   private
