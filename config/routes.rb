@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   resources :transactions, only: [ :index, :show ]
   resources :transaction_name_overrides, only: [ :create, :destroy ]
   resources :funding_schedules, only: [ :new, :create, :edit, :update, :destroy ]
-  resources :expenses, only: [ :index ]
+  resources :expenses
   resources :goals, only: [ :index ]
   resource :profile, only: [ :show, :edit, :update ] do
     get :edit_security

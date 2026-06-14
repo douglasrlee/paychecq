@@ -164,7 +164,7 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
 
   test 'destroy removes the schedule' do
     sign_in_as(@user)
-    schedule = funding_schedules(:paycheck)
+    schedule = funding_schedules(:side_gig) # no expenses attached
 
     assert_difference '@user.funding_schedules.count', -1 do
       delete funding_schedule_url(schedule)
@@ -182,5 +182,17 @@ class FundingSchedulesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to settings_path
+  end
+
+  test 'destroy is blocked when expenses are tied to the schedule' do
+    sign_in_as(@user)
+    schedule = funding_schedules(:paycheck) # has Netflix + Car insurance fixtures
+
+    assert_no_difference 'FundingSchedule.count' do
+      delete funding_schedule_url(schedule)
+    end
+
+    follow_redirect!
+    assert_match(/dependent expenses/i, flash[:alert] || @response.body)
   end
 end
