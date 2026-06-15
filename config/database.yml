@@ -15,12 +15,11 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # max_connections must cover every thread that may acquire a connection on
-  # this process: Puma threads on web; Solid Queue worker + dispatcher threads
-  # plus Solid Cable's polling thread (single-DB mode) on the worker. DB_POOL
-  # lets the worker dyno set a larger pool than the web dyno without bumping
-  # RAILS_MAX_THREADS (which also drives Puma).
-  max_connections: <%= ENV.fetch("DB_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5).to_i + 2 } %>
+  # Pool size for this process. Must cover every thread that may acquire a
+  # connection: Puma threads on web; Solid Queue worker + dispatcher threads
+  # plus Solid Cable's polling thread (single-DB mode) on the worker. Set
+  # DB_POOL per dyno (e.g., 5 on web, 7 on worker for a 3-thread queue config).
+  max_connections: <%= ENV.fetch("DB_POOL", 5) %>
   checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 5) %>
 
 
