@@ -24,7 +24,6 @@ default: &default
   # dispatcher + Solid Cable polling, so set DATABASE_POOL only there to override
   # without bumping Puma threads on web (Heroku config vars are app-wide).
   max_connections: <%= ENV.fetch("DATABASE_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5) } %>
-  checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 5) %>
 
 
 development:
