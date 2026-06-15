@@ -15,11 +15,12 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # Pool size for this process. Must cover every thread that may acquire a
-  # connection: Puma threads on web; Solid Queue worker + dispatcher threads
-  # plus Solid Cable's polling thread (single-DB mode) on the worker. Set
-  # DB_POOL per dyno (e.g., 5 on web, 7 on worker for a 3-thread queue config).
-  max_connections: <%= ENV.fetch("DB_POOL", 5) %>
+  # max_connections defaults to RAILS_MAX_THREADS (the Rails-generator default
+  # and the Heroku buildpack convention), which sizes Puma correctly on the
+  # web dyno. The worker dyno's real demand comes from Solid Queue threads +
+  # dispatcher + Solid Cable polling, not Puma, so set DB_POOL only there
+  # to override without affecting Puma's thread count on web.
+  max_connections: <%= ENV.fetch("DB_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5) } %>
   checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 5) %>
 
 
