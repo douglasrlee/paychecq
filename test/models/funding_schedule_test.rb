@@ -100,6 +100,35 @@ class FundingScheduleTest < ActiveSupport::TestCase
     assert_equal [ Date.new(2026, 1, 15), Date.new(2026, 1, 31), Date.new(2026, 2, 15), Date.new(2026, 2, 28) ], dates
   end
 
+  test 'materialize_events_through creates events from start_date through end_date when clean' do
+    schedule = @user.funding_schedules.create!(name: 'New paycheck', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+
+    events = schedule.materialize_events_through(end_date: Date.new(2026, 1, 22))
+
+    occurs_on = events.map(&:occurs_on)
+    assert_equal [ Date.new(2026, 1, 1), Date.new(2026, 1, 8), Date.new(2026, 1, 15), Date.new(2026, 1, 22) ], occurs_on
+  end
+
+  test 'materialize_events_through picks up where the last event left off' do
+    schedule = @user.funding_schedules.create!(name: 'Picked up', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+    schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 8))
+
+    events = schedule.materialize_events_through(end_date: Date.new(2026, 1, 22))
+
+    assert_equal [ Date.new(2026, 1, 15), Date.new(2026, 1, 22) ], events.map(&:occurs_on)
+  end
+
+  test 'materialize_events_through is idempotent' do
+    schedule = @user.funding_schedules.create!(name: 'Idem', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+
+    schedule.materialize_events_through(end_date: Date.new(2026, 1, 22))
+
+    assert_no_difference 'schedule.funding_events.count' do
+      schedule.materialize_events_through(end_date: Date.new(2026, 1, 22))
+    end
+  end
+
   test 'next_occurrences skips past dates and starts at first occurrence on or after after' do
     schedule = build(cadence: 'weekly', start_date: Date.new(2026, 1, 1))
 

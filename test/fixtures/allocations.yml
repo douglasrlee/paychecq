@@ -1,0 +1,11 @@
+netflix_first:
+  funding_event: paycheck_first
+  expense: netflix
+  amount: 8.00
+  funded_at: 2026-01-01T08:00:00Z
+
+netflix_second_pending:
+  funding_event: paycheck_second
+  expense: netflix
+  amount: 7.99
+  funded_at:

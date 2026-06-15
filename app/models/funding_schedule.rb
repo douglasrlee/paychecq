@@ -2,6 +2,7 @@ class FundingSchedule < ApplicationRecord
   has_paper_trail
   belongs_to :user
   has_many :expenses, dependent: :restrict_with_error
+  has_many :funding_events, dependent: :destroy
 
   CADENCES = %w[weekly biweekly semimonthly monthly].freeze
 
@@ -16,6 +17,19 @@ class FundingSchedule < ApplicationRecord
   validate :second_day_differs_from_start_day, if: :semimonthly?
 
   def semimonthly? = cadence == 'semimonthly'
+
+  # Find-or-creates a FundingEvent for every occurrence between the last
+  # materialized event (or start_date) through end_date. Idempotent.
+  def materialize_events_through(end_date:)
+    last = funding_events.maximum(:occurs_on)
+    cursor = last ? next_occurrences(count: 1, after: last + 1).first : start_date
+    events = []
+    while cursor && cursor <= end_date
+      events << funding_events.create_or_find_by!(occurs_on: cursor)
+      cursor = next_occurrences(count: 1, after: cursor + 1).first
+    end
+    events
+  end
 
   # Returns the next `count` dates this schedule fires on or after `after`.
   def next_occurrences(count: 3, after: Date.current)
