@@ -15,14 +15,12 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # Pool must cover every thread that may acquire a connection on this process:
-  # Puma threads on web, Solid Queue worker + dispatcher threads on worker, plus
-  # Solid Cable's polling thread (single-DB mode). DB_POOL lets the worker dyno
-  # set a higher pool than the web dyno without bumping RAILS_MAX_THREADS.
-  # Previously this was set under the wrong key (`max_connections`) which was
-  # silently ignored, leaving the pool at AR's default of 5 and starving the
-  # worker dyno.
-  pool: <%= ENV.fetch("DB_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5).to_i + 2 } %>
+  # max_connections must cover every thread that may acquire a connection on
+  # this process: Puma threads on web; Solid Queue worker + dispatcher threads
+  # plus Solid Cable's polling thread (single-DB mode) on the worker. DB_POOL
+  # lets the worker dyno set a larger pool than the web dyno without bumping
+  # RAILS_MAX_THREADS (which also drives Puma).
+  max_connections: <%= ENV.fetch("DB_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5).to_i + 2 } %>
   checkout_timeout: <%= ENV.fetch("DB_CHECKOUT_TIMEOUT", 5) %>
 
 
