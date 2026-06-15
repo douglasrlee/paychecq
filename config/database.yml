@@ -17,7 +17,15 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  #
+  # Resolution: DATABASE_POOL > RAILS_MAX_THREADS > 5. The default
+  # (RAILS_MAX_THREADS / 5) matches the Rails generator and sizes Puma
+  # correctly. Set DATABASE_POOL when a process needs more connections
+  # than Puma threads — e.g., the worker dyno running Solid Queue +
+  # dispatcher + Solid Cable polling. Note: Heroku config vars are
+  # app-wide, so setting DATABASE_POOL lifts both dynos — the worker
+  # needs the headroom, the web dyno just ends up over-provisioned.
+  max_connections: <%= ENV.fetch("DATABASE_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5) } %>
 
 
 development:
