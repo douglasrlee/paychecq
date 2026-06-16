@@ -21,12 +21,14 @@ class FundingSchedule < ApplicationRecord
   # Find-or-creates a FundingEvent for every occurrence between the last
   # materialized event (or start_date) through end_date. Idempotent.
   def materialize_events_through(end_date:)
+    return [] if start_date.blank? || cadence.blank?
+
     last = funding_events.maximum(:occurs_on)
-    cursor = last ? next_occurrences(count: 1, after: last + 1).first : start_date
+    cursor = last ? advance(last) : start_date
     events = []
     while cursor && cursor <= end_date
       events << funding_events.create_or_find_by!(occurs_on: cursor)
-      cursor = next_occurrences(count: 1, after: cursor + 1).first
+      cursor = advance(cursor)
     end
     events
   end

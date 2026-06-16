@@ -15,14 +15,18 @@
           <span class="badge badge-error badge-sm ml-1">Past due</span>
         <% end %>
       </p>
-      <% percent = expense.amount.positive? ? [ (expense.bucket_balance / expense.amount * 100).to_i, 100 ].min : 0 %>
+      <%
+        bucket = expense.bucket_balance
+        off_track = expense.off_track?
+        percent = expense.amount.positive? ? [ (bucket / expense.amount * 100).to_i, 100 ].min : 0
+      %>
       <div class="flex items-center gap-2 mt-1">
-        <progress class="progress <%= expense.off_track? ? 'progress-warning' : 'progress-primary' %> h-1.5 flex-1"
+        <progress class="progress <%= off_track ? 'progress-warning' : 'progress-primary' %> h-1.5 flex-1"
                   value="<%= percent %>" max="100"></progress>
         <span class="text-xs text-base-content/60 tabular-nums shrink-0">
-          <%= number_to_currency(expense.bucket_balance) %> / <%= number_to_currency(expense.amount) %>
+          <%= number_to_currency(bucket) %> / <%= number_to_currency(expense.amount) %>
         </span>
-        <% if expense.off_track? %>
+        <% if off_track %>
           <span class="badge badge-warning badge-xs shrink-0">Off track</span>
         <% end %>
       </div>

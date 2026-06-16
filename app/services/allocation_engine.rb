@@ -19,23 +19,30 @@ class AllocationEngine
   end
 
   # Walk this user's pending allocations in due-date order and flip
-  # funded_at when current available_balance can back them.
+  # funded_at when current available_balance can back them. Serialized
+  # per-user with a row lock so concurrent runs can't double-fund off
+  # the same already_funded baseline.
   def self.fund_pending_for(user)
-    available = user.bank_accounts.sum(:available_balance)
-    already_funded = Allocation.joins(:expense)
-                               .where(expenses: { user_id: user.id })
-                               .where.not(funded_at: nil)
-                               .sum(:amount)
+    user.with_lock do
+      available = user.bank_accounts.sum(:available_balance)
+      already_funded = Allocation.joins(:expense)
+                                 .where(expenses: { user_id: user.id })
+                                 .where.not(funded_at: nil)
+                                 .sum(:amount)
 
-    pending = Allocation.joins(:expense)
-                        .where(expenses: { user_id: user.id }, funded_at: nil)
-                        .order('expenses.due_on ASC, expenses.created_at ASC')
+      pending = Allocation.joins(:expense)
+                          .where(expenses: { user_id: user.id }, funded_at: nil)
+                          .order('expenses.due_on ASC, expenses.created_at ASC')
 
-    pending.find_each do |allocation|
-      next unless available >= already_funded + allocation.amount
+      # NOTE: .each (not find_each) because find_each ignores custom ORDER BY
+      # — it batches by primary key. Pending allocations per user are bounded
+      # (handful per active cycle), so loading them all is fine.
+      pending.each do |allocation|
+        next unless available >= already_funded + allocation.amount
 
-      allocation.update!(funded_at: Time.current)
-      already_funded += allocation.amount
+        allocation.update!(funded_at: Time.current)
+        already_funded += allocation.amount
+      end
     end
   end
 
