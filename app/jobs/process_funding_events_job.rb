@@ -15,7 +15,12 @@ class ProcessFundingEventsJob < ApplicationJob
       Appsignal.send_error(error)
     end
 
-    User.joins(:expenses).distinct.find_each do |user|
+    # Only walk users who actually have pending allocations to fund. Avoids
+    # acquiring a row lock per user every hour when nothing changed.
+    User.joins(expenses: :allocations)
+        .where(allocations: { funded_at: nil })
+        .distinct
+        .find_each do |user|
       AllocationEngine.fund_pending_for(user)
     rescue StandardError => error
       Rails.logger.error("AllocationEngine.fund_pending_for failed for user=#{user.id}: #{error.message}")

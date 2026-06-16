@@ -24,7 +24,9 @@ class AllocationEngine
   # the same already_funded baseline.
   def self.fund_pending_for(user)
     user.with_lock do
-      available = user.bank_accounts.sum(:available_balance)
+      # PG's SUM() returns NULL when every input row is NULL; AR returns 0
+      # only when there are no rows at all. Coalesce so we don't compare nil.
+      available = user.bank_accounts.sum(:available_balance) || 0
       already_funded = Allocation.joins(:expense)
                                  .where(expenses: { user_id: user.id })
                                  .where.not(funded_at: nil)
