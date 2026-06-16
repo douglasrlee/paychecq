@@ -49,7 +49,11 @@ class AllocationEngine
   end
 
   # Look-ahead split: remaining-amount / paychecks-remaining-until-due.
-  # Past-due falls to "this paycheck covers the rest" (clamped to 1).
+  # Note: when the expense's due_on is already in the past, next_due_on
+  # rolls forward past as_of, so paychecks_remaining is still > 0 and the
+  # normal split applies. The clamp-to-1 below only kicks in if the
+  # schedule has no occurrences in [as_of, next_due] at all (e.g., schedule
+  # hasn't started yet) — in that case this single paycheck covers the rest.
   private_class_method def self.compute_proposed_amount(expense, schedule, as_of:)
     remaining = expense.amount - expense.allocations.sum(:amount)
     return 0 if remaining <= 0
