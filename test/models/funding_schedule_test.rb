@@ -129,6 +129,21 @@ class FundingScheduleTest < ActiveSupport::TestCase
     end
   end
 
+  test 'occurrence_count_between returns the exact count even past 100 occurrences' do
+    schedule = @user.funding_schedules.create!(name: 'Weekly', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+
+    # 2 years of weekly = 105 paychecks. The old 100-cap would have undercounted this.
+    count = schedule.occurrence_count_between(after: Date.new(2026, 1, 1), through: Date.new(2027, 12, 31))
+
+    assert_equal 105, count
+  end
+
+  test 'occurrence_count_between returns 0 when through is before after' do
+    schedule = @user.funding_schedules.create!(name: 'W', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+
+    assert_equal 0, schedule.occurrence_count_between(after: Date.new(2026, 2, 1), through: Date.new(2026, 1, 1))
+  end
+
   test 'next_occurrences skips past dates and starts at first occurrence on or after after' do
     schedule = build(cadence: 'weekly', start_date: Date.new(2026, 1, 1))
 

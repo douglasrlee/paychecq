@@ -55,8 +55,7 @@ class AllocationEngine
     return 0 if remaining <= 0
 
     next_due = expense.next_due_on(after: as_of)
-    paychecks_remaining = schedule.next_occurrences(count: 100, after: as_of)
-                                  .count { |d| d <= next_due }
+    paychecks_remaining = schedule.occurrence_count_between(after: as_of, through: next_due)
     paychecks_remaining = 1 if paychecks_remaining.zero?
 
     (remaining / paychecks_remaining).round(2)

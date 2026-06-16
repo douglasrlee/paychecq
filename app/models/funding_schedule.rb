@@ -18,7 +18,7 @@ class FundingSchedule < ApplicationRecord
 
   def semimonthly? = cadence == 'semimonthly'
 
-  # Find-or-creates a FundingEvent for every occurrence between the last
+  # Finds or creates a FundingEvent for every occurrence between the last
   # materialized event (or start_date) through end_date. Idempotent.
   def materialize_events_through(end_date:)
     return [] if start_date.blank? || cadence.blank?
@@ -31,6 +31,21 @@ class FundingSchedule < ApplicationRecord
       cursor = advance(cursor)
     end
     events
+  end
+
+  # Returns the number of occurrences this schedule fires between `after`
+  # (inclusive) and `through` (inclusive). Unbounded in count — use when you
+  # need an accurate count, not when you just need the next N occurrences.
+  def occurrence_count_between(after:, through:)
+    return 0 if start_date.blank? || cadence.blank? || through < after
+
+    count = 0
+    cursor = first_occurrence_on_or_after(after)
+    while cursor && cursor <= through
+      count += 1
+      cursor = advance(cursor)
+    end
+    count
   end
 
   # Returns the next `count` dates this schedule fires on or after `after`.
