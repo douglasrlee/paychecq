@@ -84,6 +84,24 @@ class ExpenseTest < ActiveSupport::TestCase
     assert_equal Date.new(2026, 2, 14), expense.next_due_on(after: Date.new(2026, 1, 1))
   end
 
+  test 'bucket_balance sums only funded allocations' do
+    expense = expenses(:netflix)
+
+    assert_equal 8.00, expense.bucket_balance.to_f
+  end
+
+  test 'off_track? is true when any allocation is pending' do
+    expense = expenses(:netflix) # fixture has a pending allocation on paycheck_second
+
+    assert expense.off_track?
+  end
+
+  test 'off_track? is false when all allocations are funded' do
+    expense = expenses(:car_insurance)
+
+    assert_not expense.off_track?
+  end
+
   test 'past_due is true when due_on is before today' do
     travel_to Date.new(2026, 3, 1) do
       assert build(due_on: Date.new(2026, 2, 14)).past_due?

@@ -2,6 +2,7 @@ class Expense < ApplicationRecord
   has_paper_trail
   belongs_to :user
   belongs_to :funding_schedule
+  has_many :allocations, dependent: :destroy
 
   CADENCES = %w[monthly quarterly semiannual yearly].freeze
 
@@ -23,6 +24,18 @@ class Expense < ApplicationRecord
 
   def past_due?
     due_on.present? && due_on < Date.current
+  end
+
+  # Sum of funded allocations only — pending allocations don't count toward
+  # the bucket. Phase 3b will subtract on transaction linking.
+  def bucket_balance
+    allocations.where.not(funded_at: nil).sum(:amount)
+  end
+
+  # An expense is off-track when any allocation has been proposed but not
+  # yet funded (the balance hasn't caught up).
+  def off_track?
+    allocations.exists?(funded_at: nil)
   end
 
   private

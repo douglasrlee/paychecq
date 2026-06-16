@@ -1,0 +1,7 @@
+paycheck_first:
+  funding_schedule: paycheck
+  occurs_on: 2026-01-01
+
+paycheck_second:
+  funding_schedule: paycheck
+  occurs_on: 2026-01-15
