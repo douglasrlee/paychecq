@@ -23,8 +23,7 @@ class FundingSchedule < ApplicationRecord
   def materialize_events_through(end_date:)
     return [] if start_date.blank? || cadence.blank?
 
-    last = funding_events.maximum(:occurs_on)
-    cursor = last ? advance(last) : start_date
+    cursor = first_unmaterialized_occurrence
     events = []
     while cursor && cursor <= end_date
       events << funding_events.create_or_find_by!(occurs_on: cursor)
@@ -61,6 +60,18 @@ class FundingSchedule < ApplicationRecord
   end
 
   private
+
+  # Where materialize_events_through should pick up from. If older events
+  # exist, advance from the latest; if start_date was moved forward past
+  # advance(last), clamp to start_date so we never backfill into the user's
+  # revised "this is when paychecks begin" window.
+  def first_unmaterialized_occurrence
+    last = funding_events.maximum(:occurs_on)
+    return start_date unless last
+
+    candidate = advance(last)
+    [ candidate, start_date ].max
+  end
 
   def second_day_differs_from_start_day
     return if second_day_of_month.blank? || start_date.blank?

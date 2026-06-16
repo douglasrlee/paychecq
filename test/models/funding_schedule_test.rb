@@ -119,6 +119,21 @@ class FundingScheduleTest < ActiveSupport::TestCase
     assert_equal [ Date.new(2026, 1, 15), Date.new(2026, 1, 22) ], events.map(&:occurs_on)
   end
 
+  test 'materialize_events_through does not backfill before a moved-forward start_date' do
+    schedule = @user.funding_schedules.create!(name: 'Moved', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
+    # Older events exist from the original window.
+    schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 8))
+
+    # User moves start_date forward to 2026-02-01.
+    schedule.update!(start_date: Date.new(2026, 2, 1))
+
+    events = schedule.materialize_events_through(end_date: Date.new(2026, 2, 5))
+
+    # No backfill into 1/15, 1/22, 1/29 — picks up at the new start_date.
+    assert_equal [ Date.new(2026, 2, 1) ], events.map(&:occurs_on)
+  end
+
   test 'materialize_events_through is idempotent' do
     schedule = @user.funding_schedules.create!(name: 'Idem', cadence: 'weekly', start_date: Date.new(2026, 1, 1))
 

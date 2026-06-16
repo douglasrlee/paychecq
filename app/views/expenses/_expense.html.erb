@@ -22,7 +22,8 @@
       %>
       <div class="flex items-center gap-2 mt-1">
         <progress class="progress <%= off_track ? 'progress-warning' : 'progress-primary' %> h-1.5 flex-1"
-                  value="<%= percent %>" max="100"></progress>
+                  value="<%= percent %>" max="100"
+                  aria-label="<%= expense.name %> funded <%= percent %>%"></progress>
         <span class="text-xs text-base-content/60 tabular-nums shrink-0">
           <%= number_to_currency(bucket) %> / <%= number_to_currency(expense.amount) %>
         </span>
