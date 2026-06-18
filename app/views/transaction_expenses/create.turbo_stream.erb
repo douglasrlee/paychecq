@@ -1,0 +1,7 @@
+<%= turbo_stream.replace 'drawer_content' do %>
+  <%= turbo_frame_tag 'drawer_content' do %>
+    <%= render 'transactions/transaction_detail',
+        transaction: @transaction,
+        transaction_name_override: @transaction_name_override %>
+  <% end %>
+<% end %>
