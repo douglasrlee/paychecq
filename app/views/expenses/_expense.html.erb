@@ -7,10 +7,9 @@
         <p class="font-medium truncate"><%= expense.name %></p>
         <p class="font-semibold tabular-nums shrink-0"><%= number_to_currency(expense.amount) %></p>
       </div>
-      <p class="text-sm text-base-content/60 truncate">
-        <%= expense.cadence == 'semiannual' ? 'Semiannually' : expense.cadence.titleize %>
-        · From: <%= expense.funding_schedule.name %>
-        · <%= expense.past_due? ? 'Past due' : 'Next due' %>: <%= expense.due_on.strftime('%b %-d, %Y') %>
+      <p class="text-sm text-base-content/60">
+        <%= expense.past_due? ? 'Past due' : 'Due' %> <%= expense.due_on.strftime('%b %-d') %>
+        · <%= number_to_currency(expense.per_paycheck_amount) %>/<%= expense.funding_schedule.name %>
         <% if expense.past_due? %>
           <span class="badge badge-error badge-sm ml-1">Past due</span>
         <% end %>
@@ -51,18 +50,9 @@
     </svg>
   </label>
 
-  <input type="checkbox" id="delete_expense_<%= expense.id %>" class="modal-toggle" />
-  <div class="modal modal-bottom sm:modal-middle">
-    <div class="modal-box">
-      <h3 class="text-lg font-bold">Delete expense</h3>
-      <p class="py-4">Are you sure you want to delete "<%= expense.name %>"?</p>
-      <div class="modal-action">
-        <label for="delete_expense_<%= expense.id %>" class="btn">Cancel</label>
-        <%= link_to "Delete", expense_path(expense),
-              data: { turbo_method: :delete, controller: "loading-button", loading_button_text_value: "Deleting..." },
-              class: "btn btn-error" %>
-      </div>
-    </div>
-    <label class="modal-backdrop" for="delete_expense_<%= expense.id %>">Close</label>
-  </div>
+  <%= render 'components/confirm_delete_modal',
+        toggle_id: "delete_expense_#{expense.id}",
+        title: 'Delete expense',
+        message: "Are you sure you want to delete \"#{expense.name}\"?",
+        delete_path: expense_path(expense) %>
 </div>
