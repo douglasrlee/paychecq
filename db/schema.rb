@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_19_191537) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -290,6 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_191537) do
     t.string "personal_finance_category"
     t.string "personal_finance_category_detailed"
     t.string "plaid_transaction_id"
+    t.date "previous_due_on"
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_transactions_on_bank_account_id"
     t.index ["date"], name: "index_transactions_on_date"

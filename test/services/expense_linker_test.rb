@@ -76,6 +76,26 @@ class ExpenseLinkerTest < ActiveSupport::TestCase
     assert_nil @transaction.expense
   end
 
+  test 'link/unlink round-trip preserves a Jan 31 due date through Feb clamping' do
+    # Jan 31 -> bump_due_forward! clamps to Feb 28; bump_due_backward! from
+    # Feb 28 would only return Jan 28, losing the original day. With
+    # previous_due_on stored on the transaction, unlink restores exactly.
+    quirky = @user.expenses.create!(name: 'Mortgage', amount: 100, cadence: 'monthly',
+                                    due_on: Date.new(2026, 1, 31), funding_schedule: @schedule)
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
+    Allocation.create!(funding_event: event, expense: quirky, amount: 100, funded_at: Time.current)
+    txn = Transaction.create!(name: 'MORTGAGE', amount: 100, bank_account: bank_accounts(:chase_checking))
+
+    ExpenseLinker.link(transaction: txn, expense: quirky)
+    assert_equal Date.new(2026, 2, 28), quirky.reload.due_on, 'forward clamps Feb to 28'
+    assert_equal Date.new(2026, 1, 31), txn.reload.previous_due_on
+
+    ExpenseLinker.unlink(transaction: txn)
+
+    assert_equal Date.new(2026, 1, 31), quirky.reload.due_on, 'unlink restores the original 31st'
+    assert_nil txn.reload.previous_due_on
+  end
+
   test 'destroying a linked transaction unlinks it first so the bucket and due_on restore cleanly' do
     ExpenseLinker.link(transaction: @transaction, expense: @netflix)
     assert_equal 0, @netflix.reload.bucket_balance.to_f

@@ -1,11 +1,14 @@
 class ExpenseLinker
-  # Link a transaction to an expense. Walks the expense's funded, untouched
-  # allocations oldest-first and consumes them up to `transaction.amount`
-  # (capped at bucket_balance — we never overspend). Most links are exact:
-  # every touched allocation ends with spent_amount = amount. When the
-  # transaction is less than the bucket, the walk stops mid-allocation,
-  # leaving a residual that stays in the bucket. Either way, due_on
-  # advances one cycle and the transaction remembers its expense.
+  # Link a transaction to an expense. Walks the expense's untouched funded
+  # allocations oldest-first and consumes them up to `transaction.amount`.
+  # Most links are exact: every touched allocation ends with
+  # `spent_amount == amount`. When the transaction is smaller than the
+  # bucket, the walk stops mid-allocation, leaving a residual. When the
+  # transaction is larger than the bucket, the walk runs out of allocations
+  # and the leftover transaction amount simply isn't accounted for here.
+  # Either way, due_on advances one cycle and the transaction remembers
+  # which expense it satisfied — plus the pre-link due_on, so unlink can
+  # restore it exactly (round-trips around day-clamping months).
   # If the transaction is already linked elsewhere, unlinks first (full
   # rollback of the prior expense) and then links to the new one.
   def self.link(transaction:, expense:)
@@ -16,19 +19,14 @@ class ExpenseLinker
       # update the same allocations. with_lock also wraps everything below
       # in the existing surrounding Transaction.transaction.
       expense.with_lock do
+        previous_due_on = expense.due_on
         remaining = transaction.amount
         spent_at = Time.current
 
-        # The loop naturally stops when allocations are exhausted, so we
-        # don't need to pre-cap remaining at bucket_balance — and capping
-        # at bucket_balance would be wrong anyway, since bucket_balance
-        # includes partial-spend residuals on already-touched allocations
-        # that this walk can't reach.
-        #
-        # Filter on `spent_amount: 0` (rather than `spent_by_transaction_id:
-        # nil`) to directly express "never touched" — keeps the single-spender
-        # invariant intact even if a row ever ends up with a stale FK
-        # without a non-zero spent amount.
+        # Filter on `spent_amount: 0` to express "never touched" directly,
+        # which keeps the single-spender invariant intact even if a row
+        # ever ended up with a stale FK while still having no consumed
+        # amount.
         expense.allocations
                .where.not(funded_at: nil)
                .where(spent_amount: 0)
@@ -46,7 +44,7 @@ class ExpenseLinker
           remaining -= consume
         end
 
-        transaction.update!(expense: expense)
+        transaction.update!(expense: expense, previous_due_on: previous_due_on)
         expense.bump_due_forward!
       end
     end
@@ -54,8 +52,9 @@ class ExpenseLinker
 
   # Full undo of a prior link: zero out every allocation touched by this
   # transaction (single-spender invariant means resetting spent_amount to
-  # 0 always restores the original state), clear the FK, roll due_on back
-  # one cycle.
+  # 0 always restores the original state), clear the FK, and restore
+  # due_on to the exact value it had at link time (using the previous_due_on
+  # we stored on the transaction).
   def self.unlink(transaction:)
     expense = transaction.expense
     return unless expense
@@ -65,8 +64,9 @@ class ExpenseLinker
         allocation.update!(spent_amount: 0, spent_at: nil, spent_by_transaction: nil)
       end
 
-      transaction.update!(expense: nil)
-      expense.bump_due_backward!
+      restored_due_on = transaction.previous_due_on
+      transaction.update!(expense: nil, previous_due_on: nil)
+      expense.update!(due_on: restored_due_on) if restored_due_on.present?
     end
   end
 end
