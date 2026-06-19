@@ -109,4 +109,22 @@ class ExpenseTest < ActiveSupport::TestCase
       assert_not build(due_on: Date.new(2026, 4, 1)).past_due?
     end
   end
+
+  test 'per_paycheck_amount divides amount by paychecks until next due' do
+    # Biweekly schedule from Jan 1, 2026 -> Jan 1, 15, 29, Feb 12, 26, ...
+    # As of Jan 5, next due Feb 14 -> paychecks are Jan 15, 29, Feb 12 = 3.
+    travel_to Date.new(2026, 1, 5) do
+      expense = build(due_on: Date.new(2026, 2, 14), amount: 9.99)
+      assert_in_delta 3.33, expense.per_paycheck_amount.to_f, 0.01 # 9.99 / 3
+    end
+  end
+
+  test 'per_paycheck_amount handles a past-due expense by rolling forward' do
+    # As of Mar 1, due Jan 14 (past) -> next_due rolls to Feb 14 then Mar 14.
+    # Paychecks between Mar 1 and Mar 14: Mar 12 only = 1.
+    travel_to Date.new(2026, 3, 1) do
+      expense = build(due_on: Date.new(2026, 1, 14), amount: 12)
+      assert_equal 12.00, expense.per_paycheck_amount.to_f # 12 / 1
+    end
+  end
 end

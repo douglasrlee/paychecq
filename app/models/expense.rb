@@ -26,17 +26,43 @@ class Expense < ApplicationRecord
     due_on.present? && due_on < Date.current
   end
 
-  # Sum of funded, unspent allocations — money sitting in the bucket
-  # right now. A linked transaction marks its expense's allocations spent
-  # via spent_at, removing them from this sum.
+  # Money sitting in the bucket right now: the unspent remainder of each
+  # funded allocation. Most rows are either fully unspent (spent_amount = 0,
+  # full amount available) or fully spent (spent_amount = amount, contributes
+  # 0). The middle case — one allocation per linked transaction — can be
+  # partially spent when a transaction's amount didn't divide cleanly; the
+  # residual stays in the bucket here.
   def bucket_balance
-    allocations.where.not(funded_at: nil).where(spent_at: nil).sum(:amount)
+    allocations.where.not(funded_at: nil)
+               .where('amount > spent_amount')
+               .sum(Arel.sql('amount - spent_amount'))
   end
 
   # An expense is off-track when any allocation has been proposed but not
   # yet funded (the balance hasn't caught up).
   def off_track?
     allocations.exists?(funded_at: nil)
+  end
+
+  # True when the bucket has enough money to cover the expense's target.
+  # Only fully-funded expenses are eligible for transaction linking — we
+  # don't want to "spend" an under-funded bucket.
+  def fully_funded?
+    bucket_balance >= amount
+  end
+
+  # Steady-state per-paycheck contribution: amount / paychecks-until-next-due.
+  # Display-only — does NOT match what the engine proposes when a partial
+  # residual is sitting around (the engine subtracts that residual first).
+  # This is the "ongoing rate" answer to "how much of each paycheck does
+  # this expense take?"
+  def per_paycheck_amount(as_of: Date.current)
+    next_due = next_due_on(after: as_of)
+    return amount unless next_due && funding_schedule
+
+    paychecks = funding_schedule.occurrence_count_between(after: as_of, through: next_due)
+    paychecks = 1 if paychecks.zero?
+    (amount / paychecks).round(2)
   end
 
   # Roll due_on forward / backward by one cadence cycle. Called by the

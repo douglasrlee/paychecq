@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_18_032001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_034935) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_032001) do
     t.uuid "expense_id", null: false
     t.datetime "funded_at"
     t.uuid "funding_event_id", null: false
+    t.decimal "spent_amount", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "spent_at"
     t.uuid "spent_by_transaction_id"
     t.datetime "updated_at", null: false
@@ -321,7 +322,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_032001) do
 
   add_foreign_key "allocations", "expenses"
   add_foreign_key "allocations", "funding_events"
-  add_foreign_key "allocations", "transactions", column: "spent_by_transaction_id", validate: false
+  add_foreign_key "allocations", "transactions", column: "spent_by_transaction_id"
   add_foreign_key "bank_accounts", "banks"
   add_foreign_key "banks", "users"
   add_foreign_key "expenses", "funding_schedules"
@@ -338,5 +339,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_032001) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "transaction_name_overrides", "users"
   add_foreign_key "transactions", "bank_accounts"
-  add_foreign_key "transactions", "expenses", validate: false
+  add_foreign_key "transactions", "expenses"
 end
