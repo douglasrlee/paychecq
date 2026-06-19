@@ -19,6 +19,7 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
 
   test 'create links the transaction to the expense and redirects' do
     sign_in_as(@user)
+    fully_fund(@netflix)
 
     post transaction_expenses_url, params: { transaction_id: @transaction.id, expense_id: @netflix.id }
 
@@ -28,6 +29,7 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
 
   test 'create responds with turbo_stream replacing drawer_content' do
     sign_in_as(@user)
+    fully_fund(@netflix)
 
     post transaction_expenses_url,
          params: { transaction_id: @transaction.id, expense_id: @netflix.id },
@@ -35,6 +37,17 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
+  end
+
+  test 'create rejects an under-funded expense' do
+    sign_in_as(@user)
+    # @netflix has no funded allocations -> bucket_balance is 0 -> not fully funded
+
+    post transaction_expenses_url, params: { transaction_id: @transaction.id, expense_id: @netflix.id }
+
+    assert_response :see_other
+    assert_match(/isn't fully funded/i, flash[:alert])
+    assert_nil @transaction.reload.expense
   end
 
   test 'create redirects when transaction belongs to another user' do
@@ -48,6 +61,7 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
 
   test 'destroy unlinks the transaction and redirects' do
     sign_in_as(@user)
+    fully_fund(@netflix)
     ExpenseLinker.link(transaction: @transaction, expense: @netflix)
 
     delete transaction_expense_url(@transaction)
@@ -59,11 +73,19 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
 
   test 'destroy responds with turbo_stream replacing drawer_content' do
     sign_in_as(@user)
+    fully_fund(@netflix)
     ExpenseLinker.link(transaction: @transaction, expense: @netflix)
 
     delete transaction_expense_url(@transaction), headers: { Accept: 'text/vnd.turbo-stream.html' }
 
     assert_response :success
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
+  end
+
+  private
+
+  def fully_fund(expense)
+    event = expense.funding_schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    Allocation.create!(funding_event: event, expense: expense, amount: expense.amount, funded_at: Time.current)
   end
 end

@@ -5,3 +5,7 @@
         transaction_name_override: @transaction_name_override %>
   <% end %>
 <% end %>
+
+<%= turbo_stream.replace dom_id(@transaction) do %>
+  <%= render @transaction, transaction_name_overrides: @transaction_name_overrides %>
+<% end %>

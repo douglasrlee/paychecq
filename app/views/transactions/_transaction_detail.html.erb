@@ -148,7 +148,7 @@
         <div class="bg-base-200 rounded-xl p-3">
           <div class="flex items-center justify-between gap-3">
             <div class="text-sm min-w-0">
-              <p class="text-xs text-base-content/50 mb-1">Paid for</p>
+              <p class="text-xs text-base-content/50 mb-1">Expense</p>
               <p class="font-medium truncate"><%= transaction.expense.name %></p>
             </div>
             <%= button_to transaction_expense_path(transaction),
@@ -162,34 +162,53 @@
       <% else %>
         <% user_expenses = Current.user.expenses.order(:name).to_a %>
         <div class="flex items-center justify-between gap-3">
-          <h3 class="text-sm font-medium">Pays for an expense?</h3>
+          <span class="text-sm text-base-content/50">Expense</span>
           <button data-action="toggle#toggle" class="btn btn-ghost btn-sm text-primary">
             Assign to expense
           </button>
         </div>
 
+        <% fully_funded = user_expenses.select(&:fully_funded?) %>
         <div data-toggle-target="content" class="hidden mt-3">
-          <% if user_expenses.any? %>
+          <% if fully_funded.any? %>
             <%= form_with url: transaction_expenses_path,
                   html: { novalidate: true },
-                  data: { action: 'turbo:submit-end->toggle#closeOnSuccess' } do |f| %>
+                  data: { controller: 'expense-picker', action: 'turbo:submit-end->toggle#closeOnSuccess' } do |f| %>
               <%= hidden_field_tag :transaction_id, transaction.id %>
 
-              <div class="flex flex-col gap-2 mb-3">
-                <% user_expenses.each do |expense| %>
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <%= radio_button_tag :expense_id, expense.id, false, class: 'radio radio-sm radio-primary' %>
-                    <span class="text-sm"><%= expense.name %></span>
-                    <span class="text-xs text-base-content/50"><%= number_to_currency(expense.amount) %></span>
-                  </label>
-                <% end %>
+              <div class="dropdown w-full mb-3">
+                <%= hidden_field_tag :expense_id, '', required: true, data: { expense_picker_target: 'input' } %>
+                <div tabindex="0" role="button" class="btn btn-sm btn-outline w-full justify-between font-normal">
+                  <span data-expense-picker-target="label" class="text-base-content/50">Select an expense</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>a:hover]:bg-base-200! [&_li>a:hover]:text-base-content! [&_li>a:focus]:bg-base-200! [&_li>a:focus]:text-base-content!">
+                  <% fully_funded.each do |expense| %>
+                    <li>
+                      <a data-action="click->expense-picker#select"
+                         data-expense-picker-target="option"
+                         data-id="<%= expense.id %>"
+                         data-name="<%= expense.name %>">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-primary invisible" data-expense-picker-target="check" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="truncate"><%= expense.name %></span>
+                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(expense.amount) %></span>
+                      </a>
+                    </li>
+                  <% end %>
+                </ul>
               </div>
 
               <div class="flex gap-2">
-                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', data: { controller: 'loading-button', loading_button_text_value: 'Saving...' } %>
+                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', expense_picker_target: 'submit' } %>
                 <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
               </div>
             <% end %>
+          <% elsif user_expenses.any? %>
+            <p class="text-sm text-base-content/60">No expenses are fully funded yet.</p>
           <% else %>
             <p class="text-sm text-base-content/60">No expenses yet.</p>
             <%= link_to 'Create one in Expenses', expenses_path,
