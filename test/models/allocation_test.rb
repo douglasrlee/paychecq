@@ -32,4 +32,11 @@ class AllocationTest < ActiveSupport::TestCase
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:expense_id], 'has already been taken'
   end
+
+  test 'rejects spent_amount greater than amount' do
+    allocation = Allocation.new(funding_event: @event, expense: @expense, amount: 5, spent_amount: 6)
+
+    assert_not allocation.valid?
+    assert_includes allocation.errors[:spent_amount], 'cannot exceed amount'
+  end
 end

@@ -119,6 +119,22 @@ class ExpenseTest < ActiveSupport::TestCase
     end
   end
 
+  test 'bump_due_backward! recedes one cycle for each cadence' do
+    cases = {
+      'monthly' => [ Date.new(2026, 4, 15), Date.new(2026, 3, 15) ],
+      'quarterly' => [ Date.new(2026, 4, 15), Date.new(2026, 1, 15) ],
+      'semiannual' => [ Date.new(2026, 6, 15), Date.new(2025, 12, 15) ],
+      'yearly' => [ Date.new(2026, 4, 15), Date.new(2025, 4, 15) ]
+    }
+
+    cases.each do |cadence, (from, to)|
+      expense = build(cadence: cadence, due_on: from)
+      expense.save!
+      expense.bump_due_backward!
+      assert_equal to, expense.reload.due_on, "expected #{cadence} recede #{from} -> #{to}"
+    end
+  end
+
   test 'per_paycheck_amount handles a past-due expense by rolling forward' do
     # As of Mar 1, due Jan 14 (past) -> next_due rolls to Feb 14 then Mar 14.
     # Paychecks between Mar 1 and Mar 14: Mar 12 only = 1.

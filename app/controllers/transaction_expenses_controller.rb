@@ -3,6 +3,17 @@ class TransactionExpensesController < ApplicationController
     redirect_to transactions_path, alert: 'Not found'
   end
 
+  # Saving the form without picking an expense (the picker UI prevents this
+  # via a disabled submit, but a stray turbo request without expense_id
+  # would otherwise raise ParameterMissing). For turbo_stream we return
+  # 422 no-op; for HTML we redirect back to the transaction drawer.
+  rescue_from ActionController::ParameterMissing do
+    respond_to do |format|
+      format.turbo_stream { head :unprocessable_content }
+      format.html { redirect_to transactions_path, alert: 'Pick an expense first.' }
+    end
+  end
+
   def create
     @transaction = Current.user.transactions.find(params.expect(:transaction_id))
     expense = Current.user.expenses.find(params.expect(:expense_id))

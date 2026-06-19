@@ -13,6 +13,7 @@ class ExpenseLinker
       unlink(transaction: transaction) if transaction.expense_id.present?
 
       remaining = [ transaction.amount, expense.bucket_balance ].min
+      spent_at = Time.current
 
       expense.allocations
              .where.not(funded_at: nil)
@@ -24,7 +25,7 @@ class ExpenseLinker
         consume = [ remaining, allocation.amount ].min
         allocation.update!(
           spent_amount: consume,
-          spent_at: Time.current,
+          spent_at: spent_at,
           spent_by_transaction: transaction
         )
         remaining -= consume

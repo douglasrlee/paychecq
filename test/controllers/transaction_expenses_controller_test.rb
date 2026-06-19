@@ -50,6 +50,25 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_nil @transaction.reload.expense
   end
 
+  test 'create without expense_id responds gracefully via turbo_stream' do
+    sign_in_as(@user)
+
+    post transaction_expenses_url,
+         params: { transaction_id: @transaction.id },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create without expense_id redirects to transactions for an html submit' do
+    sign_in_as(@user)
+
+    post transaction_expenses_url, params: { transaction_id: @transaction.id }
+
+    assert_redirected_to transactions_path
+    assert_match(/pick an expense first/i, flash[:alert])
+  end
+
   test 'create redirects when transaction belongs to another user' do
     sign_in_as(@user)
     other = Transaction.create!(name: 'WHATEVER', amount: 10, bank_account: bank_accounts(:wells_checking))
