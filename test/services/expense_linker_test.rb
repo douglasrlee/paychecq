@@ -76,6 +76,20 @@ class ExpenseLinkerTest < ActiveSupport::TestCase
     assert_nil @transaction.expense
   end
 
+  test 'destroying a linked transaction unlinks it first so the bucket and due_on restore cleanly' do
+    ExpenseLinker.link(transaction: @transaction, expense: @netflix)
+    assert_equal 0, @netflix.reload.bucket_balance.to_f
+    advanced_due = @netflix.due_on
+
+    @transaction.destroy!
+
+    assert_equal 7.99, @netflix.reload.bucket_balance.to_f, 'bucket restored'
+    assert_not_equal advanced_due, @netflix.due_on, 'due_on rolled back'
+    assert_nil @allocation.reload.spent_at
+    assert_nil @allocation.spent_by_transaction_id
+    assert_equal 0, @allocation.spent_amount.to_f
+  end
+
   test 'partial link: transaction smaller than bucket leaves the residual in the bucket' do
     # Fully fund Netflix: one extra $8.00 allocation so bucket = 7.99 + 8.00 = 15.99
     second_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))

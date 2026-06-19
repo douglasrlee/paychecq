@@ -1,6 +1,12 @@
 class TransactionExpensesController < ApplicationController
+  # Drawer requests come in as turbo_stream — a full-page redirect would
+  # kick the user out of the drawer. Match the pattern in
+  # TransactionNameOverridesController: 204 for turbo, redirect for html.
   rescue_from ActiveRecord::RecordNotFound do
-    redirect_to transactions_path, alert: 'Not found'
+    respond_to do |format|
+      format.turbo_stream { head :no_content }
+      format.html { redirect_to transactions_path, alert: 'Not found' }
+    end
   end
 
   # Saving the form without picking an expense (the picker UI prevents this

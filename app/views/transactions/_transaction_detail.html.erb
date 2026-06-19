@@ -168,7 +168,16 @@
           </button>
         </div>
 
-        <% fully_funded = user_expenses.select(&:fully_funded?) %>
+        <%# Preload bucket_balance per expense in one aggregate query
+            so the fully_funded filter doesn't fire one SUM per expense. %>
+        <%
+          bucket_by_expense_id = Allocation.where(expense_id: user_expenses.map(&:id))
+                                           .where.not(funded_at: nil)
+                                           .where('allocations.amount > allocations.spent_amount')
+                                           .group(:expense_id)
+                                           .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+          fully_funded = user_expenses.select { |e| (bucket_by_expense_id[e.id] || 0) >= e.amount }
+        %>
         <div data-toggle-target="content" class="hidden mt-3">
           <% if fully_funded.any? %>
             <%= form_with url: transaction_expenses_path,
@@ -184,7 +193,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>a:hover]:bg-base-200! [&_li>a:hover]:text-base-content! [&_li>a:focus]:bg-base-200! [&_li>a:focus]:text-base-content!">
+                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>button:hover]:bg-base-200! [&_li>button:hover]:text-base-content! [&_li>button:focus]:bg-base-200! [&_li>button:focus]:text-base-content!">
                   <% fully_funded.each do |expense| %>
                     <li>
                       <button type="button"
