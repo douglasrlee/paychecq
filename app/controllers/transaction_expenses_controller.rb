@@ -6,7 +6,8 @@ class TransactionExpensesController < ApplicationController
   # Saving the form without picking an expense (the picker UI prevents this
   # via a disabled submit, but a stray turbo request without expense_id
   # would otherwise raise ParameterMissing). For turbo_stream we return
-  # 422 no-op; for HTML we redirect back to the transaction drawer.
+  # 422 no-op; for HTML we redirect to the transactions index with an
+  # alert (we may not have a valid transaction in scope to redirect to).
   rescue_from ActionController::ParameterMissing do
     respond_to do |format|
       format.turbo_stream { head :unprocessable_content }

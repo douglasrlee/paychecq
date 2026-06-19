@@ -124,6 +124,26 @@ class AllocationEngineTest < ActiveSupport::TestCase
     assert_in_delta 5.33, cycle2_allocation.amount.to_f, 0.01
   end
 
+  test 'fund_pending_for ignores spent allocations when computing the already-funded headroom' do
+    # Without this fix the engine treats spent allocations as still earmarked
+    # against the bank balance, so eventually it would refuse to fund any
+    # new pending allocations even though the money is genuinely available.
+    bank_accounts(:chase_checking).update!(available_balance: 20)
+    bank_accounts(:chase_savings).update!(available_balance: 0)
+
+    expense = create_expense(name: 'Recurring', amount: 15, due_on: Date.new(2026, 2, 12))
+    spent_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    Allocation.create!(funding_event: spent_event, expense: expense, amount: 15,
+                       funded_at: Time.current, spent_at: Time.current, spent_amount: 15)
+
+    new_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
+    new_allocation = Allocation.create!(funding_event: new_event, expense: expense, amount: 15, funded_at: nil)
+
+    AllocationEngine.fund_pending_for(@user)
+
+    assert new_allocation.reload.funded_at.present?, 'new allocation should fund since spent ones no longer eat the headroom'
+  end
+
   test 'propose_for reduces next-cycle proposal by a partial-spend residual' do
     # Cycle 1: $10 allocation funded, only $6.33 spent (partial). Residual $3.67 sits in the bucket.
     expense = create_expense(name: 'Test', amount: 10, due_on: Date.new(2026, 1, 29))

@@ -17,7 +17,12 @@
   <% elsif expenses.any? %>
     <%
       total = expenses.sum(&:amount)
-      allocated = expenses.sum(&:bucket_balance)
+      # Single aggregate query (not `expenses.sum(&:bucket_balance)`, which
+      # would fire one SQL per expense — N+1 on the index page).
+      allocated = Allocation.where(expense_id: expenses.map(&:id))
+                            .where.not(funded_at: nil)
+                            .where('amount > spent_amount')
+                            .sum(Arel.sql('amount - spent_amount'))
       breakdown = expenses.group_by(&:funding_schedule)
                           .transform_values { |exps| exps.sum(&:per_paycheck_amount) }
                           .sort_by { |schedule, _| schedule.name }

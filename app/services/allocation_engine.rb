@@ -27,10 +27,17 @@ class AllocationEngine
       # PG's SUM() returns NULL when every input row is NULL; AR returns 0
       # only when there are no rows at all. Coalesce so we don't compare nil.
       available = user.bank_accounts.sum(:available_balance) || 0
+      # Only the unspent portion of funded allocations is still "earmarked"
+      # in the bank balance — once a transaction is linked, that money's
+      # been disbursed and shouldn't count against future funding decisions.
+      # (Bug fixed: previously this summed `amount` over all funded rows,
+      # so cross-cycle accumulation would eventually exceed available_balance
+      # and prevent any new fundings.)
       already_funded = Allocation.joins(:expense)
                                  .where(expenses: { user_id: user.id })
                                  .where.not(funded_at: nil)
-                                 .sum(:amount)
+                                 .where('allocations.amount > allocations.spent_amount')
+                                 .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
 
       pending = Allocation.joins(:expense)
                           .where(expenses: { user_id: user.id }, funded_at: nil)

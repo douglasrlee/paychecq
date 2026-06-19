@@ -187,16 +187,17 @@
                 <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>a:hover]:bg-base-200! [&_li>a:hover]:text-base-content! [&_li>a:focus]:bg-base-200! [&_li>a:focus]:text-base-content!">
                   <% fully_funded.each do |expense| %>
                     <li>
-                      <a data-action="click->expense-picker#select"
-                         data-expense-picker-target="option"
-                         data-id="<%= expense.id %>"
-                         data-name="<%= expense.name %>">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-primary invisible" data-expense-picker-target="check" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <button type="button"
+                              data-action="click->expense-picker#select"
+                              data-expense-picker-target="option"
+                              data-id="<%= expense.id %>"
+                              data-name="<%= expense.name %>">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="picker-check h-4 w-4 shrink-0 text-primary invisible" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                         </svg>
                         <span class="truncate"><%= expense.name %></span>
                         <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(expense.amount) %></span>
-                      </a>
+                      </button>
                     </li>
                   <% end %>
                 </ul>

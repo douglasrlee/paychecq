@@ -4,8 +4,6 @@ class Allocation < ApplicationRecord
   belongs_to :expense
   belongs_to :spent_by_transaction, class_name: 'Transaction', optional: true
 
-  scope :unspent, -> { where(spent_at: nil) }
-
   validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :spent_amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validate :spent_amount_within_amount

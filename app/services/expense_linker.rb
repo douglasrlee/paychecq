@@ -12,27 +12,38 @@ class ExpenseLinker
     Transaction.transaction do
       unlink(transaction: transaction) if transaction.expense_id.present?
 
-      remaining = [ transaction.amount, expense.bucket_balance ].min
-      spent_at = Time.current
+      # Lock the expense row so two concurrent links can't both walk and
+      # update the same allocations. with_lock also wraps everything below
+      # in the existing surrounding Transaction.transaction.
+      expense.with_lock do
+        remaining = transaction.amount
+        spent_at = Time.current
 
-      expense.allocations
-             .where.not(funded_at: nil)
-             .where(spent_by_transaction_id: nil)
-             .order(:funded_at, :created_at)
-             .each do |allocation|
-        break if remaining <= 0
+        # The loop naturally stops when allocations are exhausted, so we
+        # don't need to pre-cap remaining at bucket_balance — and capping
+        # at bucket_balance would be wrong anyway, since bucket_balance
+        # includes partial-spend residuals on already-touched allocations
+        # that this walk can't reach.
+        expense.allocations
+               .where.not(funded_at: nil)
+               .where(spent_by_transaction_id: nil)
+               .order(:funded_at, :created_at)
+               .lock
+               .each do |allocation|
+          break if remaining <= 0
 
-        consume = [ remaining, allocation.amount ].min
-        allocation.update!(
-          spent_amount: consume,
-          spent_at: spent_at,
-          spent_by_transaction: transaction
-        )
-        remaining -= consume
+          consume = [ remaining, allocation.amount ].min
+          allocation.update!(
+            spent_amount: consume,
+            spent_at: spent_at,
+            spent_by_transaction: transaction
+          )
+          remaining -= consume
+        end
+
+        transaction.update!(expense: expense)
+        expense.bump_due_forward!
       end
-
-      transaction.update!(expense: expense)
-      expense.bump_due_forward!
     end
   end
 
