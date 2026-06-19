@@ -25,6 +25,20 @@ class TransactionExpensesController < ApplicationController
     @transaction = Current.user.transactions.find(params.expect(:transaction_id))
     expense = Current.user.expenses.find(params.expect(:expense_id))
 
+    # Refunds / credits (non-positive amounts) shouldn't advance an expense's
+    # cycle — they didn't pay for it. Reject before touching the linker.
+    unless @transaction.amount.positive?
+      respond_to do |format|
+        format.turbo_stream { head :unprocessable_content }
+        format.html do
+          redirect_to transaction_path(@transaction),
+                      alert: "Refunds and credits can't be linked to expenses.",
+                      status: :see_other
+        end
+      end
+      return
+    end
+
     unless expense.fully_funded?
       respond_to do |format|
         format.turbo_stream { head :unprocessable_content }

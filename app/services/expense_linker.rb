@@ -24,9 +24,14 @@ class ExpenseLinker
         # at bucket_balance would be wrong anyway, since bucket_balance
         # includes partial-spend residuals on already-touched allocations
         # that this walk can't reach.
+        #
+        # Filter on `spent_amount: 0` (rather than `spent_by_transaction_id:
+        # nil`) to directly express "never touched" — keeps the single-spender
+        # invariant intact even if a row ever ends up with a stale FK
+        # without a non-zero spent amount.
         expense.allocations
                .where.not(funded_at: nil)
-               .where(spent_by_transaction_id: nil)
+               .where(spent_amount: 0)
                .order(:funded_at, :created_at)
                .lock
                .each do |allocation|

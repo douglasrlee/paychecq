@@ -39,6 +39,18 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
   end
 
+  test 'create rejects a non-positive (refund/credit) transaction' do
+    sign_in_as(@user)
+    fully_fund(@netflix)
+    credit = Transaction.create!(name: 'REFUND', amount: -15.99, bank_account: bank_accounts(:chase_checking))
+
+    post transaction_expenses_url, params: { transaction_id: credit.id, expense_id: @netflix.id }
+
+    assert_response :see_other
+    assert_match(/refunds and credits/i, flash[:alert])
+    assert_nil credit.reload.expense
+  end
+
   test 'create rejects an under-funded expense' do
     sign_in_as(@user)
     # @netflix has no funded allocations -> bucket_balance is 0 -> not fully funded
