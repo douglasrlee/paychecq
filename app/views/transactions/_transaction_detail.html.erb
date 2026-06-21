@@ -143,7 +143,7 @@
     </div>
 
     <%# Expense link %>
-    <div data-controller="toggle">
+    <div data-controller="toggle" data-toggle-delay-frame-value="drawer_content">
       <% if transaction.expense.present? %>
         <div class="bg-base-200 rounded-xl p-3">
           <div class="flex items-center justify-between gap-3">
