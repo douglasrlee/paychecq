@@ -1,4 +1,4 @@
-<%= turbo_frame_tag "funding_schedules", class: "block w-full max-w-240 mt-6" do %>
+<%= turbo_frame_tag "funding_schedules", class: "block w-full max-w-240 mt-6 px-4" do %>
   <div class="card card-lg bg-base-100 shadow-glow">
     <div class="card-body">
       <div class="flex items-center justify-between gap-4">
@@ -44,20 +44,11 @@
               </svg>
             </label>
 
-            <input type="checkbox" id="delete_funding_schedule_<%= schedule.id %>" class="modal-toggle" />
-            <div class="modal modal-bottom sm:modal-middle">
-              <div class="modal-box">
-                <h3 class="text-lg font-bold">Delete funding schedule</h3>
-                <p class="py-4">Are you sure you want to delete "<%= schedule.name %>"?</p>
-                <div class="modal-action">
-                  <label for="delete_funding_schedule_<%= schedule.id %>" class="btn">Cancel</label>
-                  <%= link_to "Delete", funding_schedule_path(schedule),
-                        data: { turbo_method: :delete, controller: "loading-button", loading_button_text_value: "Deleting..." },
-                        class: "btn btn-error" %>
-                </div>
-              </div>
-              <label class="modal-backdrop" for="delete_funding_schedule_<%= schedule.id %>">Close</label>
-            </div>
+            <%= render 'components/confirm_delete_modal',
+                  toggle_id: "delete_funding_schedule_#{schedule.id}",
+                  title: 'Delete funding schedule',
+                  message: "Are you sure you want to delete \"#{schedule.name}\"?",
+                  delete_path: funding_schedule_path(schedule) %>
           </div>
         <% end %>
         <p class="text-sm text-base-content/40 text-center py-6 <%= 'hidden' if @funding_schedules.any? %>">

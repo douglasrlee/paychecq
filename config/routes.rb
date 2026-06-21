@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   resources :users, only: [ :new, :create ]
   resources :transactions, only: [ :index, :show ]
   resources :transaction_name_overrides, only: [ :create, :destroy ]
+  resources :transaction_expenses, only: [ :create, :destroy ]
   resources :funding_schedules, only: [ :new, :create, :edit, :update, :destroy ]
   resources :expenses, only: [ :index, :new, :create, :edit, :update, :destroy ]
   resources :goals, only: [ :index ]

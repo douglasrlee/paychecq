@@ -27,10 +27,17 @@ class AllocationEngine
       # PG's SUM() returns NULL when every input row is NULL; AR returns 0
       # only when there are no rows at all. Coalesce so we don't compare nil.
       available = user.bank_accounts.sum(:available_balance) || 0
+      # Only the unspent portion of funded allocations is still "earmarked"
+      # in the bank balance — once a transaction is linked, that money's
+      # been disbursed and shouldn't count against future funding decisions.
+      # (Bug fixed: previously this summed `amount` over all funded rows,
+      # so cross-cycle accumulation would eventually exceed available_balance
+      # and prevent any new fundings.)
       already_funded = Allocation.joins(:expense)
                                  .where(expenses: { user_id: user.id })
                                  .where.not(funded_at: nil)
-                                 .sum(:amount)
+                                 .where('allocations.amount > allocations.spent_amount')
+                                 .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
 
       pending = Allocation.joins(:expense)
                           .where(expenses: { user_id: user.id }, funded_at: nil)
@@ -49,13 +56,22 @@ class AllocationEngine
   end
 
   # Look-ahead split: remaining-amount / paychecks-remaining-until-due.
+  # `remaining` counts only the unspent contribution of each allocation,
+  # so (a) fully-spent allocations from prior cycles drop out (cycle 2+
+  # gets refunded), and (b) a partial-spend residual reduces this cycle's
+  # need by exactly the carryover (a $3.67 leftover on a $10 expense means
+  # the next cycle proposes $6.33 worth, not $10).
+  #
   # Note: when the expense's due_on is already in the past, next_due_on
   # rolls forward past as_of, so paychecks_remaining is still > 0 and the
   # normal split applies. The clamp-to-1 below only kicks in if the
   # schedule has no occurrences in [as_of, next_due] at all (e.g., schedule
   # hasn't started yet) — in that case this single paycheck covers the rest.
   private_class_method def self.compute_proposed_amount(expense, schedule, as_of:)
-    remaining = expense.amount - expense.allocations.sum(:amount)
+    active = expense.allocations
+                    .where('amount > spent_amount')
+                    .sum(Arel.sql('amount - spent_amount'))
+    remaining = expense.amount - active
     return 0 if remaining <= 0
 
     next_due = expense.next_due_on(after: as_of)

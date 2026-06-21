@@ -12,10 +12,10 @@
   </div>
 
   <% if @transactions.any? %>
-    <div class="w-full max-w-240 mt-4 space-y-6">
+    <div class="w-full max-w-240 mt-4 px-4 space-y-6">
       <% @transactions.group_by(&:date).each do |date, transactions| %>
         <div>
-          <h3 class="text-sm font-semibold text-base-content/60 px-4 mb-2">
+          <h3 class="text-sm font-semibold text-base-content/60 mb-2">
             <% if date.nil? %>
               Unknown date
             <% elsif date == Date.current %>

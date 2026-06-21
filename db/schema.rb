@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_15_052452) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -23,10 +23,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_052452) do
     t.uuid "expense_id", null: false
     t.datetime "funded_at"
     t.uuid "funding_event_id", null: false
+    t.decimal "spent_amount", precision: 10, scale: 2, default: "0.0", null: false
+    t.datetime "spent_at"
+    t.uuid "spent_by_transaction_id"
     t.datetime "updated_at", null: false
     t.index ["expense_id"], name: "index_allocations_on_expense_id"
     t.index ["funding_event_id", "expense_id"], name: "index_allocations_on_funding_event_id_and_expense_id", unique: true
     t.index ["funding_event_id"], name: "index_allocations_on_funding_event_id"
+    t.index ["spent_by_transaction_id"], name: "index_allocations_on_spent_by_transaction_id"
   end
 
   create_table "bank_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -276,6 +280,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_052452) do
     t.uuid "bank_account_id"
     t.datetime "created_at", null: false
     t.date "date"
+    t.uuid "expense_id"
     t.string "logo_url"
     t.string "merchant_entity_id"
     t.string "merchant_name"
@@ -285,9 +290,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_052452) do
     t.string "personal_finance_category"
     t.string "personal_finance_category_detailed"
     t.string "plaid_transaction_id"
+    t.date "previous_due_on"
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_transactions_on_bank_account_id"
     t.index ["date"], name: "index_transactions_on_date"
+    t.index ["expense_id"], name: "index_transactions_on_expense_id"
     t.index ["name"], name: "index_transactions_on_name", opclass: :gin_trgm_ops, using: :gin
     t.index ["plaid_transaction_id"], name: "index_transactions_on_plaid_transaction_id", unique: true
   end
@@ -316,6 +323,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_052452) do
 
   add_foreign_key "allocations", "expenses"
   add_foreign_key "allocations", "funding_events"
+  add_foreign_key "allocations", "transactions", column: "spent_by_transaction_id", on_delete: :nullify
   add_foreign_key "bank_accounts", "banks"
   add_foreign_key "banks", "users"
   add_foreign_key "expenses", "funding_schedules"
@@ -332,4 +340,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_052452) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "transaction_name_overrides", "users"
   add_foreign_key "transactions", "bank_accounts"
+  add_foreign_key "transactions", "expenses", on_delete: :nullify
 end

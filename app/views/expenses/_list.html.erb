@@ -15,6 +15,37 @@
       </div>
     </div>
   <% elsif expenses.any? %>
+    <%
+      total = expenses.sum(&:amount)
+      # Single aggregate query (not `expenses.sum(&:bucket_balance)`, which
+      # would fire one SQL per expense — N+1 on the index page).
+      allocated = Allocation.where(expense_id: expenses.map(&:id))
+                            .where.not(funded_at: nil)
+                            .where('amount > spent_amount')
+                            .sum(Arel.sql('amount - spent_amount'))
+      breakdown = expenses.group_by(&:funding_schedule)
+                          .transform_values { |exps| exps.sum(&:per_paycheck_amount) }
+                          .sort_by { |schedule, _| schedule.name }
+    %>
+    <div class="px-1 mb-4 flex flex-wrap items-end gap-x-8 gap-y-3">
+      <div>
+        <div class="text-xs text-base-content/60">Allocated / Total</div>
+        <div class="text-2xl font-bold tabular-nums leading-tight">
+          <%= number_to_currency(allocated) %>
+          <span class="text-base font-normal text-base-content/40">/ <%= number_to_currency(total) %></span>
+        </div>
+      </div>
+      <% breakdown.each do |schedule, amount| %>
+        <div>
+          <div class="text-xs text-base-content/60 truncate">From <%= schedule.name %></div>
+          <div class="font-semibold tabular-nums leading-tight">
+            <%= number_to_currency(amount) %>
+            <span class="text-xs text-base-content/60 font-normal">/paycheck</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
     <div class="space-y-2">
       <% expenses.each do |expense| %>
         <%= render expense %>

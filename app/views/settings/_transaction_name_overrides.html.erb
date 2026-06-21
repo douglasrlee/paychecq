@@ -1,12 +1,14 @@
-<div class="card card-lg bg-base-100 mt-6 w-full max-w-240 shadow-glow">
-  <div class="card-body">
-    <h2 class="card-title">Transaction Name Overrides</h2>
-    <p class="text-sm text-base-content/60 mt-1">Automatically rename transactions based on matching rules. Exact match takes priority over contains.</p>
+<div class="w-full max-w-240 mt-6 px-4">
+  <div class="card card-lg bg-base-100 shadow-glow">
+    <div class="card-body">
+      <h2 class="card-title">Transaction Name Overrides</h2>
+      <p class="text-sm text-base-content/60 mt-1">Automatically rename transactions based on matching rules. Exact match takes priority over contains.</p>
 
-    <%= turbo_frame_tag "transaction_name_overrides" do %>
-      <%= render "transaction_name_overrides/list",
-          transaction_name_overrides: @transaction_name_overrides,
-          transaction_name_overrides_pagy: @transaction_name_overrides_pagy %>
-    <% end %>
+      <%= turbo_frame_tag "transaction_name_overrides" do %>
+        <%= render "transaction_name_overrides/list",
+            transaction_name_overrides: @transaction_name_overrides,
+            transaction_name_overrides_pagy: @transaction_name_overrides_pagy %>
+      <% end %>
+    </div>
   </div>
 </div>

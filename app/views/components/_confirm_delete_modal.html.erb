@@ -1,0 +1,16 @@
+<%# locals: (toggle_id:, title:, message:, delete_path:, loading_text: 'Deleting...') %>
+
+<input type="checkbox" id="<%= toggle_id %>" class="modal-toggle" />
+<div class="modal modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold"><%= title %></h3>
+    <p class="py-4"><%= message %></p>
+    <div class="modal-action">
+      <label for="<%= toggle_id %>" class="btn">Cancel</label>
+      <%= link_to 'Delete', delete_path,
+            data: { turbo_method: :delete, controller: 'loading-button', loading_button_text_value: loading_text },
+            class: 'btn btn-error' %>
+    </div>
+  </div>
+  <label class="modal-backdrop" for="<%= toggle_id %>">Close</label>
+</div>
