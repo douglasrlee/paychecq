@@ -65,10 +65,12 @@ class Expense < ApplicationRecord
     (amount / paychecks).round(2)
   end
 
-  # Roll due_on forward / backward by one cadence cycle. Called by the
-  # expense linker when a transaction is linked (forward) or unlinked
-  # (backward). Public surface so the service doesn't need to reach into
-  # the private advance/recede helpers.
+  # Roll due_on forward / backward by one cadence cycle. `bump_due_forward!`
+  # is called by ExpenseLinker when a transaction is linked. Unlink no
+  # longer uses `bump_due_backward!` — it restores from `previous_due_on`
+  # instead, so the day-of-month survives months that clamp (Jan 31 ->
+  # Feb 28 -> Jan 31, not Jan 28). `bump_due_backward!` is kept on the
+  # public surface for callers that genuinely want a one-cycle recede.
   def bump_due_forward!
     update!(due_on: advance(due_on))
   end
