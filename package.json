@@ -24,6 +24,6 @@
     "tailwindcss": "^4.3.0"
   },
   "overrides": {
-    "undici": "^7.20.0"
+    "undici": "^7.28.0"
   }
 }
