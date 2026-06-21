@@ -1,8 +1,11 @@
 <%# locals: (expense:) %>
 
-<div class="relative">
-  <div class="flex items-center px-4 py-3 gap-3 bg-base-200 rounded-xl pr-24">
-    <div class="min-w-0 flex-1">
+<%= link_to edit_expense_path(expense),
+      class: "block bg-base-200 rounded-xl transition-colors hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-primary",
+      "aria-label": "Edit #{expense.name}",
+      data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
+  <div class="px-4 py-3">
+    <div class="min-w-0">
       <div class="flex items-baseline gap-2 min-w-0">
         <p class="font-medium truncate"><%= expense.name %></p>
         <p class="font-semibold tabular-nums shrink-0"><%= number_to_currency(expense.amount) %></p>
@@ -32,27 +35,4 @@
       </div>
     </div>
   </div>
-
-  <%= link_to edit_expense_path(expense),
-        class: "btn btn-ghost btn-sm text-primary absolute right-12 top-1/2 -translate-y-1/2",
-        "aria-label": "Edit #{expense.name}",
-        data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-    </svg>
-  <% end %>
-
-  <label for="delete_expense_<%= expense.id %>"
-         class="btn btn-ghost btn-sm text-error absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
-         aria-label="Delete <%= expense.name %>">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-    </svg>
-  </label>
-
-  <%= render 'components/confirm_delete_modal',
-        toggle_id: "delete_expense_#{expense.id}",
-        title: 'Delete expense',
-        message: "Are you sure you want to delete \"#{expense.name}\"?",
-        delete_path: expense_path(expense) %>
-</div>
+<% end %>

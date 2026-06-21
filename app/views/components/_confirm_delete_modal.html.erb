@@ -1,4 +1,4 @@
-<%# locals: (toggle_id:, title:, message:, delete_path:, loading_text: 'Deleting...') %>
+<%# locals: (toggle_id:, title:, message:, delete_path:, loading_text: 'Deleting...', form_data: nil) %>
 
 <input type="checkbox" id="<%= toggle_id %>" class="modal-toggle" />
 <div class="modal modal-middle">
@@ -7,9 +7,19 @@
     <p class="py-4"><%= message %></p>
     <div class="modal-action">
       <label for="<%= toggle_id %>" class="btn">Cancel</label>
-      <%= link_to 'Delete', delete_path,
-            data: { turbo_method: :delete, controller: 'loading-button', loading_button_text_value: loading_text },
-            class: 'btn btn-error' %>
+      <% if form_data %>
+        <%# button_to renders an inline form, so turbo:submit-end fires on it —
+            letting callers (e.g. the expense drawer) hook the form to close. %>
+        <%= button_to 'Delete', delete_path,
+              method: :delete,
+              class: 'btn btn-error',
+              data: { controller: 'loading-button', loading_button_text_value: loading_text },
+              form: { data: form_data } %>
+      <% else %>
+        <%= link_to 'Delete', delete_path,
+              data: { turbo_method: :delete, controller: 'loading-button', loading_button_text_value: loading_text },
+              class: 'btn btn-error' %>
+      <% end %>
     </div>
   </div>
   <label class="modal-backdrop" for="<%= toggle_id %>">Close</label>
