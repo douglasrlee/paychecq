@@ -2,6 +2,7 @@ class FundingSchedule < ApplicationRecord
   has_paper_trail
   belongs_to :user
   has_many :expenses, dependent: :restrict_with_error
+  has_many :goals, dependent: :restrict_with_error
   has_many :funding_events, dependent: :destroy
 
   CADENCES = %w[weekly biweekly semimonthly monthly].freeze

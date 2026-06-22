@@ -3,12 +3,13 @@ class Transaction < ApplicationRecord
 
   belongs_to :bank_account, optional: true
   belongs_to :expense, optional: true
+  belongs_to :goal, optional: true
 
   # Plaid sync can destroy transactions when the bank reports a posted
-  # transaction as removed. If the transaction was linked to an expense,
-  # we unlink first so the expense's bucket and due_on roll back cleanly
-  # rather than leaving allocations in a half-restored state.
+  # transaction as removed. Unlink from expense/goal first so buckets and
+  # due_on roll back cleanly rather than leaving allocations half-restored.
   before_destroy :unlink_expense_if_linked
+  before_destroy :unlink_goal_if_linked
 
   validates :name, :amount, presence: true
   validates :amount, numericality: true
@@ -45,5 +46,11 @@ class Transaction < ApplicationRecord
     return if expense_id.blank?
 
     ExpenseLinker.unlink(transaction: self)
+  end
+
+  def unlink_goal_if_linked
+    return if goal_id.blank?
+
+    GoalLinker.unlink(transaction: self)
   end
 end

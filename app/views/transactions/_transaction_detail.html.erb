@@ -159,7 +159,7 @@
             <% end %>
           </div>
         </div>
-      <% else %>
+      <% elsif transaction.goal.blank? %>
         <% user_expenses = Current.user.expenses.order(:name).to_a %>
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-base-content/50">Expense</span>
@@ -222,6 +222,91 @@
           <% else %>
             <p class="text-sm text-base-content/60">No expenses yet.</p>
             <%= link_to 'Create one in Expenses', expenses_path,
+                  class: 'link link-primary text-sm',
+                  data: { turbo_frame: '_top' } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Goal link %>
+    <div data-controller="toggle" data-toggle-delay-frame-value="drawer_content">
+      <% if transaction.goal.present? %>
+        <div class="bg-base-200 rounded-xl p-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm min-w-0">
+              <p class="text-xs text-base-content/50 mb-1">Goal</p>
+              <p class="font-medium truncate"><%= transaction.goal.name %></p>
+            </div>
+            <%= button_to transaction_goal_path(transaction),
+                  method: :delete,
+                  class: 'btn btn-ghost btn-sm text-error shrink-0',
+                  data: { controller: 'loading-button', loading_button_text_value: 'Unlinking...' } do %>
+              Unlink
+            <% end %>
+          </div>
+        </div>
+      <% elsif transaction.expense.blank? %>
+        <% user_goals = Current.user.goals.order(:name).to_a %>
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-sm text-base-content/50">Goal</span>
+          <button data-action="toggle#toggle" class="btn btn-ghost btn-sm text-primary">
+            Assign to goal
+          </button>
+        </div>
+
+        <%
+          bucket_by_goal_id = Allocation.where(goal_id: user_goals.map(&:id))
+                                        .where.not(funded_at: nil)
+                                        .where('allocations.amount > allocations.spent_amount')
+                                        .group(:goal_id)
+                                        .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+          fully_funded_goals = user_goals.select { |g| (bucket_by_goal_id[g.id] || 0) >= g.amount }
+        %>
+        <div data-toggle-target="content" class="hidden mt-3">
+          <% if fully_funded_goals.any? %>
+            <%= form_with url: transaction_goals_path,
+                  html: { novalidate: true },
+                  data: { controller: 'goal-picker', action: 'turbo:submit-end->toggle#closeOnSuccess' } do |f| %>
+              <%= hidden_field_tag :transaction_id, transaction.id %>
+
+              <div class="dropdown w-full mb-3">
+                <%= hidden_field_tag :goal_id, '', required: true, data: { goal_picker_target: 'input' } %>
+                <div tabindex="0" role="button" class="btn btn-sm btn-outline w-full justify-between font-normal">
+                  <span data-goal-picker-target="label" class="text-base-content/50">Select a goal</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>button:hover]:bg-base-200! [&_li>button:hover]:text-base-content! [&_li>button:focus]:bg-base-200! [&_li>button:focus]:text-base-content!">
+                  <% fully_funded_goals.each do |goal| %>
+                    <li>
+                      <button type="button"
+                              data-action="click->goal-picker#select"
+                              data-goal-picker-target="option"
+                              data-id="<%= goal.id %>"
+                              data-name="<%= goal.name %>">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="picker-check h-4 w-4 shrink-0 text-primary invisible" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="truncate"><%= goal.name %></span>
+                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(goal.amount) %></span>
+                      </button>
+                    </li>
+                  <% end %>
+                </ul>
+              </div>
+
+              <div class="flex gap-2">
+                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', goal_picker_target: 'submit' } %>
+                <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
+              </div>
+            <% end %>
+          <% elsif user_goals.any? %>
+            <p class="text-sm text-base-content/60">No goals are fully funded yet.</p>
+          <% else %>
+            <p class="text-sm text-base-content/60">No goals yet.</p>
+            <%= link_to 'Create one in Goals', goals_path,
                   class: 'link link-primary text-sm',
                   data: { turbo_frame: '_top' } %>
           <% end %>

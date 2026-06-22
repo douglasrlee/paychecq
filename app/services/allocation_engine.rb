@@ -1,7 +1,7 @@
 class AllocationEngine
   # Idempotently propose Allocation rows for one funding event — one per
-  # expense on the schedule, created with funded_at: nil. Setting
-  # processed_at signals "we've considered this event."
+  # expense and one per goal on the schedule, created with funded_at: nil.
+  # Setting processed_at signals "we've considered this event."
   def self.propose_for(funding_event)
     return if funding_event.processed_at.present?
 
@@ -15,38 +15,33 @@ class AllocationEngine
       end
     end
 
+    schedule.goals.find_each do |goal|
+      amount = compute_proposed_amount(goal, schedule, as_of: funding_event.occurs_on)
+      next if amount <= 0
+
+      Allocation.create_or_find_by!(funding_event: funding_event, goal: goal) do |a|
+        a.amount = amount
+      end
+    end
+
     funding_event.update!(processed_at: Time.current)
   end
 
-  # Walk this user's pending allocations in due-date order and flip
-  # funded_at when current available_balance can back them. Serialized
+  # Walk this user's pending allocations (expenses + goals) in due-date order
+  # and flip funded_at when current available_balance can back them. Serialized
   # per-user with a row lock so concurrent runs can't double-fund off
   # the same already_funded baseline.
   def self.fund_pending_for(user)
     user.with_lock do
-      # PG's SUM() returns NULL when every input row is NULL; AR returns 0
-      # only when there are no rows at all. Coalesce so we don't compare nil.
       available = user.bank_accounts.sum(:available_balance) || 0
-      # Only the unspent portion of funded allocations is still "earmarked"
-      # in the bank balance — once a transaction is linked, that money's
-      # been disbursed and shouldn't count against future funding decisions.
-      # (Bug fixed: previously this summed `amount` over all funded rows,
-      # so cross-cycle accumulation would eventually exceed available_balance
-      # and prevent any new fundings.)
-      already_funded = Allocation.joins(:expense)
-                                 .where(expenses: { user_id: user.id })
+
+      already_funded = Allocation.where(expense_id: user.expense_ids)
+                                 .or(Allocation.where(goal_id: user.goal_ids))
                                  .where.not(funded_at: nil)
                                  .where('allocations.amount > allocations.spent_amount')
                                  .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
 
-      pending = Allocation.joins(:expense)
-                          .where(expenses: { user_id: user.id }, funded_at: nil)
-                          .order('expenses.due_on ASC, expenses.created_at ASC')
-
-      # NOTE: .each (not find_each) because find_each ignores custom ORDER BY
-      # — it batches by primary key. Pending allocations per user are bounded
-      # (handful per active cycle), so loading them all is fine.
-      pending.each do |allocation|
+      pending_allocations_for(user).each do |allocation|
         next unless available >= already_funded + allocation.amount
 
         allocation.update!(funded_at: Time.current)
@@ -55,26 +50,34 @@ class AllocationEngine
     end
   end
 
+  # Load pending expense + goal allocations sorted by due_on across both types.
+  # Bounded in size per user so loading all into memory is fine.
+  private_class_method def self.pending_allocations_for(user)
+    pending_expense = Allocation.eager_load(:expense)
+                                .where(expenses: { user_id: user.id }, funded_at: nil)
+                                .order('expenses.due_on ASC, expenses.created_at ASC')
+                                .to_a
+
+    pending_goal = Allocation.eager_load(:goal)
+                             .where(goals: { user_id: user.id }, funded_at: nil)
+                             .order('goals.due_on ASC, goals.created_at ASC')
+                             .to_a
+
+    (pending_expense + pending_goal)
+      .sort_by { |a| [ a.expense&.due_on || a.goal&.due_on, a.created_at ] }
+  end
+
   # Look-ahead split: remaining-amount / paychecks-remaining-until-due.
-  # `remaining` counts only the unspent contribution of each allocation,
-  # so (a) fully-spent allocations from prior cycles drop out (cycle 2+
-  # gets refunded), and (b) a partial-spend residual reduces this cycle's
-  # need by exactly the carryover (a $3.67 leftover on a $10 expense means
-  # the next cycle proposes $6.33 worth, not $10).
-  #
-  # Note: when the expense's due_on is already in the past, next_due_on
-  # rolls forward past as_of, so paychecks_remaining is still > 0 and the
-  # normal split applies. The clamp-to-1 below only kicks in if the
-  # schedule has no occurrences in [as_of, next_due] at all (e.g., schedule
-  # hasn't started yet) — in that case this single paycheck covers the rest.
-  private_class_method def self.compute_proposed_amount(expense, schedule, as_of:)
-    active = expense.allocations
-                    .where('amount > spent_amount')
-                    .sum(Arel.sql('amount - spent_amount'))
-    remaining = expense.amount - active
+  # Works for both Expense and Goal since both expose the same interface
+  # (amount, allocations, next_due_on).
+  private_class_method def self.compute_proposed_amount(item, schedule, as_of:)
+    active = item.allocations
+                 .where('amount > spent_amount')
+                 .sum(Arel.sql('amount - spent_amount'))
+    remaining = item.amount - active
     return 0 if remaining <= 0
 
-    next_due = expense.next_due_on(after: as_of)
+    next_due = item.next_due_on(after: as_of)
     paychecks_remaining = schedule.occurrence_count_between(after: as_of, through: next_due)
     paychecks_remaining = 1 if paychecks_remaining.zero?
 

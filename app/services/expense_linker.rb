@@ -13,6 +13,7 @@ class ExpenseLinker
   # rollback of the prior expense) and then links to the new one.
   def self.link(transaction:, expense:)
     Transaction.transaction do
+      GoalLinker.unlink(transaction: transaction) if transaction.goal_id.present?
       unlink(transaction: transaction) if transaction.expense_id.present?
 
       # Lock the expense row so two concurrent links can't both walk and

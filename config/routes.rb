@@ -17,9 +17,10 @@ Rails.application.routes.draw do
   resources :transactions, only: [ :index, :show ]
   resources :transaction_name_overrides, only: [ :create, :destroy ]
   resources :transaction_expenses, only: [ :create, :destroy ]
+  resources :transaction_goals, only: [ :create, :destroy ]
   resources :funding_schedules, only: [ :new, :create, :edit, :update, :destroy ]
   resources :expenses, only: [ :index, :new, :create, :edit, :update, :destroy ]
-  resources :goals, only: [ :index ]
+  resources :goals, only: [ :index, :new, :create, :edit, :update, :destroy ]
   resource :profile, only: [ :show, :edit, :update ] do
     get :edit_security
     patch :update_security
