@@ -102,6 +102,20 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_nil @transaction.reload.expense
   end
 
+  test 'create re-renders the free-to-spend header with the updated total' do
+    sign_in_as(@user)
+    fully_fund(@netflix)
+
+    post transaction_expenses_url,
+         params: { transaction_id: @transaction.id, expense_id: @netflix.id },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/turbo-stream action="replace" target="free_to_spend"/, response.body)
+    # Netflix's $15.99 bucket is now spent → $0 in buckets, full $6,000 free.
+    assert_match(/\$0\.00 in buckets/, response.body)
+  end
+
   test 'destroy responds with turbo_stream replacing drawer_content' do
     sign_in_as(@user)
     fully_fund(@netflix)
@@ -111,6 +125,19 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
+  end
+
+  test 'destroy re-renders the free-to-spend header with the restored total' do
+    sign_in_as(@user)
+    fully_fund(@netflix)
+    ExpenseLinker.link(transaction: @transaction, expense: @netflix)
+
+    delete transaction_expense_url(@transaction), headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/turbo-stream action="replace" target="free_to_spend"/, response.body)
+    # Unlinking restores Netflix's $15.99 to its bucket.
+    assert_match(/\$15\.99 in buckets/, response.body)
   end
 
   private

@@ -79,23 +79,39 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'a', text: /Prev/
   end
 
-  test 'index shows aggregated available balance when a bank is linked' do
+  test 'index shows free-to-spend as available balance minus funded buckets' do
     sign_in_as(users(:johndoe))
 
     get transactions_url
 
+    # chase checking ($1000) + savings ($5000) = $6000 available;
+    # only netflix_first ($8.00) is funded and unspent → $5,992.00 free.
     assert_response :success
-    assert_select 'span', text: 'Available Balance:'
-    assert_select 'span', text: '$6,000.00'
+    assert_select 'div', text: 'Free-to-Spend'
+    assert_select 'span', text: '$5,992.00'
+    assert_select 'div', text: '$6,000.00 available'
+    assert_select 'div', text: '$8.00 in buckets'
   end
 
-  test 'index does not render an available balance when no bank is linked' do
+  test 'index renders negative safe-to-spend with error styling' do
+    bank_accounts(:chase_checking).update!(available_balance: 0)
+    bank_accounts(:chase_savings).update!(available_balance: 0)
+    sign_in_as(users(:johndoe))
+
+    get transactions_url
+
+    # $0 available, $8.00 reserved in buckets → -$8.00 free to spend.
+    assert_response :success
+    assert_select 'span.text-error', text: '-$8.00'
+  end
+
+  test 'index does not render free-to-spend when no bank is linked' do
     sign_in_as(users(:admin))
 
     get transactions_url
 
     assert_response :success
-    assert_select 'span', text: 'Available Balance:', count: 0
+    assert_select 'div', text: 'Free-to-Spend', count: 0
   end
 
   test 'show requires authentication' do

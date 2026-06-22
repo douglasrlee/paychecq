@@ -9,3 +9,9 @@
 <%= turbo_stream.replace dom_id(@transaction) do %>
   <%= render @transaction, transaction_name_overrides: @transaction_name_overrides %>
 <% end %>
+
+<%# Linking spends the expense's funded allocations, shrinking "in buckets"
+    and raising Free-to-Spend — keep the index header in sync. %>
+<%= turbo_stream.replace 'free_to_spend' do %>
+  <%= render 'transactions/free_to_spend' %>
+<% end %>

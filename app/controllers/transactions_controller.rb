@@ -5,8 +5,10 @@ class TransactionsController < ApplicationController
       Current.user.transactions.includes(:expense).order(Arel.sql('date DESC NULLS LAST, created_at DESC')),
       limit: 25
     )
+    # Free-to-Spend (available balance minus funded buckets) is computed in
+    # the transactions/_free_to_spend partial so the link/unlink streams can
+    # re-render it.
     @has_bank = Current.user.banks.exists?
-    @available_balance = Current.user.bank_accounts.sum(:available_balance) if @has_bank
   end
 
   def show
