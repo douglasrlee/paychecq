@@ -93,7 +93,7 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'div', text: '$8.00 in buckets'
   end
 
-  test 'index renders negative safe-to-spend with error styling' do
+  test 'index renders negative free-to-spend with error styling' do
     bank_accounts(:chase_checking).update!(available_balance: 0)
     bank_accounts(:chase_savings).update!(available_balance: 0)
     sign_in_as(users(:johndoe))

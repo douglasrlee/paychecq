@@ -1,6 +1,7 @@
 <%# Free-to-Spend summary. Self-contained (computes from Current.user) so the
-    link/unlink turbo streams can re-render it when buckets change. The
-    aggregate mirrors expenses/_list.html.erb — one query, no N+1. %>
+    link/unlink turbo streams can re-render it when buckets change. The bucket
+    total is a single aggregate query (mirrors expenses/_list.html.erb),
+    avoiding the per-expense N+1 of summing bucket_balance one row at a time. %>
 <div id="free_to_spend" class="text-right">
   <% if Current.user.banks.exists? %>
     <%
