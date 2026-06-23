@@ -6,11 +6,17 @@
   <% if Current.user.banks.exists? %>
     <%
       available = Current.user.bank_accounts.sum(:available_balance)
-      allocated = Current.user.expenses
-                          .joins(:allocations)
-                          .where.not(allocations: { funded_at: nil })
-                          .where('allocations.amount > allocations.spent_amount')
-                          .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+      expense_allocated = Current.user.expenses
+                                 .joins(:allocations)
+                                 .where.not(allocations: { funded_at: nil })
+                                 .where('allocations.amount > allocations.spent_amount')
+                                 .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+      goal_allocated = Current.user.goals
+                              .joins(:allocations)
+                              .where.not(allocations: { funded_at: nil })
+                              .where('allocations.amount > allocations.spent_amount')
+                              .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+      allocated = expense_allocated + goal_allocated
       free = available - allocated
     %>
     <details class="group">

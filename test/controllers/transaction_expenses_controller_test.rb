@@ -39,6 +39,18 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
   end
 
+  test 'linking an expense shows the goal section as a disabled placeholder' do
+    sign_in_as(@user)
+    fully_fund(@netflix)
+
+    post transaction_expenses_url,
+         params: { transaction_id: @transaction.id, expense_id: @netflix.id },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :success
+    assert_match(/Unlink the expense to assign a goal/, response.body)
+  end
+
   test 'create rejects a non-positive (refund/credit) transaction' do
     sign_in_as(@user)
     fully_fund(@netflix)

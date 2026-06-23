@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_22_053817) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -20,17 +20,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
   create_table "allocations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "amount", precision: 10, scale: 2, null: false
     t.datetime "created_at", null: false
-    t.uuid "expense_id", null: false
+    t.uuid "expense_id"
     t.datetime "funded_at"
     t.uuid "funding_event_id", null: false
+    t.uuid "goal_id"
     t.decimal "spent_amount", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "spent_at"
     t.uuid "spent_by_transaction_id"
     t.datetime "updated_at", null: false
     t.index ["expense_id"], name: "index_allocations_on_expense_id"
-    t.index ["funding_event_id", "expense_id"], name: "index_allocations_on_funding_event_id_and_expense_id", unique: true
+    t.index ["funding_event_id", "expense_id"], name: "index_allocations_on_funding_event_id_and_expense_id", unique: true, where: "(expense_id IS NOT NULL)"
+    t.index ["funding_event_id", "goal_id"], name: "index_allocations_on_funding_event_id_and_goal_id", unique: true, where: "(goal_id IS NOT NULL)"
     t.index ["funding_event_id"], name: "index_allocations_on_funding_event_id"
+    t.index ["goal_id"], name: "index_allocations_on_goal_id"
     t.index ["spent_by_transaction_id"], name: "index_allocations_on_spent_by_transaction_id"
+    t.check_constraint "num_nonnulls(expense_id, goal_id) = 1", name: "allocations_exactly_one_allocatable"
   end
 
   create_table "bank_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -99,6 +103,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["user_id"], name: "index_funding_schedules_on_user_id"
+  end
+
+  create_table "goals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.string "cadence", null: false
+    t.datetime "created_at", null: false
+    t.date "due_on", null: false
+    t.uuid "funding_schedule_id", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["funding_schedule_id"], name: "index_goals_on_funding_schedule_id"
+    t.index ["user_id"], name: "index_goals_on_user_id"
   end
 
   create_table "push_subscriptions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -281,6 +298,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
     t.datetime "created_at", null: false
     t.date "date"
     t.uuid "expense_id"
+    t.uuid "goal_id"
     t.string "logo_url"
     t.string "merchant_entity_id"
     t.string "merchant_name"
@@ -295,8 +313,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
     t.index ["bank_account_id"], name: "index_transactions_on_bank_account_id"
     t.index ["date"], name: "index_transactions_on_date"
     t.index ["expense_id"], name: "index_transactions_on_expense_id"
+    t.index ["goal_id"], name: "index_transactions_on_goal_id"
     t.index ["name"], name: "index_transactions_on_name", opclass: :gin_trgm_ops, using: :gin
     t.index ["plaid_transaction_id"], name: "index_transactions_on_plaid_transaction_id", unique: true
+    t.check_constraint "num_nonnulls(expense_id, goal_id) <= 1", name: "transactions_at_most_one_link"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -323,6 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
 
   add_foreign_key "allocations", "expenses"
   add_foreign_key "allocations", "funding_events"
+  add_foreign_key "allocations", "goals"
   add_foreign_key "allocations", "transactions", column: "spent_by_transaction_id", on_delete: :nullify
   add_foreign_key "bank_accounts", "banks"
   add_foreign_key "banks", "users"
@@ -330,6 +351,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
   add_foreign_key "expenses", "users"
   add_foreign_key "funding_events", "funding_schedules"
   add_foreign_key "funding_schedules", "users"
+  add_foreign_key "goals", "funding_schedules"
+  add_foreign_key "goals", "users"
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -341,4 +364,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_19_193908) do
   add_foreign_key "transaction_name_overrides", "users"
   add_foreign_key "transactions", "bank_accounts"
   add_foreign_key "transactions", "expenses", on_delete: :nullify
+  add_foreign_key "transactions", "goals", on_delete: :nullify
 end

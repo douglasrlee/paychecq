@@ -1,0 +1,38 @@
+<%# locals: (goal:) %>
+
+<%= link_to edit_goal_path(goal),
+      class: "block bg-base-200 rounded-xl transition-colors hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-primary",
+      "aria-label": "Edit #{goal.name}",
+      data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
+  <div class="px-4 py-3">
+    <div class="min-w-0">
+      <div class="flex items-baseline gap-2 min-w-0">
+        <p class="font-medium truncate"><%= goal.name %></p>
+        <p class="font-semibold tabular-nums shrink-0"><%= number_to_currency(goal.amount) %></p>
+      </div>
+      <p class="text-sm text-base-content/60">
+        <%= goal.past_due? ? 'Past due' : 'Due' %> <%= goal.due_on.strftime('%b %-d') %>
+        · <%= number_to_currency(goal.per_paycheck_amount) %>/<%= goal.funding_schedule.name %>
+        <% if goal.past_due? %>
+          <span class="badge badge-error badge-sm ml-1">Past due</span>
+        <% end %>
+      </p>
+      <%
+        bucket = goal.bucket_balance
+        off_track = goal.off_track?
+        percent = goal.amount.positive? ? [ (bucket / goal.amount * 100).to_i, 100 ].min : 0
+      %>
+      <div class="flex items-center gap-2 mt-1">
+        <progress class="progress <%= off_track ? 'progress-warning' : 'progress-primary' %> h-1.5 flex-1"
+                  value="<%= percent %>" max="100"
+                  aria-label="<%= goal.name %> funded <%= percent %>%"></progress>
+        <span class="text-xs text-base-content/60 tabular-nums shrink-0">
+          <%= number_to_currency(bucket) %> / <%= number_to_currency(goal.amount) %>
+        </span>
+        <% if off_track %>
+          <span class="badge badge-warning badge-xs shrink-0">Off track</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

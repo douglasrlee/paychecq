@@ -39,4 +39,18 @@ class AllocationTest < ActiveSupport::TestCase
     assert_not allocation.valid?
     assert_includes allocation.errors[:spent_amount], 'cannot exceed amount'
   end
+
+  test 'rejects an allocation linked to both an expense and a goal' do
+    allocation = Allocation.new(funding_event: @event, expense: @expense, goal: goals(:janes_goal), amount: 5)
+
+    assert_not allocation.valid?
+    assert_includes allocation.errors[:base], 'must belong to exactly one of an expense or a goal'
+  end
+
+  test 'rejects an allocation linked to neither an expense nor a goal' do
+    allocation = Allocation.new(funding_event: @event, amount: 5)
+
+    assert_not allocation.valid?
+    assert_includes allocation.errors[:base], 'must belong to exactly one of an expense or a goal'
+  end
 end

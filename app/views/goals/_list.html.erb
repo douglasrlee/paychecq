@@ -1,0 +1,65 @@
+<%# locals: (goals:, funding_schedules:) %>
+
+<%= turbo_frame_tag "goals", class: "block w-full max-w-240 mt-4 px-4" do %>
+  <% if funding_schedules.none? %>
+    <div class="card card-lg bg-base-100 shadow-glow">
+      <div class="card-body">
+        <div class="text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="mt-4 text-base-content/60">Add a funding schedule first</p>
+          <p class="mt-1 text-sm text-base-content/40">Goals are funded by your paychecks — set one up to get started.</p>
+          <%= link_to "Go to settings", settings_path, class: "btn btn-primary btn-sm mt-4", data: { turbo_frame: "_top" } %>
+        </div>
+      </div>
+    </div>
+  <% elsif goals.any? %>
+    <%
+      total = goals.sum(&:amount)
+      allocated = Allocation.where(goal_id: goals.map(&:id))
+                            .where.not(funded_at: nil)
+                            .where('amount > spent_amount')
+                            .sum(Arel.sql('amount - spent_amount'))
+      breakdown = goals.group_by(&:funding_schedule)
+                       .transform_values { |gs| gs.sum(&:per_paycheck_amount) }
+                       .sort_by { |schedule, _| schedule.name }
+    %>
+    <div class="px-1 mb-4 flex flex-wrap items-end gap-x-8 gap-y-3">
+      <div>
+        <div class="text-xs text-base-content/60">Allocated / Total</div>
+        <div class="text-2xl font-bold tabular-nums leading-tight">
+          <%= number_to_currency(allocated) %>
+          <span class="text-base font-normal text-base-content/40">/ <%= number_to_currency(total) %></span>
+        </div>
+      </div>
+      <% breakdown.each do |schedule, amount| %>
+        <div>
+          <div class="text-xs text-base-content/60 truncate">From <%= schedule.name %></div>
+          <div class="font-semibold tabular-nums leading-tight">
+            <%= number_to_currency(amount) %>
+            <span class="text-xs text-base-content/60 font-normal">/paycheck</span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="space-y-2">
+      <% goals.each do |goal| %>
+        <%= render goal %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card card-lg bg-base-100 shadow-glow">
+      <div class="card-body">
+        <div class="text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+          </svg>
+          <p class="mt-4 text-base-content/60">No goals yet</p>
+          <p class="mt-1 text-sm text-base-content/40">Tap + to add your first one.</p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

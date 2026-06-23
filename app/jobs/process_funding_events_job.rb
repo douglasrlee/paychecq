@@ -22,10 +22,13 @@ class ProcessFundingEventsJob < ApplicationJob
 
     # Only walk users who actually have pending allocations to fund. Avoids
     # acquiring a row lock per user every hour when nothing changed.
-    User.joins(expenses: :allocations)
-        .where(allocations: { funded_at: nil })
-        .distinct
-        .find_each do |user|
+    ids_via_expenses = User.joins(expenses: :allocations)
+                           .where(allocations: { funded_at: nil })
+                           .distinct.pluck(:id)
+    ids_via_goals = User.joins(goals: :allocations)
+                        .where(allocations: { funded_at: nil })
+                        .distinct.pluck(:id)
+    User.where(id: ids_via_expenses | ids_via_goals).find_each do |user|
       AllocationEngine.fund_pending_for(user)
     rescue StandardError => error
       Rails.logger.error("AllocationEngine.fund_pending_for failed for user=#{user.id}: #{error.message}")

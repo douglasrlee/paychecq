@@ -162,9 +162,87 @@ class AllocationEngineTest < ActiveSupport::TestCase
     assert_in_delta 2.11, cycle2_allocation.amount.to_f, 0.01 # 6.33 / 3
   end
 
+  test 'propose_for creates one allocation per goal, all pending' do
+    goal = create_goal(name: 'Vacation', amount: 15.99, due_on: Date.new(2026, 1, 29)) # 3 paychecks: Jan 1, 15, 29
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+
+    assert_difference 'Allocation.count', 1 do
+      AllocationEngine.propose_for(event)
+    end
+
+    allocation = event.allocations.find_by(goal: goal)
+    assert_in_delta 5.33, allocation.amount.to_f, 0.01 # 15.99 / 3
+    assert_nil allocation.funded_at
+    assert event.reload.processed_at.present?
+  end
+
+  test 'propose_for proposes for expenses and goals on the same schedule' do
+    expense = create_expense(name: 'Netflix', amount: 15.99, due_on: Date.new(2026, 1, 29))
+    goal = create_goal(name: 'Vacation', amount: 1200, due_on: Date.new(2026, 12, 1))
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+
+    assert_difference 'Allocation.count', 2 do
+      AllocationEngine.propose_for(event)
+    end
+
+    assert event.allocations.find_by(expense: expense).present?
+    assert event.allocations.find_by(goal: goal).present?
+  end
+
+  test 'propose_for skips fully-funded goals' do
+    goal = create_goal(name: 'Vacation', amount: 50, due_on: Date.new(2026, 12, 1))
+    earlier_event = @schedule.funding_events.create!(occurs_on: Date.new(2025, 12, 18))
+    Allocation.create!(funding_event: earlier_event, goal: goal, amount: 50, funded_at: Time.current)
+
+    new_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+
+    assert_no_difference 'Allocation.count' do
+      AllocationEngine.propose_for(new_event)
+    end
+  end
+
+  test 'fund_pending_for breaks due-date ties by the item created_at, not the allocation created_at' do
+    bank_accounts(:chase_checking).update!(available_balance: 50)
+    bank_accounts(:chase_savings).update!(available_balance: 0)
+
+    # Goal is created before the expense (earlier item created_at), but
+    # propose_for builds the expense allocation first — so the allocation
+    # created_at order is the opposite of the item created_at order. Both
+    # share a due date, so the tie-break decides who funds first.
+    goal = create_goal(name: 'Goal', amount: 50, due_on: Date.new(2026, 1, 1))
+    expense = create_expense(name: 'Expense', amount: 50, due_on: Date.new(2026, 1, 1))
+    assert goal.created_at < expense.created_at, 'goal item should be created before the expense item'
+
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    AllocationEngine.propose_for(event)
+
+    goal_alloc = event.allocations.find_by(goal: goal)
+    expense_alloc = event.allocations.find_by(expense: expense)
+    assert goal_alloc.created_at > expense_alloc.created_at, 'expense allocation should be created first'
+
+    AllocationEngine.fund_pending_for(@user)
+
+    assert goal_alloc.reload.funded_at.present?, 'earlier-created goal should fund first on a due-date tie'
+    assert_nil expense_alloc.reload.funded_at, 'later-created expense waits when the balance covers only one'
+  end
+
+  test 'fund_pending_for funds a goal allocation when balance covers' do
+    goal = create_goal(name: 'Vacation', amount: 15.99, due_on: Date.new(2026, 1, 29))
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    AllocationEngine.propose_for(event)
+
+    AllocationEngine.fund_pending_for(@user)
+
+    assert event.allocations.find_by(goal: goal).funded_at.present?
+  end
+
   private
 
   def create_expense(name:, amount:, due_on:)
     @user.expenses.create!(name: name, amount: amount, cadence: 'monthly', due_on: due_on, funding_schedule: @schedule)
+  end
+
+  def create_goal(name:, amount:, due_on:)
+    @user.goals.create!(name: name, amount: amount, cadence: 'monthly', due_on: due_on, funding_schedule: @schedule)
   end
 end

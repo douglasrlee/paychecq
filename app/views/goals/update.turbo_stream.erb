@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "goals" do %>
+  <%= render "goals/list", goals: @goals, funding_schedules: @funding_schedules %>
+<% end %>
