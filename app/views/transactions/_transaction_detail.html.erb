@@ -226,6 +226,12 @@
                   data: { turbo_frame: '_top' } %>
           <% end %>
         </div>
+      <% else %>
+        <%# Linked to a goal — expense and goal are mutually exclusive. %>
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-sm text-base-content/30">Expense</span>
+          <span class="text-sm text-base-content/40 text-right">Unlink the goal to assign an expense</span>
+        </div>
       <% end %>
     </div>
 
@@ -310,6 +316,12 @@
                   class: 'link link-primary text-sm',
                   data: { turbo_frame: '_top' } %>
           <% end %>
+        </div>
+      <% else %>
+        <%# Linked to an expense — expense and goal are mutually exclusive. %>
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-sm text-base-content/30">Goal</span>
+          <span class="text-sm text-base-content/40 text-right">Unlink the expense to assign a goal</span>
         </div>
       <% end %>
     </div>

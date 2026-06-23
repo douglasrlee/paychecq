@@ -25,11 +25,12 @@ class CreateGoalsAndExtendAllocationsForGoals < ActiveRecord::Migration[8.1]
 
     add_foreign_key :allocations, :goals, validate: false
 
-    # Replace the blanket unique index with two partial ones (one per type)
-    safety_assured do
-      remove_index :allocations, column: [ :funding_event_id, :expense_id ],
-                                 name: 'index_allocations_on_funding_event_id_and_expense_id'
-    end
+    # Replace the blanket unique index with two partial ones (one per type).
+    # Drop concurrently so it doesn't take an ACCESS EXCLUSIVE lock that blocks
+    # writes (safe here since disable_ddl_transaction! is set above).
+    remove_index :allocations, column: [ :funding_event_id, :expense_id ],
+                               name: 'index_allocations_on_funding_event_id_and_expense_id',
+                               algorithm: :concurrently
     add_index :allocations, [ :funding_event_id, :expense_id ],
               unique: true,
               where: 'expense_id IS NOT NULL',
