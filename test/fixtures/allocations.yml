@@ -14,7 +14,7 @@ janes_goal_first:
   funding_event: janes_paycheck_first
   goal: janes_goal
   amount: 8.00
-  funded_at: 2026-01-01T08:00:00Z
+  funded_at: 2026-03-01T08:00:00Z
 
 janes_goal_second_pending:
   funding_event: janes_paycheck_second

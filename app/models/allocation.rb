@@ -24,6 +24,6 @@ class Allocation < ApplicationRecord
   def exactly_one_allocatable
     return if expense_id.present? ^ goal_id.present?
 
-    errors.add(:base, 'must belong to either an expense or a goal, not both')
+    errors.add(:base, 'must belong to exactly one of an expense or a goal')
   end
 end

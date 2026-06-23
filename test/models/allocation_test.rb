@@ -44,13 +44,13 @@ class AllocationTest < ActiveSupport::TestCase
     allocation = Allocation.new(funding_event: @event, expense: @expense, goal: goals(:janes_goal), amount: 5)
 
     assert_not allocation.valid?
-    assert_includes allocation.errors[:base], 'must belong to either an expense or a goal, not both'
+    assert_includes allocation.errors[:base], 'must belong to exactly one of an expense or a goal'
   end
 
   test 'rejects an allocation linked to neither an expense nor a goal' do
     allocation = Allocation.new(funding_event: @event, amount: 5)
 
     assert_not allocation.valid?
-    assert_includes allocation.errors[:base], 'must belong to either an expense or a goal, not both'
+    assert_includes allocation.errors[:base], 'must belong to exactly one of an expense or a goal'
   end
 end
