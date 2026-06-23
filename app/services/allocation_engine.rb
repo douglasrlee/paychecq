@@ -63,8 +63,14 @@ class AllocationEngine
                              .order('goals.due_on ASC, goals.created_at ASC')
                              .to_a
 
+    # Tie-break on the expense/goal's created_at (matching each per-type SQL
+    # order above), not the allocation's, so same-due-date items keep a stable
+    # funding priority.
     (pending_expense + pending_goal)
-      .sort_by { |a| [ a.expense&.due_on || a.goal&.due_on, a.created_at ] }
+      .sort_by do |a|
+        item = a.expense || a.goal
+        [ item.due_on, item.created_at ]
+      end
   end
 
   # Look-ahead split: remaining-amount / paychecks-remaining-until-due.
