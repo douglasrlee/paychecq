@@ -316,6 +316,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_053817) do
     t.index ["goal_id"], name: "index_transactions_on_goal_id"
     t.index ["name"], name: "index_transactions_on_name", opclass: :gin_trgm_ops, using: :gin
     t.index ["plaid_transaction_id"], name: "index_transactions_on_plaid_transaction_id", unique: true
+    t.check_constraint "num_nonnulls(expense_id, goal_id) <= 1", name: "transactions_at_most_one_link"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

@@ -53,6 +53,14 @@ class CreateGoalsAndExtendAllocationsForGoals < ActiveRecord::Migration[8.1]
     # an FK violation (mirrors the transactions/expenses fix in
     # CascadeNullifyTransactionExpenseLinkingFks)
     add_foreign_key :transactions, :goals, on_delete: :nullify, validate: false
+
+    # A transaction links to an expense OR a goal — never both. <= 1 (not = 1)
+    # because an unlinked transaction has neither set. DB-level backstop for the
+    # linker-side mutual exclusion, mirroring allocations_exactly_one_allocatable.
+    add_check_constraint :transactions,
+                         'num_nonnulls(expense_id, goal_id) <= 1',
+                         name: 'transactions_at_most_one_link',
+                         validate: false
   end
   # rubocop:enable Rails/BulkChangeTable
 end

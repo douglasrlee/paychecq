@@ -4,6 +4,11 @@ class GoalLinker
   # If the transaction is already linked to an expense, unlinks that first.
   def self.link(transaction:, goal:)
     Transaction.transaction do
+      # Lock the transaction row first so concurrent goal/expense link
+      # requests serialize per-transaction. Without this two requests can each
+      # see the other FK blank and commit with both expense_id and goal_id set.
+      transaction.lock!
+
       ExpenseLinker.unlink(transaction: transaction) if transaction.expense_id.present?
       unlink(transaction: transaction) if transaction.goal_id.present?
 

@@ -57,6 +57,16 @@ class TransactionTest < ActiveSupport::TestCase
     assert_equal bank_account, transaction.bank_account
   end
 
+  test 'database rejects a transaction linked to both an expense and a goal' do
+    transaction = Transaction.create!(name: 'Both', amount: 15.00)
+
+    # Bypass the linkers (which enforce mutual exclusion) to confirm the
+    # DB-level CHECK constraint is a real backstop against a both-linked state.
+    assert_raises(ActiveRecord::StatementInvalid) do
+      transaction.update_columns(expense_id: expenses(:netflix).id, goal_id: goals(:janes_goal).id) # rubocop:disable Rails/SkipsModelValidations
+    end
+  end
+
   test 'safe_logo_url returns https url' do
     transaction = Transaction.new(name: 'Test', amount: 10, logo_url: 'https://example.com/logo.png')
 

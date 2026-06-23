@@ -13,6 +13,11 @@ class ExpenseLinker
   # rollback of the prior expense) and then links to the new one.
   def self.link(transaction:, expense:)
     Transaction.transaction do
+      # Lock the transaction row first so concurrent expense/goal link
+      # requests serialize per-transaction. Without this two requests can each
+      # see the other FK blank and commit with both expense_id and goal_id set.
+      transaction.lock!
+
       GoalLinker.unlink(transaction: transaction) if transaction.goal_id.present?
       unlink(transaction: transaction) if transaction.expense_id.present?
 
