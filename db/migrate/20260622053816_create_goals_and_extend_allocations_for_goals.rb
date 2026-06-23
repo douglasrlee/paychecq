@@ -3,7 +3,7 @@ class CreateGoalsAndExtendAllocationsForGoals < ActiveRecord::Migration[8.1]
 
   # rubocop:disable Rails/BulkChangeTable -- bulk: true is incompatible with algorithm: :concurrently
   def change
-    create_table :goals, id: :uuid, default: -> { "gen_random_uuid()" } do |t|
+    create_table :goals, id: :uuid, default: -> { 'gen_random_uuid()' } do |t|
       t.string :name, null: false
       t.decimal :amount, precision: 10, scale: 2, null: false
       t.string :cadence, null: false
@@ -26,27 +26,33 @@ class CreateGoalsAndExtendAllocationsForGoals < ActiveRecord::Migration[8.1]
     add_foreign_key :allocations, :goals, validate: false
 
     # Replace the blanket unique index with two partial ones (one per type)
-    safety_assured { remove_index :allocations, name: "index_allocations_on_funding_event_id_and_expense_id" }
+    safety_assured do
+      remove_index :allocations, column: [ :funding_event_id, :expense_id ],
+                                 name: 'index_allocations_on_funding_event_id_and_expense_id'
+    end
     add_index :allocations, [ :funding_event_id, :expense_id ],
               unique: true,
-              where: "expense_id IS NOT NULL",
-              name: "index_allocations_on_funding_event_id_and_expense_id",
+              where: 'expense_id IS NOT NULL',
+              name: 'index_allocations_on_funding_event_id_and_expense_id',
               algorithm: :concurrently
     add_index :allocations, [ :funding_event_id, :goal_id ],
               unique: true,
-              where: "goal_id IS NOT NULL",
-              name: "index_allocations_on_funding_event_id_and_goal_id",
+              where: 'goal_id IS NOT NULL',
+              name: 'index_allocations_on_funding_event_id_and_goal_id',
               algorithm: :concurrently
 
     # Exactly one of expense_id or goal_id must be set
     add_check_constraint :allocations,
-                         "num_nonnulls(expense_id, goal_id) = 1",
-                         name: "allocations_exactly_one_allocatable",
+                         'num_nonnulls(expense_id, goal_id) = 1',
+                         name: 'allocations_exactly_one_allocatable',
                          validate: false
 
     add_column :transactions, :goal_id, :uuid
     add_index :transactions, :goal_id, algorithm: :concurrently
-    add_foreign_key :transactions, :goals, validate: false
+    # on_delete: :nullify so deleting a goal clears the link instead of raising
+    # an FK violation (mirrors the transactions/expenses fix in
+    # CascadeNullifyTransactionExpenseLinkingFks)
+    add_foreign_key :transactions, :goals, on_delete: :nullify, validate: false
   end
   # rubocop:enable Rails/BulkChangeTable
 end

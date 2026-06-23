@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_22_053816) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_22_053817) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -34,9 +34,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_053816) do
     t.index ["funding_event_id"], name: "index_allocations_on_funding_event_id"
     t.index ["goal_id"], name: "index_allocations_on_goal_id"
     t.index ["spent_by_transaction_id"], name: "index_allocations_on_spent_by_transaction_id"
+    t.check_constraint "num_nonnulls(expense_id, goal_id) = 1", name: "allocations_exactly_one_allocatable"
   end
-
-  add_check_constraint "allocations", "num_nonnulls(expense_id, goal_id) = 1", name: "allocations_exactly_one_allocatable", validate: false
 
   create_table "bank_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "account_subtype"
@@ -343,7 +342,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_053816) do
 
   add_foreign_key "allocations", "expenses"
   add_foreign_key "allocations", "funding_events"
-  add_foreign_key "allocations", "goals", validate: false
+  add_foreign_key "allocations", "goals"
   add_foreign_key "allocations", "transactions", column: "spent_by_transaction_id", on_delete: :nullify
   add_foreign_key "bank_accounts", "banks"
   add_foreign_key "banks", "users"
@@ -351,8 +350,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_053816) do
   add_foreign_key "expenses", "users"
   add_foreign_key "funding_events", "funding_schedules"
   add_foreign_key "funding_schedules", "users"
-  add_foreign_key "goals", "funding_schedules", validate: false
-  add_foreign_key "goals", "users", validate: false
+  add_foreign_key "goals", "funding_schedules"
+  add_foreign_key "goals", "users"
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -364,5 +363,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_053816) do
   add_foreign_key "transaction_name_overrides", "users"
   add_foreign_key "transactions", "bank_accounts"
   add_foreign_key "transactions", "expenses", on_delete: :nullify
-  add_foreign_key "transactions", "goals", validate: false
+  add_foreign_key "transactions", "goals", on_delete: :nullify
 end

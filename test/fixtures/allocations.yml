@@ -9,3 +9,15 @@ netflix_second_pending:
   expense: netflix
   amount: 7.99
   funded_at:
+
+janes_goal_first:
+  funding_event: janes_paycheck_first
+  goal: janes_goal
+  amount: 8.00
+  funded_at: 2026-01-01T08:00:00Z
+
+janes_goal_second_pending:
+  funding_event: janes_paycheck_second
+  goal: janes_goal
+  amount: 7.99
+  funded_at:

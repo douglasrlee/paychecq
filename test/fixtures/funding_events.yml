@@ -5,3 +5,13 @@ paycheck_first:
 paycheck_second:
   funding_schedule: paycheck
   occurs_on: 2026-01-15
+
+# Dates kept off johndoe's 2026-01-01/15 events so job tests that look events
+# up by occurs_on stay unambiguous.
+janes_paycheck_first:
+  funding_schedule: janes_paycheck
+  occurs_on: 2026-03-01
+
+janes_paycheck_second:
+  funding_schedule: janes_paycheck
+  occurs_on: 2026-03-15

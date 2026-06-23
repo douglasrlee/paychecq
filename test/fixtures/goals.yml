@@ -1,0 +1,15 @@
+janes_goal:
+  user: janedoe
+  funding_schedule: janes_paycheck
+  name: Emergency fund
+  amount: 3000.00
+  cadence: yearly
+  due_on: 2026-10-01
+
+janes_new_car:
+  user: janedoe
+  funding_schedule: janes_paycheck
+  name: New car
+  amount: 5000.00
+  cadence: yearly
+  due_on: 2027-01-01
