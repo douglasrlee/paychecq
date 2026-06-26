@@ -38,13 +38,20 @@ class Goal < ApplicationRecord
     bucket_balance >= amount
   end
 
+  # Per-paycheck contribution still needed: remaining-to-fund /
+  # paychecks-until-next-due. Display-only. Money already in the bucket lowers
+  # the remaining, so funding the goal (by paycheck or by hand) shrinks this
+  # rate; a fully-funded bucket needs $0/paycheck.
   def per_paycheck_amount(as_of: Date.current)
     next_due = next_due_on(after: as_of)
     return amount unless next_due && funding_schedule
 
+    remaining = amount - bucket_balance
+    return 0 if remaining <= 0
+
     paychecks = funding_schedule.occurrence_count_between(after: as_of, through: next_due)
     paychecks = 1 if paychecks.zero?
-    (amount / paychecks).round(2)
+    (remaining / paychecks).round(2)
   end
 
   def bump_due_forward!

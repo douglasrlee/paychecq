@@ -19,6 +19,32 @@ class User < ApplicationRecord
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
+  # Money the bank says is spendable right now.
+  def available_balance
+    bank_accounts.sum(:available_balance)
+  end
+
+  # Money sitting in expense + goal buckets: the unspent remainder of every
+  # funded allocation across both. Single aggregate query per type (mirrors the
+  # expenses/goals list headers) so it stays cheap on the index pages.
+  def allocated_in_buckets
+    expense_allocated = expenses.joins(:allocations)
+                                .where.not(allocations: { funded_at: nil })
+                                .where('allocations.amount > allocations.spent_amount')
+                                .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+    goal_allocated = goals.joins(:allocations)
+                          .where.not(allocations: { funded_at: nil })
+                          .where('allocations.amount > allocations.spent_amount')
+                          .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
+    expense_allocated + goal_allocated
+  end
+
+  # What's left to spend freely after buckets are funded. Manual allocations
+  # draw against this; ManualAllocator won't let an add push it negative.
+  def free_to_spend
+    available_balance - allocated_in_buckets
+  end
+
   private
 
   def email_on_allowlist

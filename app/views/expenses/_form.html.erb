@@ -21,19 +21,25 @@
 
       <fieldset class="fieldset">
         <legend class="fieldset-legend justify-start gap-0">
-          Amount<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
+          Amount needed<span class="text-error tooltip tooltip-error tooltip-right cursor-pointer" data-tip="Required">•</span>
         </legend>
         <div class="relative">
-          <%= f.number_field :amount,
-                value: expense.amount,
-                step: 0.01,
-                min: 0.01,
-                class: "input w-full #{expense.errors[:amount].any? ? 'input-error' : ''}" %>
+          <label class="input w-full <%= 'input-error' if expense.errors[:amount].any? %>">
+            <span class="text-base-content/50">$</span>
+            <%= f.number_field :amount,
+                  value: expense.amount,
+                  step: 0.01,
+                  min: 0.01,
+                  inputmode: "decimal",
+                  class: "grow" %>
+          </label>
           <% if expense.errors[:amount].any? %>
             <p class="absolute left-0 top-full text-error mt-2 text-xs"><%= expense.errors.full_messages_for(:amount).first %></p>
           <% end %>
         </div>
       </fieldset>
+
+      <%= render "expenses/balance", expense: expense %>
 
       <fieldset class="fieldset">
         <legend class="fieldset-legend justify-start gap-0">

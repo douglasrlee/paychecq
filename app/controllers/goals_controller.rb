@@ -39,15 +39,29 @@ class GoalsController < ApplicationController
   end
 
   def update
-    if @goal.update(goal_params)
-      load_goals_for_index
-      respond_to do |format|
-        format.turbo_stream
-        format.html { redirect_to goals_path, notice: 'Goal updated' }
-      end
-    else
+    # The drawer's Update saves the goal and its allocated balance together, so
+    # apply both atomically — an allocation failure (e.g. over Free-to-Spend)
+    # rolls back the record changes too.
+    allocation = nil
+    updated = false
+    ActiveRecord::Base.transaction do
+      updated = @goal.update(goal_params)
+      raise ActiveRecord::Rollback unless updated
+
+      allocation = apply_allocated_amount(@goal)
+      raise ActiveRecord::Rollback if allocation && !allocation.ok?
+    end
+
+    if !updated || allocation&.error
+      @allocation_error = allocation&.error
       @funding_schedules = Current.user.funding_schedules.order(:name)
-      render :edit, status: :unprocessable_content, formats: [ :html ]
+      return render :edit, status: :unprocessable_content, formats: [ :html ]
+    end
+
+    load_goals_for_index
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to goals_path, notice: 'Goal updated' }
     end
   end
 
@@ -73,5 +87,15 @@ class GoalsController < ApplicationController
 
   def goal_params
     params.expect(goal: [ :name, :amount, :cadence, :due_on, :funding_schedule_id ])
+  end
+
+  # The drawer's "Allocated" field (shown only when a bank is linked) sets the
+  # bucket balance to the typed total. Blank means "leave it alone". Returns the
+  # ManualAllocator result, or nil when there's nothing to apply.
+  def apply_allocated_amount(goal)
+    amount = params.fetch(:allocated_amount, nil)
+    return if amount.blank?
+
+    ManualAllocator.set_balance(item: goal, amount: amount.to_d)
   end
 end

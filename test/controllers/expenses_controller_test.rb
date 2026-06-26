@@ -167,6 +167,60 @@ class ExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 22.99, expense.amount.to_f
   end
 
+  test 'update applies the allocated amount alongside expense changes' do
+    sign_in_as(@user)
+    expense = expenses(:netflix) # starts with an $8.00 funded allocation
+
+    patch expense_url(expense), params: {
+      expense: {
+        name: 'Netflix Premium', amount: '22.99', cadence: 'monthly',
+        due_on: '2026-02-14', funding_schedule_id: @schedule.id
+      },
+      allocated_amount: '5.00'
+    }
+
+    assert_redirected_to expenses_path
+    assert_equal 'Netflix Premium', expense.reload.name
+    assert_equal 5.00, expense.bucket_balance.to_f
+  end
+
+  test 'update with an allocated amount over free-to-spend re-renders with an error and rolls back' do
+    sign_in_as(@user)
+    expense = expenses(:netflix)
+
+    patch expense_url(expense),
+          params: {
+            expense: {
+              name: 'Renamed', amount: '22.99', cadence: 'monthly',
+              due_on: '2026-02-14', funding_schedule_id: @schedule.id
+            },
+            allocated_amount: '999999'
+          },
+          headers: { Accept: 'text/vnd.turbo-stream.html' }
+
+    assert_response :unprocessable_content
+    assert_match(/Free-to-Spend/, response.body)
+    expense.reload
+    assert_equal 8.00, expense.bucket_balance.to_f, 'bucket left untouched on error'
+    assert_equal 'Netflix', expense.name, 'expense edit rolled back with the allocation'
+  end
+
+  test 'update without an allocated amount leaves the bucket untouched' do
+    sign_in_as(@user)
+    expense = expenses(:netflix)
+    ManualAllocator.set_balance(item: expense, amount: 12.00)
+
+    patch expense_url(expense), params: {
+      expense: {
+        name: 'Netflix', amount: '22.99', cadence: 'monthly',
+        due_on: '2026-02-14', funding_schedule_id: @schedule.id
+      }
+    }
+
+    assert_redirected_to expenses_path
+    assert_equal 12.00, expense.reload.bucket_balance.to_f
+  end
+
   test 'update with turbo_stream accept and invalid input returns html form' do
     sign_in_as(@user)
     expense = expenses(:netflix)
