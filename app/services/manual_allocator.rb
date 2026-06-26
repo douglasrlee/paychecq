@@ -86,10 +86,13 @@ class ManualAllocator
   # user's own manual row before any scheduled paycheck money, then auto
   # allocations newest-first (pull back the most recent funding first).
   def drawable_allocations
+    # Manual row first (funding_event_id IS NULL sorts ahead of NOT NULL), then
+    # auto allocations newest-first. Ordered in SQL, then materialized so we can
+    # mutate rows while iterating.
     @item.allocations.where.not(funded_at: nil)
          .where('amount > spent_amount')
+         .order(Arel.sql('funding_event_id IS NOT NULL, created_at DESC'))
          .to_a
-         .sort_by { |a| [ a.funding_event_id.nil? ? 0 : 1, -a.created_at.to_f ] }
   end
 
   def round(amount) = amount.to_d.round(2)
