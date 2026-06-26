@@ -190,19 +190,21 @@ class GoalsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 300.00, @goal.bucket_balance.to_f
   end
 
-  test 'update with an allocated amount over free-to-spend re-renders with an error' do
+  test 'update with an allocated amount over free-to-spend re-renders with an error and rolls back' do
     sign_in_as(@user)
 
     patch goal_url(@goal),
           params: {
-            goal: { name: 'Vacation', amount: '1200.00', cadence: 'yearly', due_on: '2026-12-01', funding_schedule_id: @schedule.id },
+            goal: { name: 'Renamed', amount: '1200.00', cadence: 'yearly', due_on: '2026-12-01', funding_schedule_id: @schedule.id },
             allocated_amount: '999999'
           },
           headers: { Accept: 'text/vnd.turbo-stream.html' }
 
     assert_response :unprocessable_content
     assert_match(/Free-to-Spend/, response.body)
-    assert_equal 0, @goal.reload.bucket_balance.to_f
+    @goal.reload
+    assert_equal 0, @goal.bucket_balance.to_f
+    assert_equal 'Vacation', @goal.name, 'goal edit rolled back with the allocation'
   end
 
   test 'update with turbo_stream accept and invalid input returns html form' do

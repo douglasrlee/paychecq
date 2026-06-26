@@ -184,14 +184,14 @@ class ExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 5.00, expense.bucket_balance.to_f
   end
 
-  test 'update with an allocated amount over free-to-spend re-renders with an error' do
+  test 'update with an allocated amount over free-to-spend re-renders with an error and rolls back' do
     sign_in_as(@user)
     expense = expenses(:netflix)
 
     patch expense_url(expense),
           params: {
             expense: {
-              name: 'Netflix', amount: '22.99', cadence: 'monthly',
+              name: 'Renamed', amount: '22.99', cadence: 'monthly',
               due_on: '2026-02-14', funding_schedule_id: @schedule.id
             },
             allocated_amount: '999999'
@@ -200,7 +200,9 @@ class ExpensesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_match(/Free-to-Spend/, response.body)
-    assert_equal 8.00, expense.reload.bucket_balance.to_f, 'bucket left untouched on error'
+    expense.reload
+    assert_equal 8.00, expense.bucket_balance.to_f, 'bucket left untouched on error'
+    assert_equal 'Netflix', expense.name, 'expense edit rolled back with the allocation'
   end
 
   test 'update without an allocated amount leaves the bucket untouched' do

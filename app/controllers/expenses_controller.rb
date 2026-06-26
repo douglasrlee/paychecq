@@ -39,14 +39,21 @@ class ExpensesController < ApplicationController
   end
 
   def update
-    unless @expense.update(expense_params)
-      @funding_schedules = Current.user.funding_schedules.order(:name)
-      return render :edit, status: :unprocessable_content, formats: [ :html ]
+    # The drawer's Update saves the expense and its allocated balance together,
+    # so apply both atomically — an allocation failure (e.g. over Free-to-Spend)
+    # rolls back the record changes too.
+    allocation = nil
+    updated = false
+    ActiveRecord::Base.transaction do
+      updated = @expense.update(expense_params)
+      raise ActiveRecord::Rollback unless updated
+
+      allocation = apply_allocated_amount(@expense)
+      raise ActiveRecord::Rollback if allocation && !allocation.ok?
     end
 
-    allocation = apply_allocated_amount(@expense)
-    if allocation && !allocation.ok?
-      @allocation_error = allocation.error
+    if !updated || allocation&.error
+      @allocation_error = allocation&.error
       @funding_schedules = Current.user.funding_schedules.order(:name)
       return render :edit, status: :unprocessable_content, formats: [ :html ]
     end
