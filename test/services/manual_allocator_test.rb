@@ -108,6 +108,21 @@ class ManualAllocatorTest < ActiveSupport::TestCase
     end
   end
 
+  test 'locks the bucket row to serialize with transaction linkers' do
+    # ExpenseLinker/GoalLinker write spent_amount under expense.with_lock; without
+    # taking the same lock here, remove could persist amount < spent_amount.
+    locked = false
+    @expense.define_singleton_method(:with_lock) do |&block|
+      locked = true
+      block.call
+    end
+
+    ManualAllocator.new(@expense).set_balance(50)
+
+    assert locked, 'set_balance must lock the bucket row'
+    assert_equal 50, @expense.bucket_balance.to_f
+  end
+
   test 'works for goals too' do
     goal = @user.goals.create!(name: 'New laptop', amount: 2000, cadence: 'yearly', due_on: Date.new(2026, 12, 1), funding_schedule: @schedule)
 

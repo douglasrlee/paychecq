@@ -9,10 +9,12 @@
 # the manual row first, then auto allocations newest-first — never below what a
 # linked transaction already spent.
 #
-# Serialized per-user with a row lock (matching AllocationEngine.fund_pending_for
-# and ExpenseLinker) so a concurrent fund/allocate can't read a stale
-# Free-to-Spend baseline. Per-row save!/update!/destroy! keeps callbacks +
-# PaperTrail intact.
+# Serialized with two nested row locks: the user row (matching
+# AllocationEngine.fund_pending_for) so the Free-to-Spend baseline can't shift
+# mid-calc, then the bucket row (matching ExpenseLinker/GoalLinker, which set
+# spent_amount under that same lock) so a concurrent link can't slip in between
+# our read and write and leave an allocation with amount < spent_amount.
+# Per-row save!/update!/destroy! keeps callbacks + PaperTrail intact.
 class ManualAllocator
   Result = Struct.new(:ok, :error) do
     def ok? = ok
@@ -33,14 +35,19 @@ class ManualAllocator
     target = round(amount)
     return failure('Enter an amount of zero or more.') if target.negative?
 
+    # User-then-bucket order matches the other services (linkers lock the
+    # transaction/bucket, never the user; fund_pending_for locks the user only),
+    # so this can't deadlock against them.
     @user.with_lock do
-      delta = target - @item.bucket_balance
-      if delta.positive?
-        return failure("That's more than your Free-to-Spend.") if delta > @user.free_to_spend
+      @item.with_lock do
+        delta = target - @item.bucket_balance
+        if delta.positive?
+          return failure("That's more than your Free-to-Spend.") if delta > @user.free_to_spend
 
-        add(delta)
-      elsif delta.negative?
-        remove(-delta)
+          add(delta)
+        elsif delta.negative?
+          remove(-delta)
+        end
       end
     end
 
