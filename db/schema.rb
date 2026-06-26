@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_22_053817) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_25_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -22,17 +22,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_053817) do
     t.datetime "created_at", null: false
     t.uuid "expense_id"
     t.datetime "funded_at"
-    t.uuid "funding_event_id", null: false
+    t.uuid "funding_event_id"
     t.uuid "goal_id"
     t.decimal "spent_amount", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "spent_at"
     t.uuid "spent_by_transaction_id"
     t.datetime "updated_at", null: false
     t.index ["expense_id"], name: "index_allocations_on_expense_id"
+    t.index ["expense_id"], name: "index_allocations_on_manual_expense_id", unique: true, where: "((funding_event_id IS NULL) AND (expense_id IS NOT NULL))"
     t.index ["funding_event_id", "expense_id"], name: "index_allocations_on_funding_event_id_and_expense_id", unique: true, where: "(expense_id IS NOT NULL)"
     t.index ["funding_event_id", "goal_id"], name: "index_allocations_on_funding_event_id_and_goal_id", unique: true, where: "(goal_id IS NOT NULL)"
     t.index ["funding_event_id"], name: "index_allocations_on_funding_event_id"
     t.index ["goal_id"], name: "index_allocations_on_goal_id"
+    t.index ["goal_id"], name: "index_allocations_on_manual_goal_id", unique: true, where: "((funding_event_id IS NULL) AND (goal_id IS NOT NULL))"
     t.index ["spent_by_transaction_id"], name: "index_allocations_on_spent_by_transaction_id"
     t.check_constraint "num_nonnulls(expense_id, goal_id) = 1", name: "allocations_exactly_one_allocatable"
   end

@@ -143,4 +143,26 @@ class ExpenseTest < ActiveSupport::TestCase
       assert_equal 12.00, expense.per_paycheck_amount.to_f # 12 / 1
     end
   end
+
+  test 'per_paycheck_amount subtracts money already in the bucket' do
+    # 3 paychecks until due (Jan 15, 29, Feb 12). $9.99 target with $3 funded
+    # leaves $6.99 to move over 3 paychecks = $2.33.
+    travel_to Date.new(2026, 1, 5) do
+      expense = build(due_on: Date.new(2026, 2, 14), amount: 9.99)
+      expense.save!
+      Allocation.create!(funding_event: funding_events(:paycheck_first), expense: expense, amount: 3, funded_at: Time.current)
+
+      assert_in_delta 2.33, expense.per_paycheck_amount.to_f, 0.01
+    end
+  end
+
+  test 'per_paycheck_amount is zero once the bucket is fully funded' do
+    travel_to Date.new(2026, 1, 5) do
+      expense = build(due_on: Date.new(2026, 2, 14), amount: 9.99)
+      expense.save!
+      Allocation.create!(funding_event: funding_events(:paycheck_first), expense: expense, amount: 9.99, funded_at: Time.current)
+
+      assert_equal 0, expense.per_paycheck_amount.to_f
+    end
+  end
 end

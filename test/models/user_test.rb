@@ -149,4 +149,32 @@ class UserTest < ActiveSupport::TestCase
   ensure
     ENV['ALLOWED_EMAILS'] = original
   end
+
+  test 'free_to_spend is available balance minus funded unspent buckets' do
+    user = users(:johndoe)
+    user.expenses.destroy_all
+    user.funding_schedules.destroy_all
+    schedule = user.funding_schedules.create!(name: 'Paycheck', cadence: 'biweekly', start_date: Date.new(2026, 1, 1))
+    expense = user.expenses.create!(name: 'Rent', amount: 100, cadence: 'monthly', due_on: Date.new(2026, 2, 1), funding_schedule: schedule)
+    event = schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    Allocation.create!(funding_event: event, expense: expense, amount: 100, funded_at: Time.current)
+
+    # johndoe has $6,000 available across chase_checking + chase_savings.
+    assert_equal 6000, user.available_balance.to_f
+    assert_equal 100, user.allocated_in_buckets.to_f
+    assert_equal 5900, user.free_to_spend.to_f
+  end
+
+  test 'free_to_spend ignores pending (unfunded) allocations' do
+    user = users(:johndoe)
+    user.expenses.destroy_all
+    user.funding_schedules.destroy_all
+    schedule = user.funding_schedules.create!(name: 'Paycheck', cadence: 'biweekly', start_date: Date.new(2026, 1, 1))
+    expense = user.expenses.create!(name: 'Rent', amount: 100, cadence: 'monthly', due_on: Date.new(2026, 2, 1), funding_schedule: schedule)
+    event = schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    Allocation.create!(funding_event: event, expense: expense, amount: 100, funded_at: nil)
+
+    assert_equal 0, user.allocated_in_buckets.to_f
+    assert_equal 6000, user.free_to_spend.to_f
+  end
 end

@@ -39,15 +39,22 @@ class ExpensesController < ApplicationController
   end
 
   def update
-    if @expense.update(expense_params)
-      load_expenses_for_index
-      respond_to do |format|
-        format.turbo_stream
-        format.html { redirect_to expenses_path, notice: 'Expense updated' }
-      end
-    else
+    unless @expense.update(expense_params)
       @funding_schedules = Current.user.funding_schedules.order(:name)
-      render :edit, status: :unprocessable_content, formats: [ :html ]
+      return render :edit, status: :unprocessable_content, formats: [ :html ]
+    end
+
+    allocation = apply_allocated_amount(@expense)
+    if allocation && !allocation.ok?
+      @allocation_error = allocation.error
+      @funding_schedules = Current.user.funding_schedules.order(:name)
+      return render :edit, status: :unprocessable_content, formats: [ :html ]
+    end
+
+    load_expenses_for_index
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to expenses_path, notice: 'Expense updated' }
     end
   end
 
@@ -73,5 +80,15 @@ class ExpensesController < ApplicationController
 
   def expense_params
     params.expect(expense: [ :name, :amount, :cadence, :due_on, :funding_schedule_id ])
+  end
+
+  # The drawer's "Allocated" field (shown only when a bank is linked) sets the
+  # bucket balance to the typed total. Blank means "leave it alone". Returns the
+  # ManualAllocator result, or nil when there's nothing to apply.
+  def apply_allocated_amount(expense)
+    amount = params.fetch(:allocated_amount, nil)
+    return if amount.blank?
+
+    ManualAllocator.set_balance(item: expense, amount: amount.to_d)
   end
 end

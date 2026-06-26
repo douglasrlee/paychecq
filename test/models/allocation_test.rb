@@ -53,4 +53,26 @@ class AllocationTest < ActiveSupport::TestCase
     assert_not allocation.valid?
     assert_includes allocation.errors[:base], 'must belong to exactly one of an expense or a goal'
   end
+
+  test 'allows a manual allocation with no funding_event' do
+    allocation = Allocation.new(expense: @expense, amount: 25, funded_at: Time.current)
+
+    assert allocation.valid?
+  end
+
+  test 'enforces one manual allocation per expense' do
+    Allocation.create!(expense: @expense, amount: 10, funded_at: Time.current)
+    duplicate = Allocation.new(expense: @expense, amount: 5, funded_at: Time.current)
+
+    assert_not duplicate.valid?
+    assert_includes duplicate.errors[:expense_id], 'has already been taken'
+  end
+
+  test 'manual scope returns allocations without a funding_event' do
+    manual = Allocation.create!(expense: @expense, amount: 10, funded_at: Time.current)
+    auto = Allocation.create!(funding_event: @event, expense: @expense, amount: 5)
+
+    assert_includes Allocation.manual, manual
+    assert_not_includes Allocation.manual, auto
+  end
 end

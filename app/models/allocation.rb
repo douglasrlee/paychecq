@@ -1,9 +1,16 @@
 class Allocation < ApplicationRecord
   has_paper_trail
-  belongs_to :funding_event
+  # Optional: a manual allocation (user funded a bucket directly) has no
+  # funding_event. Auto allocations from the engine always set one.
+  belongs_to :funding_event, optional: true
   belongs_to :expense, optional: true
   belongs_to :goal, optional: true
   belongs_to :spent_by_transaction, class_name: 'Transaction', optional: true
+
+  # Manual allocations carry no funding_event. One per bucket, enforced by the
+  # uniqueness validations below (scope: :funding_event_id, IS NULL here) and a
+  # matching partial unique index.
+  scope :manual, -> { where(funding_event_id: nil) }
 
   validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :spent_amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
