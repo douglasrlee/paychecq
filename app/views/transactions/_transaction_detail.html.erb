@@ -142,16 +142,18 @@
 
     </div>
 
-    <%# Expense link %>
+    <%# Assign to a bucket — an expense and a goal are mutually exclusive, so a
+        single assignment over both. %>
     <div data-controller="toggle" data-toggle-delay-frame-value="drawer_content">
-      <% if transaction.expense.present? %>
+      <% linked_bucket = transaction.expense || transaction.goal %>
+      <% if linked_bucket %>
         <div class="bg-base-200 rounded-xl p-3">
           <div class="flex items-center justify-between gap-3">
             <div class="text-sm min-w-0">
-              <p class="text-xs text-base-content/50 mb-1">Expense</p>
-              <p class="font-medium truncate"><%= transaction.expense.name %></p>
+              <p class="text-xs text-base-content/50 mb-1"><%= transaction.expense ? 'Expense' : 'Goal' %></p>
+              <p class="font-medium truncate"><%= linked_bucket.name %></p>
             </div>
-            <%= button_to transaction_expense_path(transaction),
+            <%= button_to (transaction.expense ? transaction_expense_path(transaction) : transaction_goal_path(transaction)),
                   method: :delete,
                   class: 'btn btn-ghost btn-sm text-error shrink-0',
                   data: { controller: 'loading-button', loading_button_text_value: 'Unlinking...' } do %>
@@ -159,48 +161,43 @@
             <% end %>
           </div>
         </div>
-      <% elsif transaction.goal.blank? %>
+      <% else %>
         <% user_expenses = Current.user.expenses.order(:name).to_a %>
+        <% user_goals = Current.user.goals.order(:name).to_a %>
         <div class="flex items-center justify-between gap-3">
-          <span class="text-sm text-base-content/50">Expense</span>
+          <span class="text-sm text-base-content/50">Bucket</span>
           <button data-action="toggle#toggle" class="btn btn-ghost btn-sm text-primary">
-            Assign to expense
+            Assign
           </button>
         </div>
 
-        <%# Preload bucket_balance per expense in one aggregate query
-            so the fully_funded filter doesn't fire one SUM per expense. %>
-        <%
-          bucket_by_expense_id = Allocation.where(expense_id: user_expenses.map(&:id))
-                                           .where.not(funded_at: nil)
-                                           .where('allocations.amount > allocations.spent_amount')
-                                           .group(:expense_id)
-                                           .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
-          fully_funded = user_expenses.select { |e| (bucket_by_expense_id[e.id] || 0) >= e.amount }
-        %>
         <div data-toggle-target="content" class="hidden mt-3">
-          <% if fully_funded.any? %>
+          <% if user_expenses.any? || user_goals.any? %>
             <%= form_with url: transaction_expenses_path,
                   html: { novalidate: true },
-                  data: { controller: 'expense-picker', action: 'turbo:submit-end->toggle#closeOnSuccess' } do |f| %>
+                  data: { controller: 'bucket-picker',
+                          bucket_picker_expense_url_value: transaction_expenses_path,
+                          bucket_picker_goal_url_value: transaction_goals_path,
+                          action: 'turbo:submit-end->toggle#closeOnSuccess' } do |f| %>
               <%= hidden_field_tag :transaction_id, transaction.id %>
+              <%# Name flips to goal_id when a goal is picked (see bucket-picker). %>
+              <%= hidden_field_tag :expense_id, '', required: true, data: { bucket_picker_target: 'input' } %>
 
-              <div class="dropdown w-full mb-3">
-                <%= hidden_field_tag :expense_id, '', required: true, data: { expense_picker_target: 'input' } %>
-                <div tabindex="0" role="button" class="btn btn-sm btn-outline w-full justify-between font-normal">
-                  <span data-expense-picker-target="label" class="text-base-content/50">Select an expense</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>button:hover]:bg-base-200! [&_li>button:hover]:text-base-content! [&_li>button:focus]:bg-base-200! [&_li>button:focus]:text-base-content!">
-                  <% fully_funded.each do |expense| %>
-                    <li>
+              <input type="text" placeholder="Search expenses and goals"
+                     aria-label="Search expenses and goals"
+                     data-bucket-picker-target="search"
+                     data-action="input->bucket-picker#filter"
+                     class="input input-bordered input-sm w-full mb-2" />
+
+              <ul class="menu bg-base-100 rounded-box w-full p-1 mb-3 max-h-60 overflow-y-auto flex-nowrap border border-base-300 [&_li>button:hover]:bg-base-200! [&_li>button:hover]:text-base-content! [&_li>button:focus]:bg-base-200! [&_li>button:focus]:text-base-content!">
+                <% if user_expenses.any? %>
+                  <li class="menu-title text-xs" data-bucket-picker-target="group">Expenses</li>
+                  <% user_expenses.each do |expense| %>
+                    <li data-bucket-picker-target="option" data-name="<%= expense.name.downcase %>">
                       <button type="button"
-                              data-action="click->expense-picker#select"
-                              data-expense-picker-target="option"
-                              data-id="<%= expense.id %>"
-                              data-name="<%= expense.name %>">
+                              data-action="click->bucket-picker#select"
+                              data-type="expense"
+                              data-id="<%= expense.id %>">
                         <svg xmlns="http://www.w3.org/2000/svg" class="picker-check h-4 w-4 shrink-0 text-primary invisible" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                         </svg>
@@ -209,89 +206,15 @@
                       </button>
                     </li>
                   <% end %>
-                </ul>
-              </div>
-
-              <div class="flex gap-2">
-                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', expense_picker_target: 'submit' } %>
-                <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
-              </div>
-            <% end %>
-          <% elsif user_expenses.any? %>
-            <p class="text-sm text-base-content/60">No expenses are fully funded yet.</p>
-          <% else %>
-            <p class="text-sm text-base-content/60">No expenses yet.</p>
-            <%= link_to 'Create one in Expenses', expenses_path,
-                  class: 'link link-primary text-sm',
-                  data: { turbo_frame: '_top' } %>
-          <% end %>
-        </div>
-      <% else %>
-        <%# Linked to a goal — expense and goal are mutually exclusive. %>
-        <div class="flex items-center justify-between gap-3">
-          <span class="text-sm text-base-content/30">Expense</span>
-          <span class="text-sm text-base-content/40 text-right">Unlink the goal to assign an expense</span>
-        </div>
-      <% end %>
-    </div>
-
-    <%# Goal link %>
-    <div data-controller="toggle" data-toggle-delay-frame-value="drawer_content">
-      <% if transaction.goal.present? %>
-        <div class="bg-base-200 rounded-xl p-3">
-          <div class="flex items-center justify-between gap-3">
-            <div class="text-sm min-w-0">
-              <p class="text-xs text-base-content/50 mb-1">Goal</p>
-              <p class="font-medium truncate"><%= transaction.goal.name %></p>
-            </div>
-            <%= button_to transaction_goal_path(transaction),
-                  method: :delete,
-                  class: 'btn btn-ghost btn-sm text-error shrink-0',
-                  data: { controller: 'loading-button', loading_button_text_value: 'Unlinking...' } do %>
-              Unlink
-            <% end %>
-          </div>
-        </div>
-      <% elsif transaction.expense.blank? %>
-        <% user_goals = Current.user.goals.order(:name).to_a %>
-        <div class="flex items-center justify-between gap-3">
-          <span class="text-sm text-base-content/50">Goal</span>
-          <button data-action="toggle#toggle" class="btn btn-ghost btn-sm text-primary">
-            Assign to goal
-          </button>
-        </div>
-
-        <%
-          bucket_by_goal_id = Allocation.where(goal_id: user_goals.map(&:id))
-                                        .where.not(funded_at: nil)
-                                        .where('allocations.amount > allocations.spent_amount')
-                                        .group(:goal_id)
-                                        .sum(Arel.sql('allocations.amount - allocations.spent_amount'))
-          fully_funded_goals = user_goals.select { |g| (bucket_by_goal_id[g.id] || 0) >= g.amount }
-        %>
-        <div data-toggle-target="content" class="hidden mt-3">
-          <% if fully_funded_goals.any? %>
-            <%= form_with url: transaction_goals_path,
-                  html: { novalidate: true },
-                  data: { controller: 'goal-picker', action: 'turbo:submit-end->toggle#closeOnSuccess' } do |f| %>
-              <%= hidden_field_tag :transaction_id, transaction.id %>
-
-              <div class="dropdown w-full mb-3">
-                <%= hidden_field_tag :goal_id, '', required: true, data: { goal_picker_target: 'input' } %>
-                <div tabindex="0" role="button" class="btn btn-sm btn-outline w-full justify-between font-normal">
-                  <span data-goal-picker-target="label" class="text-base-content/50">Select a goal</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box w-full p-2 shadow z-10 mt-1 max-h-60 overflow-y-auto flex-nowrap [&_li>button:hover]:bg-base-200! [&_li>button:hover]:text-base-content! [&_li>button:focus]:bg-base-200! [&_li>button:focus]:text-base-content!">
-                  <% fully_funded_goals.each do |goal| %>
-                    <li>
+                <% end %>
+                <% if user_goals.any? %>
+                  <li class="menu-title text-xs" data-bucket-picker-target="group">Goals</li>
+                  <% user_goals.each do |goal| %>
+                    <li data-bucket-picker-target="option" data-name="<%= goal.name.downcase %>">
                       <button type="button"
-                              data-action="click->goal-picker#select"
-                              data-goal-picker-target="option"
-                              data-id="<%= goal.id %>"
-                              data-name="<%= goal.name %>">
+                              data-action="click->bucket-picker#select"
+                              data-type="goal"
+                              data-id="<%= goal.id %>">
                         <svg xmlns="http://www.w3.org/2000/svg" class="picker-check h-4 w-4 shrink-0 text-primary invisible" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                         </svg>
@@ -300,28 +223,20 @@
                       </button>
                     </li>
                   <% end %>
-                </ul>
-              </div>
+                <% end %>
+              </ul>
 
               <div class="flex gap-2">
-                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', goal_picker_target: 'submit' } %>
+                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', bucket_picker_target: 'submit' } %>
                 <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
               </div>
             <% end %>
-          <% elsif user_goals.any? %>
-            <p class="text-sm text-base-content/60">No goals are fully funded yet.</p>
           <% else %>
-            <p class="text-sm text-base-content/60">No goals yet.</p>
-            <%= link_to 'Create one in Goals', goals_path,
+            <p class="text-sm text-base-content/60">No expenses or goals yet.</p>
+            <%= link_to 'Create one in Expenses', expenses_path,
                   class: 'link link-primary text-sm',
                   data: { turbo_frame: '_top' } %>
           <% end %>
-        </div>
-      <% else %>
-        <%# Linked to an expense — expense and goal are mutually exclusive. %>
-        <div class="flex items-center justify-between gap-3">
-          <span class="text-sm text-base-content/30">Goal</span>
-          <span class="text-sm text-base-content/40 text-right">Unlink the expense to assign a goal</span>
         </div>
       <% end %>
     </div>

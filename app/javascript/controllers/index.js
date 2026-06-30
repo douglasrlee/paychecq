@@ -5,11 +5,10 @@
 import { application } from "./application";
 
 import AutoDismissController from "./auto_dismiss_controller";
+import BucketPickerController from "./bucket_picker_controller";
 import DismissibleController from "./dismissible_controller";
 import DrawerController from "./drawer_controller";
-import ExpensePickerController from "./expense_picker_controller";
 import FundingScheduleFormController from "./funding_schedule_form_controller";
-import GoalPickerController from "./goal_picker_controller";
 import LoadingButtonController from "./loading_button_controller";
 import PlaidLinkController from "./plaid_link_controller";
 import PullToRefreshController from "./pull_to_refresh_controller";
@@ -19,11 +18,10 @@ import SwipeNavController from "./swipe_nav_controller";
 import ToggleController from "./toggle_controller";
 
 application.register("auto-dismiss", AutoDismissController);
+application.register("bucket-picker", BucketPickerController);
 application.register("dismissible", DismissibleController);
 application.register("drawer", DrawerController);
-application.register("expense-picker", ExpensePickerController);
 application.register("funding-schedule-form", FundingScheduleFormController);
-application.register("goal-picker", GoalPickerController);
 application.register("loading-button", LoadingButtonController);
 application.register("plaid-link", PlaidLinkController);
 application.register("pull-to-refresh", PullToRefreshController);

@@ -4,10 +4,15 @@ class Transaction < ApplicationRecord
   belongs_to :bank_account, optional: true
   belongs_to :expense, optional: true
   belongs_to :goal, optional: true
+  # No dependent: destroy/delete here — before_destroy unlinks first, which
+  # removes this transaction's allocation_spends and recomputes the affected
+  # allocations' spent_amount. A transaction only ever has spends while linked,
+  # so unlink always clears them before the row is deleted (FK stays satisfied).
+  has_many :allocation_spends, foreign_key: :spent_by_transaction_id, inverse_of: :spent_by_transaction # rubocop:disable Rails/HasManyOrHasOneDependent
 
   # Plaid sync can destroy transactions when the bank reports a posted
-  # transaction as removed. Unlink from expense/goal first so buckets and
-  # due_on roll back cleanly rather than leaving allocations half-restored.
+  # transaction as removed. Unlink from expense/goal first so bucket balances
+  # roll back cleanly rather than leaving allocations half-restored.
   before_destroy :unlink_expense_if_linked
   before_destroy :unlink_goal_if_linked
 

@@ -15,7 +15,7 @@ class GoalLinkerTest < ActiveSupport::TestCase
     @allocation = Allocation.create!(funding_event: event, goal: @vacation, amount: 7.99, funded_at: Time.current)
   end
 
-  test 'link marks funded unspent allocations spent, sets goal, advances due_on' do
+  test 'link draws the transaction down from the bucket and sets the goal' do
     assert_equal 7.99, @vacation.bucket_balance.to_f
     original_due_on = @vacation.due_on
 
@@ -23,29 +23,23 @@ class GoalLinkerTest < ActiveSupport::TestCase
 
     assert_equal 0, @vacation.reload.bucket_balance.to_f
     assert_equal @vacation, @transaction.reload.goal
-    assert_equal Date.new(2026, 3, 14), @vacation.due_on
-    assert_not_equal original_due_on, @vacation.due_on
+    assert_equal original_due_on, @vacation.due_on, 'due dates are calendar-driven; linking never moves them'
 
     spent = @allocation.reload
+    assert_equal 7.99, spent.spent_amount.to_f
     assert spent.spent_at.present?
-    assert_equal @transaction, spent.spent_by_transaction
+    assert_equal 1, AllocationSpend.where(spent_by_transaction: @transaction).count
   end
 
   test 'link against an already goal-linked transaction unlinks the prior goal first' do
     other = @user.goals.create!(name: 'Other', amount: 50, cadence: 'monthly', due_on: Date.new(2026, 2, 20), funding_schedule: @schedule)
     GoalLinker.link(transaction: @transaction, goal: @vacation)
 
-    vacation_due_after_first_link = @vacation.reload.due_on
-    other_due_before = other.due_on
-
     GoalLinker.link(transaction: @transaction, goal: other)
 
-    @vacation.reload
-    other.reload
     assert_equal other, @transaction.reload.goal
-    assert_not_equal vacation_due_after_first_link, @vacation.due_on, 'vacation due_on should roll back'
-    assert_not_equal other_due_before, other.due_on, 'other due_on should advance'
-    assert_nil @allocation.reload.spent_at, 'vacation allocation should be unspent again'
+    assert_equal 7.99, @vacation.reload.bucket_balance.to_f, 'vacation bucket restored'
+    assert_equal 0, @allocation.reload.spent_amount.to_f, 'vacation allocation unspent again'
   end
 
   test 'link unlinks a prior expense link before linking to the goal' do
@@ -58,7 +52,7 @@ class GoalLinkerTest < ActiveSupport::TestCase
 
     assert_nil @transaction.reload.expense, 'expense link removed'
     assert_equal @vacation, @transaction.goal
-    assert_nil expense_allocation.reload.spent_at, 'expense allocation restored'
+    assert_equal 0, expense_allocation.reload.spent_amount.to_f, 'expense allocation restored'
     assert_equal 15.99, expense.reload.bucket_balance.to_f
   end
 
@@ -68,20 +62,20 @@ class GoalLinkerTest < ActiveSupport::TestCase
     GoalLinker.unlink(transaction: @transaction)
 
     assert_nil @transaction.reload.goal
-    assert_equal Date.new(2026, 2, 14), @vacation.reload.due_on
-    assert_nil @allocation.reload.spent_at
-    assert_nil @allocation.spent_by_transaction
-    assert_equal 7.99, @vacation.bucket_balance.to_f
+    assert_equal 7.99, @vacation.reload.bucket_balance.to_f
+    assert_equal 0, @allocation.reload.spent_amount.to_f
+    assert_nil @allocation.spent_at
+    assert_equal 0, AllocationSpend.where(spent_by_transaction: @transaction).count
   end
 
-  test 'link still flips FK and advances due_on when goal has no funded allocations' do
+  test 'link still flips the FK when the goal has no funded allocations' do
     empty = @user.goals.create!(name: 'Empty', amount: 10, cadence: 'monthly', due_on: Date.new(2026, 3, 1), funding_schedule: @schedule)
 
     assert_equal 0, empty.bucket_balance.to_f
     GoalLinker.link(transaction: @transaction, goal: empty)
 
     assert_equal empty, @transaction.reload.goal
-    assert_equal Date.new(2026, 4, 1), empty.reload.due_on
+    assert_equal 0, empty.reload.bucket_balance.to_f
   end
 
   test 'unlink is a no-op when the transaction has no goal' do
@@ -91,38 +85,18 @@ class GoalLinkerTest < ActiveSupport::TestCase
     assert_nil @transaction.goal
   end
 
-  test 'link/unlink round-trip preserves a Jan 31 due date through Feb clamping' do
-    quirky = @user.goals.create!(name: 'Mortgage', amount: 100, cadence: 'monthly',
-                                 due_on: Date.new(2026, 1, 31), funding_schedule: @schedule)
-    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
-    Allocation.create!(funding_event: event, goal: quirky, amount: 100, funded_at: Time.current)
-    txn = Transaction.create!(name: 'MORTGAGE', amount: 100, bank_account: bank_accounts(:chase_checking))
-
-    GoalLinker.link(transaction: txn, goal: quirky)
-    assert_equal Date.new(2026, 2, 28), quirky.reload.due_on, 'forward clamps Feb to 28'
-    assert_equal Date.new(2026, 1, 31), txn.reload.previous_due_on
-
-    GoalLinker.unlink(transaction: txn)
-
-    assert_equal Date.new(2026, 1, 31), quirky.reload.due_on, 'unlink restores the original 31st'
-    assert_nil txn.reload.previous_due_on
-  end
-
-  test 'destroying a linked transaction unlinks it first so the bucket and due_on restore cleanly' do
+  test 'destroying a linked transaction unlinks it first so the bucket restores cleanly' do
     GoalLinker.link(transaction: @transaction, goal: @vacation)
     assert_equal 0, @vacation.reload.bucket_balance.to_f
-    advanced_due = @vacation.due_on
 
     @transaction.destroy!
 
     assert_equal 7.99, @vacation.reload.bucket_balance.to_f, 'bucket restored'
-    assert_not_equal advanced_due, @vacation.due_on, 'due_on rolled back'
-    assert_nil @allocation.reload.spent_at
-    assert_nil @allocation.spent_by_transaction_id
-    assert_equal 0, @allocation.spent_amount.to_f
+    assert_equal 0, @allocation.reload.spent_amount.to_f
+    assert_nil @allocation.spent_at
   end
 
-  test 'partial link: transaction smaller than bucket leaves the residual in the bucket' do
+  test 'partial link: transaction smaller than the bucket leaves the residual in the bucket' do
     second_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
     Allocation.create!(funding_event: second_event, goal: @vacation, amount: 8.00, funded_at: Time.current)
     assert_equal 15.99, @vacation.bucket_balance.to_f
@@ -133,10 +107,9 @@ class GoalLinkerTest < ActiveSupport::TestCase
 
     assert_equal 10.99, @vacation.reload.bucket_balance.to_f
     assert_equal @vacation, partial.reload.goal
-    assert_equal Date.new(2026, 3, 14), @vacation.due_on, 'due_on rolls forward even on partial'
   end
 
-  test 'partial link spends oldest allocation fully and the next one partially' do
+  test 'partial link spends the oldest allocation fully and the next one partially' do
     second_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
     second = Allocation.create!(funding_event: second_event, goal: @vacation, amount: 8.00, funded_at: Time.current)
 
@@ -144,18 +117,10 @@ class GoalLinkerTest < ActiveSupport::TestCase
 
     GoalLinker.link(transaction: partial, goal: @vacation)
 
-    first = @allocation.reload
-    second.reload
-
-    assert_equal 7.99, first.spent_amount.to_f, 'oldest allocation fully consumed'
-    assert_equal first.amount, first.spent_amount, 'oldest fully spent'
-    assert_equal partial, first.spent_by_transaction
-
-    assert_equal 2.01, second.spent_amount.to_f, 'next allocation takes the remainder'
-    assert second.amount > second.spent_amount, 'next allocation has residual'
-    assert_equal partial, second.spent_by_transaction
-
+    assert_equal 7.99, @allocation.reload.spent_amount.to_f, 'oldest allocation fully consumed'
+    assert_equal 2.01, second.reload.spent_amount.to_f, 'next allocation takes the remainder'
     assert_equal 5.99, @vacation.reload.bucket_balance.to_f, '15.99 - 10.00'
+    assert_equal 2, AllocationSpend.where(spent_by_transaction: partial).count
   end
 
   test 'unlink restores a partial link cleanly' do
@@ -167,18 +132,16 @@ class GoalLinkerTest < ActiveSupport::TestCase
     GoalLinker.unlink(transaction: partial)
 
     assert_nil partial.reload.goal
-    assert_equal Date.new(2026, 2, 14), @vacation.reload.due_on, 'due_on rolls back'
-    assert_equal 15.99, @vacation.bucket_balance.to_f, 'bucket fully restored'
+    assert_equal 15.99, @vacation.reload.bucket_balance.to_f, 'bucket fully restored'
 
     [ @allocation, second ].each do |allocation|
       allocation.reload
       assert_equal 0, allocation.spent_amount.to_f
       assert_nil allocation.spent_at
-      assert_nil allocation.spent_by_transaction
     end
   end
 
-  test 'link caps consumption at bucket_balance when transaction exceeds it' do
+  test 'link caps consumption at bucket_balance when the transaction exceeds it' do
     second_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
     Allocation.create!(funding_event: second_event, goal: @vacation, amount: 8.00, funded_at: Time.current)
 
@@ -190,24 +153,39 @@ class GoalLinkerTest < ActiveSupport::TestCase
     assert_equal @vacation, overpay.reload.goal
   end
 
-  test 'link skips allocations already spent by a prior transaction' do
-    first_partial = Transaction.create!(name: 'PRIOR', amount: 3.00, bank_account: bank_accounts(:chase_checking))
-    GoalLinker.link(transaction: first_partial, goal: @vacation)
-
+  test 'several transactions share one goal bucket (shared draw-down)' do
     second_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
     second = Allocation.create!(funding_event: second_event, goal: @vacation, amount: 8.00, funded_at: Time.current)
-    assert_equal 12.99, @vacation.reload.bucket_balance.to_f
 
-    next_txn = Transaction.create!(name: 'NEXT', amount: 8.00, bank_account: bank_accounts(:chase_checking))
-    GoalLinker.link(transaction: next_txn, goal: @vacation)
+    charge_a = Transaction.create!(name: 'CHARGE A', amount: 6.00, bank_account: bank_accounts(:chase_checking))
+    charge_b = Transaction.create!(name: 'CHARGE B', amount: 9.99, bank_account: bank_accounts(:chase_checking))
 
-    assert_equal first_partial, @allocation.reload.spent_by_transaction
-    assert_equal 3.00, @allocation.spent_amount.to_f
+    GoalLinker.link(transaction: charge_a, goal: @vacation)
+    GoalLinker.link(transaction: charge_b, goal: @vacation)
 
-    second.reload
-    assert_equal next_txn, second.spent_by_transaction
-    assert_equal 8.00, second.spent_amount.to_f
+    assert_equal @vacation, charge_a.reload.goal
+    assert_equal @vacation, charge_b.reload.goal
+    assert_equal 0, @vacation.reload.bucket_balance.to_f
+    assert_equal 7.99, @allocation.reload.spent_amount.to_f
+    assert_equal 8.00, second.reload.spent_amount.to_f
+    assert_equal 2, AllocationSpend.where(allocation: @allocation).count, 'one allocation spent by two transactions'
+  end
 
-    assert_equal 4.99, @vacation.bucket_balance.to_f
+  test 'unlinking one of several shared transactions returns only its share' do
+    second_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
+    second = Allocation.create!(funding_event: second_event, goal: @vacation, amount: 8.00, funded_at: Time.current)
+
+    charge_a = Transaction.create!(name: 'CHARGE A', amount: 6.00, bank_account: bank_accounts(:chase_checking))
+    charge_b = Transaction.create!(name: 'CHARGE B', amount: 9.99, bank_account: bank_accounts(:chase_checking))
+    GoalLinker.link(transaction: charge_a, goal: @vacation)
+    GoalLinker.link(transaction: charge_b, goal: @vacation)
+
+    GoalLinker.unlink(transaction: charge_a)
+
+    assert_nil charge_a.reload.goal
+    assert_equal @vacation, charge_b.reload.goal, 'the other charge stays linked'
+    assert_equal 6.00, @vacation.reload.bucket_balance.to_f
+    assert_equal 1.99, @allocation.reload.spent_amount.to_f
+    assert_equal 8.00, second.reload.spent_amount.to_f
   end
 end

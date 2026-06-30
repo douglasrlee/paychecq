@@ -39,7 +39,7 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
   end
 
-  test 'linking an expense shows the goal section as a disabled placeholder' do
+  test 'linking an expense shows the linked bucket card with an unlink action' do
     sign_in_as(@user)
     fully_fund(@netflix)
 
@@ -48,7 +48,11 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
          headers: { Accept: 'text/vnd.turbo-stream.html' }
 
     assert_response :success
-    assert_match(/Unlink the expense to assign a goal/, response.body)
+    assert_match(/Netflix/, response.body)
+    assert_match(/Unlink/, response.body)
+    # The combined picker collapses into a single card once linked — no
+    # separate goal section / placeholder.
+    assert_no_match(/Search expenses and goals/, response.body)
   end
 
   test 'create rejects a non-positive (refund/credit) transaction' do
@@ -63,15 +67,17 @@ class TransactionExpensesControllerTest < ActionDispatch::IntegrationTest
     assert_nil credit.reload.expense
   end
 
-  test 'create rejects an under-funded expense' do
+  test 'create links an under-funded expense, drawing down whatever is available' do
     sign_in_as(@user)
-    # @netflix has no funded allocations -> bucket_balance is 0 -> not fully funded
+    # @netflix has no funded allocations -> bucket_balance is 0. Linking is no
+    # longer gated on being fully funded; it links and draws what's there (0).
 
-    post transaction_expenses_url, params: { transaction_id: @transaction.id, expense_id: @netflix.id }
+    post transaction_expenses_url,
+         params: { transaction_id: @transaction.id, expense_id: @netflix.id },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
 
-    assert_response :see_other
-    assert_match(/isn't fully funded/i, flash[:alert])
-    assert_nil @transaction.reload.expense
+    assert_response :success
+    assert_equal @netflix, @transaction.reload.expense
   end
 
   test 'create without expense_id responds gracefully via turbo_stream' do

@@ -35,16 +35,57 @@ class AllocationEngineTest < ActiveSupport::TestCase
     end
   end
 
-  test 'propose_for skips fully-funded expenses' do
+  test 'propose_for banks the next cycle once the current cycle is fully funded' do
+    # The current cycle is already fully funded (15.99 unspent in the bucket).
+    # Rather than skipping, the engine now pre-funds toward the next cycle.
     expense = create_expense(name: 'Netflix', amount: 15.99, due_on: Date.new(2026, 1, 29))
     earlier_event = @schedule.funding_events.create!(occurs_on: Date.new(2025, 12, 18))
     Allocation.create!(funding_event: earlier_event, expense: expense, amount: 15.99, funded_at: Time.current)
 
     new_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
 
-    assert_no_difference 'Allocation.count' do
+    assert_difference 'Allocation.count', 1 do
       AllocationEngine.propose_for(new_event)
     end
+
+    allocation = new_event.allocations.find_by(expense: expense)
+    assert allocation.amount.positive?, 'should still propose toward the next cycle'
+    assert allocation.amount < expense.amount, 'next-cycle proposal is a per-paycheck share, not a whole cycle'
+    assert_nil allocation.funded_at
+  end
+
+  test 'propose_for keeps banking further cycles as money accumulates' do
+    expense = create_expense(name: 'Rent', amount: 100, due_on: Date.new(2026, 1, 29))
+    # Two whole cycles already funded and unspent (active = 200).
+    e1 = @schedule.funding_events.create!(occurs_on: Date.new(2025, 12, 4))
+    e2 = @schedule.funding_events.create!(occurs_on: Date.new(2025, 12, 18))
+    Allocation.create!(funding_event: e1, expense: expense, amount: 100, funded_at: Time.current)
+    Allocation.create!(funding_event: e2, expense: expense, amount: 100, funded_at: Time.current)
+
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+
+    assert_difference 'Allocation.count', 1 do
+      AllocationEngine.propose_for(event)
+    end
+
+    assert event.allocations.find_by(expense: expense).amount.positive?,
+           'still proposes a third cycle even with two already banked'
+  end
+
+  test 'fund_pending_for banks a pre-funded next cycle when the balance has room' do
+    bank_accounts(:chase_checking).update!(available_balance: 1000)
+    bank_accounts(:chase_savings).update!(available_balance: 0)
+
+    expense = create_expense(name: 'Rent', amount: 100, due_on: Date.new(2026, 1, 29))
+    funded_event = @schedule.funding_events.create!(occurs_on: Date.new(2025, 12, 18))
+    Allocation.create!(funding_event: funded_event, expense: expense, amount: 100, funded_at: Time.current)
+
+    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    AllocationEngine.propose_for(event)
+    AllocationEngine.fund_pending_for(@user)
+
+    assert event.allocations.find_by(expense: expense).funded_at.present?,
+           'next-cycle allocation funds when the balance covers it'
   end
 
   test 'propose_for past-due expense allocates full remaining' do
@@ -68,23 +109,26 @@ class AllocationEngineTest < ActiveSupport::TestCase
   end
 
   test 'fund_pending_for funds in due-date order when balance is partial' do
-    # Urgent allocation will be $30 (60 / 2 paychecks), Later will be $20 (80 / 4).
-    # Total available $30 covers urgent only.
-    bank_accounts(:chase_checking).update!(available_balance: 30)
-    bank_accounts(:chase_savings).update!(available_balance: 0)
+    # Funding priority is the rolling current due date, so pin "today" to keep
+    # it deterministic. Urgent allocation is $30 (60 / 2 paychecks), Later is
+    # $20 (80 / 4). Total available $30 covers urgent only.
+    travel_to Date.new(2026, 1, 1) do
+      bank_accounts(:chase_checking).update!(available_balance: 30)
+      bank_accounts(:chase_savings).update!(available_balance: 0)
 
-    urgent = create_expense(name: 'Urgent', amount: 60, due_on: Date.new(2026, 1, 15))
-    later  = create_expense(name: 'Later',  amount: 80, due_on: Date.new(2026, 2, 12))
+      urgent = create_expense(name: 'Urgent', amount: 60, due_on: Date.new(2026, 1, 15))
+      later  = create_expense(name: 'Later',  amount: 80, due_on: Date.new(2026, 2, 12))
 
-    event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
-    AllocationEngine.propose_for(event)
+      event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+      AllocationEngine.propose_for(event)
 
-    AllocationEngine.fund_pending_for(@user)
+      AllocationEngine.fund_pending_for(@user)
 
-    urgent_alloc = event.allocations.find_by(expense: urgent)
-    later_alloc  = event.allocations.find_by(expense: later)
-    assert urgent_alloc.funded_at.present?, 'urgent expense should be funded first'
-    assert_nil later_alloc.funded_at, 'later expense should remain pending when balance runs out'
+      urgent_alloc = event.allocations.find_by(expense: urgent)
+      later_alloc  = event.allocations.find_by(expense: later)
+      assert urgent_alloc.funded_at.present?, 'urgent expense should be funded first'
+      assert_nil later_alloc.funded_at, 'later expense should remain pending when balance runs out'
+    end
   end
 
   test 'fund_pending_for picks up previously-pending allocations on a later run' do
@@ -189,16 +233,21 @@ class AllocationEngineTest < ActiveSupport::TestCase
     assert event.allocations.find_by(goal: goal).present?
   end
 
-  test 'propose_for skips fully-funded goals' do
+  test 'propose_for banks the next cycle once the current goal cycle is fully funded' do
     goal = create_goal(name: 'Vacation', amount: 50, due_on: Date.new(2026, 12, 1))
     earlier_event = @schedule.funding_events.create!(occurs_on: Date.new(2025, 12, 18))
     Allocation.create!(funding_event: earlier_event, goal: goal, amount: 50, funded_at: Time.current)
 
     new_event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
 
-    assert_no_difference 'Allocation.count' do
+    assert_difference 'Allocation.count', 1 do
       AllocationEngine.propose_for(new_event)
     end
+
+    allocation = new_event.allocations.find_by(goal: goal)
+    assert allocation.amount.positive?, 'should still propose toward the next goal cycle'
+    assert allocation.amount < goal.amount, 'next-cycle proposal is a per-paycheck share, not a whole cycle'
+    assert_nil allocation.funded_at
   end
 
   test 'fund_pending_for breaks due-date ties by the item created_at, not the allocation created_at' do

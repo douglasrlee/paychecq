@@ -63,28 +63,43 @@ class AllocationEngine
                              .order('goals.due_on ASC, goals.created_at ASC')
                              .to_a
 
-    # Tie-break on the expense/goal's created_at (matching each per-type SQL
-    # order above), not the allocation's, so same-due-date items keep a stable
-    # funding priority.
+    # Sort by the rolling current due date (calendar-driven, not the stored
+    # anchor) so the soonest-due bucket funds first. Tie-break on the
+    # expense/goal's created_at so same-due-date items keep a stable priority.
     (pending_expense + pending_goal)
       .sort_by do |a|
         item = a.expense || a.goal
-        [ item.due_on, item.created_at ]
+        [ item.current_due_on, item.created_at ]
       end
   end
 
   # Look-ahead split: remaining-amount / paychecks-remaining-until-due.
   # Works for both Expense and Goal since both expose the same interface
-  # (amount, allocations, next_due_on).
+  # (amount, allocations, next_due_on, advance_due).
+  #
+  # Funding never stops at a single full cycle: once the current cycle is
+  # covered we roll the horizon forward and keep banking the next cycle, and
+  # the next. The bank balance is the real limiter and is applied later in
+  # fund_pending_for, so here we always propose this paycheck's share toward
+  # whichever cycle is currently filling.
   private_class_method def self.compute_proposed_amount(item, schedule, as_of:)
     active = item.allocations
                  .where('amount > spent_amount')
                  .sum(Arel.sql('amount - spent_amount'))
-    remaining = item.amount - active
+
+    # Whole cycles already banked ahead, and how much is earmarked toward the
+    # cycle currently filling. `into_current` is in [0, amount), so `remaining`
+    # is always positive — we keep funding future cycles indefinitely.
+    cycles_banked = (active / item.amount).floor
+    into_current = active - (cycles_banked * item.amount)
+    remaining = item.amount - into_current
     return 0 if remaining <= 0
 
+    # The cycle currently filling is due `cycles_banked` cadence-cycles after
+    # the next due date — spread its remaining over the paychecks until then.
     next_due = item.next_due_on(after: as_of)
-    paychecks_remaining = schedule.occurrence_count_between(after: as_of, through: next_due)
+    target_due = item.advance_due(next_due, cycles_banked)
+    paychecks_remaining = schedule.occurrence_count_between(after: as_of, through: target_due)
     paychecks_remaining = 1 if paychecks_remaining.zero?
 
     (remaining / paychecks_remaining).round(2)

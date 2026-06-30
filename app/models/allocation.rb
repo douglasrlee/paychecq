@@ -6,6 +6,7 @@ class Allocation < ApplicationRecord
   belongs_to :expense, optional: true
   belongs_to :goal, optional: true
   belongs_to :spent_by_transaction, class_name: 'Transaction', optional: true
+  has_many :allocation_spends, dependent: :delete_all
 
   # Manual allocations carry no funding_event. One per bucket, enforced by the
   # uniqueness validations below (scope: :funding_event_id, IS NULL here) and a

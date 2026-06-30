@@ -1,4 +1,5 @@
 <%# locals: (goals:, funding_schedules:) %>
+<% goals = goals.sort_by { |g| [ g.current_due_on, g.name ] } %>
 
 <%= turbo_frame_tag "goals", class: "block w-full max-w-240 mt-4 px-4" do %>
   <% if funding_schedules.none? %>

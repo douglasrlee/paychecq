@@ -29,18 +29,6 @@ class TransactionGoalsController < ApplicationController
       return
     end
 
-    unless goal.fully_funded?
-      respond_to do |format|
-        format.turbo_stream { head :unprocessable_content }
-        format.html do
-          redirect_to transaction_path(@transaction),
-                      alert: "#{goal.name} isn't fully funded yet.",
-                      status: :see_other
-        end
-      end
-      return
-    end
-
     GoalLinker.link(transaction: @transaction, goal: goal)
     respond_with_drawer
   end

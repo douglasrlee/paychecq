@@ -6,7 +6,7 @@ class GoalsController < ApplicationController
   end
 
   def index
-    @goals = Current.user.goals.includes(:funding_schedule).order(:due_on, :name)
+    @goals = Current.user.goals.includes(:funding_schedule)
     @funding_schedules = Current.user.funding_schedules.order(:name)
   end
 
@@ -81,7 +81,7 @@ class GoalsController < ApplicationController
   end
 
   def load_goals_for_index
-    @goals = Current.user.goals.includes(:funding_schedule).order(:due_on, :name)
+    @goals = Current.user.goals.includes(:funding_schedule)
     @funding_schedules = Current.user.funding_schedules.order(:name)
   end
 

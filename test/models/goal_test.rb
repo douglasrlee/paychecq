@@ -102,6 +102,19 @@ class GoalTest < ActiveSupport::TestCase
     assert_not goal.off_track?
   end
 
+  test 'off_track? is false when the current cycle is funded but a future cycle is queued' do
+    schedule = @user.funding_schedules.create!(name: 'Roof paycheck', cadence: 'monthly', start_date: Date.new(2026, 1, 1))
+    goal = @user.goals.create!(name: 'Roof', amount: 100, cadence: 'monthly',
+                               due_on: Date.new(2026, 2, 1), funding_schedule: schedule)
+    e1 = schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    e2 = schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
+    goal.allocations.create!(funding_event: e1, amount: 100, funded_at: Time.current) # current cycle, in bucket
+    goal.allocations.create!(funding_event: e2, amount: 50, funded_at: nil)           # next cycle, queued
+
+    assert goal.bucket_balance >= goal.amount
+    assert_not goal.off_track?
+  end
+
   test 'fully_funded? is false until the bucket covers the target amount' do
     # janes_goal has $8.00 funded against a $3,000 target.
     assert_not goals(:janes_goal).fully_funded?
@@ -115,11 +128,10 @@ class GoalTest < ActiveSupport::TestCase
     assert goal.fully_funded?
   end
 
-  test 'past_due is true when due_on is before today' do
-    travel_to Date.new(2026, 3, 1) do
-      assert build(due_on: Date.new(2026, 2, 14)).past_due?
-      assert_not build(due_on: Date.new(2026, 3, 1)).past_due?
-      assert_not build(due_on: Date.new(2026, 4, 1)).past_due?
+  test 'current_due_on rolls forward to the next occurrence once the date passes' do
+    travel_to Date.new(2026, 3, 15) do
+      goal = build(cadence: 'monthly', due_on: Date.new(2026, 2, 14))
+      assert_equal Date.new(2026, 4, 14), goal.current_due_on
     end
   end
 
@@ -129,22 +141,6 @@ class GoalTest < ActiveSupport::TestCase
     travel_to Date.new(2026, 1, 5) do
       goal = build(cadence: 'monthly', due_on: Date.new(2026, 2, 14), amount: 9.99)
       assert_in_delta 3.33, goal.per_paycheck_amount.to_f, 0.01 # 9.99 / 3
-    end
-  end
-
-  test 'bump_due_backward! recedes one cycle for each cadence' do
-    cases = {
-      'monthly' => [ Date.new(2026, 4, 15), Date.new(2026, 3, 15) ],
-      'quarterly' => [ Date.new(2026, 4, 15), Date.new(2026, 1, 15) ],
-      'semiannual' => [ Date.new(2026, 6, 15), Date.new(2025, 12, 15) ],
-      'yearly' => [ Date.new(2026, 4, 15), Date.new(2025, 4, 15) ]
-    }
-
-    cases.each do |cadence, (from, to)|
-      goal = build(cadence: cadence, due_on: from)
-      goal.save!
-      goal.bump_due_backward!
-      assert_equal to, goal.reload.due_on, "expected #{cadence} recede #{from} -> #{to}"
     end
   end
 

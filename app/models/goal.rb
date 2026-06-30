@@ -20,8 +20,11 @@ class Goal < ApplicationRecord
     cursor
   end
 
-  def past_due?
-    due_on.present? && due_on < Date.current
+  # The due date to show and sort by — the next occurrence on or after today,
+  # rolling forward the day after one passes, independent of payment. `due_on`
+  # stays put as the anchor the user picked.
+  def current_due_on(as_of: Date.current)
+    next_due_on(after: as_of) || due_on
   end
 
   def bucket_balance
@@ -30,8 +33,11 @@ class Goal < ApplicationRecord
                .sum(Arel.sql('amount - spent_amount'))
   end
 
+  # Off-track when the current cycle isn't fully funded yet and money is still
+  # queued to catch it up. Pre-funded future cycles leave pending allocations
+  # around, so "any pending allocation" no longer means off-track.
   def off_track?
-    allocations.exists?(funded_at: nil)
+    bucket_balance < amount && allocations.exists?(funded_at: nil)
   end
 
   def fully_funded?
@@ -54,12 +60,13 @@ class Goal < ApplicationRecord
     (remaining / paychecks).round(2)
   end
 
-  def bump_due_forward!
-    update!(due_on: advance(due_on))
-  end
-
-  def bump_due_backward!
-    update!(due_on: recede(due_on))
+  # The due date `cycles` full cadence-cycles after `from`. The allocation
+  # engine uses this to roll the funding horizon forward when pre-funding
+  # future cycles. Clamps day-of-month like the rest of the cadence math.
+  def advance_due(from, cycles)
+    result = from
+    cycles.times { result = advance(result) }
+    result
   end
 
   private
@@ -80,23 +87,9 @@ class Goal < ApplicationRecord
     end
   end
 
-  def recede(date)
-    case cadence
-    when 'monthly'    then recede_months(date, 1)
-    when 'quarterly'  then recede_months(date, 3)
-    when 'semiannual' then recede_months(date, 6)
-    when 'yearly'     then recede_months(date, 12)
-    end
-  end
-
   def advance_months(date, months)
     next_date = date >> months
     clamp_day(next_date.year, next_date.month, due_on.day)
-  end
-
-  def recede_months(date, months)
-    prev_date = date << months
-    clamp_day(prev_date.year, prev_date.month, due_on.day)
   end
 
   def clamp_day(year, month, day)

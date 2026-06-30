@@ -40,7 +40,7 @@ class TransactionGoalsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/turbo-stream action="replace" target="drawer_content"/, response.body)
   end
 
-  test 'linking a goal shows the expense section as a disabled placeholder' do
+  test 'linking a goal shows the linked bucket card with an unlink action' do
     sign_in_as(@user)
     fully_fund(@vacation)
 
@@ -49,7 +49,9 @@ class TransactionGoalsControllerTest < ActionDispatch::IntegrationTest
          headers: { Accept: 'text/vnd.turbo-stream.html' }
 
     assert_response :success
-    assert_match(/Unlink the goal to assign an expense/, response.body)
+    assert_match(/Vacation/, response.body)
+    assert_match(/Unlink/, response.body)
+    assert_no_match(/Search expenses and goals/, response.body)
   end
 
   test 'create rejects a non-positive (refund/credit) transaction' do
@@ -64,15 +66,17 @@ class TransactionGoalsControllerTest < ActionDispatch::IntegrationTest
     assert_nil credit.reload.goal
   end
 
-  test 'create rejects an under-funded goal' do
+  test 'create links an under-funded goal, drawing down whatever is available' do
     sign_in_as(@user)
-    # @vacation has no funded allocations -> bucket_balance is 0 -> not fully funded
+    # @vacation has no funded allocations -> bucket_balance is 0. Linking is no
+    # longer gated on being fully funded; it links and draws what's there (0).
 
-    post transaction_goals_url, params: { transaction_id: @transaction.id, goal_id: @vacation.id }
+    post transaction_goals_url,
+         params: { transaction_id: @transaction.id, goal_id: @vacation.id },
+         headers: { Accept: 'text/vnd.turbo-stream.html' }
 
-    assert_response :see_other
-    assert_match(/isn't fully funded/i, flash[:alert])
-    assert_nil @transaction.reload.goal
+    assert_response :success
+    assert_equal @vacation, @transaction.reload.goal
   end
 
   test 'create without goal_id responds gracefully via turbo_stream' do
