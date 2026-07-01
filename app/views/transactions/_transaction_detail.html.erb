@@ -164,6 +164,8 @@
       <% else %>
         <% user_expenses = Current.user.expenses.order(:name).to_a %>
         <% user_goals = Current.user.goals.order(:name).to_a %>
+        <% expense_balances = Allocation.where(expense: user_expenses).where.not(funded_at: nil).where('amount > spent_amount').group(:expense_id).sum('amount - spent_amount') %>
+        <% goal_balances = Allocation.where(goal: user_goals).where.not(funded_at: nil).where('amount > spent_amount').group(:goal_id).sum('amount - spent_amount') %>
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-base-content/50">Bucket</span>
           <button data-action="toggle#toggle" class="btn btn-ghost btn-sm text-primary">
@@ -202,7 +204,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                         </svg>
                         <span class="truncate"><%= expense.name %></span>
-                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(expense.amount) %></span>
+                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(expense_balances[expense.id] || 0) %></span>
                       </button>
                     </li>
                   <% end %>
@@ -219,7 +221,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                         </svg>
                         <span class="truncate"><%= goal.name %></span>
-                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(goal.amount) %></span>
+                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(goal_balances[goal.id] || 0) %></span>
                       </button>
                     </li>
                   <% end %>
