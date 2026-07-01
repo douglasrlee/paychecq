@@ -90,6 +90,17 @@ class ExpenseTest < ActiveSupport::TestCase
     assert_equal 8.00, expense.bucket_balance.to_f
   end
 
+  test 'fully_funded? is true once the bucket covers the target amount' do
+    expense = expenses(:netflix) # $22.99 target, $8.00 in bucket
+    expense.allocations.create!(amount: 14.99, funded_at: Time.current)
+
+    assert expense.fully_funded?
+  end
+
+  test 'fully_funded? is false when the bucket is under the target' do
+    assert_not expenses(:netflix).fully_funded?
+  end
+
   test 'off_track? is true when any allocation is pending' do
     expense = expenses(:netflix) # fixture has a pending allocation on paycheck_second
 
