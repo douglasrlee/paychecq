@@ -67,7 +67,7 @@ class ExpenseLinker
                                       .group(:allocation_id)
                                       .sum(:amount)
 
-        Allocation.where(id: allocation_ids).each do |allocation|
+        Allocation.where(id: allocation_ids).find_each do |allocation|
           remaining = remaining_by[allocation.id] || 0
           allocation.update!(
             spent_amount: remaining,
