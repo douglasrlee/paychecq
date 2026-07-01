@@ -41,11 +41,11 @@ class GoalLinker
   end
 
   def self.unlink(transaction:)
-    goal = transaction.goal
-    return unless goal
-
     Transaction.transaction do
       transaction.lock!
+      goal = transaction.goal
+      next unless goal
+
       goal.with_lock do
         spends = AllocationSpend.where(spent_by_transaction: transaction)
         allocation_ids = spends.pluck(:allocation_id)

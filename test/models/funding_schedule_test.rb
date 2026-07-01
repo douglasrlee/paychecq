@@ -180,6 +180,16 @@ class FundingScheduleTest < ActiveSupport::TestCase
     assert_equal 5, schedule.occurrence_count_between(after: Date.new(2026, 1, 1), through: Date.new(2026, 3, 1))
   end
 
+  test 'occurrence_count_between for semimonthly when after is mid-month (exercises first_occurrence_on_or_after)' do
+    schedule = @user.funding_schedules.create!(name: 'Semi', cadence: 'semimonthly', start_date: Date.new(2026, 1, 1), second_day_of_month: 15)
+
+    # after = Jan 5: first occ = Jan 15 (d1=Jan 1 < Jan 5, d2=Jan 15 >= Jan 5)
+    assert_equal 2, schedule.occurrence_count_between(after: Date.new(2026, 1, 5), through: Date.new(2026, 2, 1))
+
+    # after = Jan 20: first occ = Feb 1 (both Jan 1 and Jan 15 are past)
+    assert_equal 3, schedule.occurrence_count_between(after: Date.new(2026, 1, 20), through: Date.new(2026, 3, 1))
+  end
+
   test 'next_occurrences skips past dates and starts at first occurrence on or after after' do
     schedule = build(cadence: 'weekly', start_date: Date.new(2026, 1, 1))
 

@@ -53,11 +53,11 @@ class ExpenseLinker
   # each touched allocation's spent_amount from whatever spends remain (other
   # transactions may still be drawing on the same allocation). Clears the FK.
   def self.unlink(transaction:)
-    expense = transaction.expense
-    return unless expense
-
     Transaction.transaction do
       transaction.lock!
+      expense = transaction.expense
+      next unless expense
+
       expense.with_lock do
         spends = AllocationSpend.where(spent_by_transaction: transaction)
         allocation_ids = spends.pluck(:allocation_id)

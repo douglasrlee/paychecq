@@ -34,7 +34,7 @@ class FundingSchedule < ApplicationRecord
   end
 
   # Returns the number of occurrences this schedule fires between `after`
-  # (inclusive) and `through` (inclusive). O(1) per cadence.
+  # (inclusive) and `through` (inclusive). O(1) for all cadences.
   def occurrence_count_between(after:, through:)
     return 0 if start_date.blank? || cadence.blank? || through < after
 
@@ -78,6 +78,10 @@ class FundingSchedule < ApplicationRecord
   def first_occurrence_on_or_after(target)
     return start_date if target <= start_date
 
+    first_occurrence_by_cadence(target)
+  end
+
+  def first_occurrence_by_cadence(target)
     case cadence
     when 'weekly'
       days_ahead = (target - start_date).to_i
@@ -85,10 +89,21 @@ class FundingSchedule < ApplicationRecord
     when 'biweekly'
       days_ahead = (target - start_date).to_i
       start_date + (days_ahead.fdiv(14).ceil * 14)
-    else
-      cursor = start_date
-      cursor = advance(cursor) while cursor < target
-      cursor
+    when 'monthly'
+      candidate = clamp_day(target.year, target.month, start_date.day)
+      candidate >= target ? candidate : advance_monthly(candidate)
+    when 'semimonthly'
+      first_semimonthly_occurrence_on_or_after(target)
+    end
+  end
+
+  def first_semimonthly_occurrence_on_or_after(target)
+    d1, d2 = [ start_date.day, second_day_of_month ].sort
+    occ1 = clamp_day(target.year, target.month, d1)
+    occ2 = clamp_day(target.year, target.month, d2)
+    if occ1 >= target then occ1
+    elsif occ2 >= target then occ2
+    else clamp_day((target >> 1).year, (target >> 1).month, d1)
     end
   end
 
