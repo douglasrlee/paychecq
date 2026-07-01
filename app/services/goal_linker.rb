@@ -45,14 +45,21 @@ class GoalLinker
     return unless goal
 
     Transaction.transaction do
+      transaction.lock!
       goal.with_lock do
-        AllocationSpend.where(spent_by_transaction: transaction).includes(:allocation).find_each do |spend|
-          allocation = spend.allocation
-          spend.destroy!
-          remaining_spent = AllocationSpend.where(allocation: allocation).sum(:amount)
+        spends = AllocationSpend.where(spent_by_transaction: transaction)
+        allocation_ids = spends.pluck(:allocation_id)
+        spends.delete_all
+
+        remaining_by = AllocationSpend.where(allocation_id: allocation_ids)
+                                      .group(:allocation_id)
+                                      .sum(:amount)
+
+        Allocation.where(id: allocation_ids).each do |allocation|
+          remaining = remaining_by[allocation.id] || 0
           allocation.update!(
-            spent_amount: remaining_spent,
-            spent_at: (remaining_spent.positive? ? allocation.spent_at : nil)
+            spent_amount: remaining,
+            spent_at: remaining.positive? ? allocation.spent_at : nil
           )
         end
 

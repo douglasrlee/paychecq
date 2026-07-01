@@ -64,9 +64,13 @@ class Goal < ApplicationRecord
   # engine uses this to roll the funding horizon forward when pre-funding
   # future cycles. Clamps day-of-month like the rest of the cadence math.
   def advance_due(from, cycles)
-    result = from
-    cycles.times { result = advance(result) }
-    result
+    months = case cadence
+             when 'monthly'    then 1
+             when 'quarterly'  then 3
+             when 'semiannual' then 6
+             when 'yearly'     then 12
+             end
+    advance_months(from, cycles * months)
   end
 
   private
