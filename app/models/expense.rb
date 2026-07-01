@@ -12,13 +12,20 @@ class Expense < ApplicationRecord
   validates :due_on, presence: true
   validate :funding_schedule_belongs_to_user
 
-  # Returns the next date this expense is due on or after `after`.
+  # Returns the next date this expense is due on or after `after`. O(1):
+  # compute how many full cadence-cycles fit between due_on and after,
+  # jump there in one advance_months call, then advance once more if we
+  # still landed before after (happens when the clamped day is earlier
+  # in the target month than after.day).
   def next_due_on(after: Date.current)
     return nil if due_on.blank? || CADENCES.exclude?(cadence)
+    return due_on if due_on >= after
 
-    cursor = due_on
-    cursor = advance(cursor) while cursor < after
-    cursor
+    months_per = { 'monthly' => 1, 'quarterly' => 3, 'semiannual' => 6, 'yearly' => 12 }[cadence]
+    months_elapsed = ((after.year - due_on.year) * 12) + (after.month - due_on.month)
+    cycles = months_elapsed.fdiv(months_per).ceil
+    result = advance_months(due_on, cycles * months_per)
+    result < after ? advance_months(due_on, (cycles + 1) * months_per) : result
   end
 
   # The due date to show and sort by. Due dates are calendar-driven and
@@ -87,15 +94,6 @@ class Expense < ApplicationRecord
     return if funding_schedule.user_id == user_id
 
     errors.add(:funding_schedule_id, 'must belong to you')
-  end
-
-  def advance(date)
-    case cadence
-    when 'monthly'    then advance_months(date, 1)
-    when 'quarterly'  then advance_months(date, 3)
-    when 'semiannual' then advance_months(date, 6)
-    when 'yearly'     then advance_months(date, 12)
-    end
   end
 
   def advance_months(date, months)
