@@ -97,15 +97,21 @@ class ManualAllocatorTest < ActiveSupport::TestCase
     assert_equal 40, manual.reload.amount.to_f, 'floored at the spent amount, row kept'
   end
 
-  test 'fully allocating by hand leaves the engine nothing to propose' do
+  test 'fully allocating the current cycle by hand still banks the next cycle' do
+    # The hand-funded $1000 covers the current cycle; the engine no longer
+    # proposes for it, but it does pre-fund toward the next cycle (item 4).
     soon = @user.expenses.create!(name: 'Trip', amount: 1000, cadence: 'monthly', due_on: Date.new(2026, 1, 29), funding_schedule: @schedule)
     ManualAllocator.set_balance(item: soon, amount: 1000)
 
     event = @schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
 
-    assert_no_difference -> { soon.allocations.where(funding_event: event).count } do
+    assert_difference -> { soon.allocations.where(funding_event: event).count }, 1 do
       AllocationEngine.propose_for(event)
     end
+
+    proposed = soon.allocations.find_by(funding_event: event)
+    assert proposed.amount.positive?, 'banks a per-paycheck share toward the next cycle'
+    assert proposed.amount < soon.amount
   end
 
   test 'locks the bucket row to serialize with transaction linkers' do

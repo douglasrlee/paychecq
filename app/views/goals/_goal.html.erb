@@ -4,18 +4,15 @@
       class: "block bg-base-200 rounded-xl transition-colors hover:bg-base-300 focus-visible:outline-2 focus-visible:outline-primary",
       "aria-label": "Edit #{goal.name}",
       data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
-  <div class="px-4 py-3">
+  <div class="px-3 py-2">
     <div class="min-w-0">
       <div class="flex items-baseline gap-2 min-w-0">
-        <p class="font-medium truncate"><%= goal.name %></p>
-        <p class="font-semibold tabular-nums shrink-0"><%= number_to_currency(goal.amount) %></p>
+        <p class="text-sm font-medium truncate"><%= goal.name %></p>
+        <p class="text-sm font-semibold tabular-nums shrink-0"><%= number_to_currency(goal.amount) %></p>
       </div>
-      <p class="text-sm text-base-content/60">
-        <%= goal.past_due? ? 'Past due' : 'Due' %> <%= goal.due_on.strftime('%b %-d') %>
+      <p class="text-xs text-base-content/60">
+        Due <%= goal.current_due_on.strftime('%b %-d') %>
         · <%= number_to_currency(goal.per_paycheck_amount) %>/<%= goal.funding_schedule.name %>
-        <% if goal.past_due? %>
-          <span class="badge badge-error badge-sm ml-1">Past due</span>
-        <% end %>
       </p>
       <%
         bucket = goal.bucket_balance

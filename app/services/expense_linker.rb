@@ -1,16 +1,15 @@
 class ExpenseLinker
-  # Link a transaction to an expense. Walks the expense's untouched funded
-  # allocations oldest-first and consumes them up to `transaction.amount`.
-  # Most links are exact: every touched allocation ends with
-  # `spent_amount == amount`. When the transaction is smaller than the
-  # bucket, the walk stops mid-allocation, leaving a residual. When the
-  # transaction is larger than the bucket, the walk runs out of allocations
-  # and the leftover transaction amount simply isn't accounted for here.
-  # Either way, due_on advances one cycle and the transaction remembers
-  # which expense it satisfied — plus the pre-link due_on, so unlink can
-  # restore it exactly (round-trips around day-clamping months).
-  # If the transaction is already linked elsewhere, unlinks first (full
-  # rollback of the prior expense) and then links to the new one.
+  # Link a transaction to an expense and draw the transaction's amount down
+  # from the bucket. Walks the expense's funded allocations oldest-first and
+  # consumes each one's remaining headroom (amount - spent_amount) up to
+  # `transaction.amount`, recording each draw as an AllocationSpend row. A
+  # bucket can be shared by several transactions — an expense paid by multiple
+  # charges draws each one down in turn until the bucket is empty; any leftover
+  # transaction amount beyond the bucket simply isn't accounted for here.
+  #
+  # Due dates are calendar-driven and independent of linking, so linking never
+  # touches due_on. If the transaction is already linked elsewhere, unlinks
+  # first (full rollback of the prior bucket) and then links here.
   def self.link(transaction:, expense:)
     Transaction.transaction do
       # Lock the transaction row first so concurrent expense/goal link
@@ -25,54 +24,61 @@ class ExpenseLinker
       # update the same allocations. with_lock also wraps everything below
       # in the existing surrounding Transaction.transaction.
       expense.with_lock do
-        previous_due_on = expense.due_on
         remaining = transaction.amount
         spent_at = Time.current
 
-        # Filter on `spent_amount: 0` to express "never touched" directly,
-        # which keeps the single-spender invariant intact even if a row
-        # ever ended up with a stale FK while still having no consumed
-        # amount.
         expense.allocations
                .where.not(funded_at: nil)
-               .where(spent_amount: 0)
+               .where('amount > spent_amount')
                .order(:funded_at, :created_at)
                .lock
                .each do |allocation|
           break if remaining <= 0
 
-          consume = [ remaining, allocation.amount ].min
-          allocation.update!(
-            spent_amount: consume,
-            spent_at: spent_at,
-            spent_by_transaction: transaction
-          )
+          available = allocation.amount - allocation.spent_amount
+          consume = [ remaining, available ].min
+          next if consume <= 0
+
+          AllocationSpend.create!(allocation: allocation, spent_by_transaction: transaction, amount: consume)
+          allocation.update!(spent_amount: allocation.spent_amount + consume, spent_at: spent_at)
           remaining -= consume
         end
 
-        transaction.update!(expense: expense, previous_due_on: previous_due_on)
-        expense.bump_due_forward!
+        transaction.update!(expense: expense)
       end
     end
   end
 
-  # Full undo of a prior link: zero out every allocation touched by this
-  # transaction (single-spender invariant means resetting spent_amount to
-  # 0 always restores the original state), clear the FK, and restore
-  # due_on to the exact value it had at link time (using the previous_due_on
-  # we stored on the transaction).
+  # Undo this transaction's draws: delete its AllocationSpend rows and recompute
+  # each touched allocation's spent_amount from whatever spends remain (other
+  # transactions may still be drawing on the same allocation). Clears the FK.
   def self.unlink(transaction:)
-    expense = transaction.expense
-    return unless expense
-
     Transaction.transaction do
-      Allocation.where(spent_by_transaction: transaction).find_each do |allocation|
-        allocation.update!(spent_amount: 0, spent_at: nil, spent_by_transaction: nil)
-      end
+      transaction.lock!
+      expense = transaction.expense
+      next unless expense
 
-      restored_due_on = transaction.previous_due_on
-      transaction.update!(expense: nil, previous_due_on: nil)
-      expense.update!(due_on: restored_due_on) if restored_due_on.present?
+      expense.with_lock do
+        spends = AllocationSpend.where(spent_by_transaction: transaction)
+        allocation_ids = spends.pluck(:allocation_id)
+        spends.delete_all
+
+        remaining_by = AllocationSpend.where(allocation_id: allocation_ids)
+                                      .group(:allocation_id)
+                                      .sum(:amount)
+        last_spent_at_by = AllocationSpend.where(allocation_id: allocation_ids)
+                                          .group(:allocation_id)
+                                          .maximum(:created_at)
+
+        Allocation.where(id: allocation_ids).find_each do |allocation|
+          allocation.update!(
+            spent_amount: remaining_by[allocation.id] || 0,
+            spent_at: last_spent_at_by[allocation.id]
+          )
+        end
+
+        transaction.update!(expense: nil)
+      end
     end
   end
 end

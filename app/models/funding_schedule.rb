@@ -34,18 +34,12 @@ class FundingSchedule < ApplicationRecord
   end
 
   # Returns the number of occurrences this schedule fires between `after`
-  # (inclusive) and `through` (inclusive). Unbounded in count — use when you
-  # need an accurate count, not when you just need the next N occurrences.
+  # (inclusive) and `through` (inclusive). O(1) for all cadences.
   def occurrence_count_between(after:, through:)
     return 0 if start_date.blank? || cadence.blank? || through < after
 
-    count = 0
-    cursor = first_occurrence_on_or_after(after)
-    while cursor && cursor <= through
-      count += 1
-      cursor = advance(cursor)
-    end
-    count
+    first = first_occurrence_on_or_after(after)
+    first <= through ? occurrences_in_range(first, through) : 0
   end
 
   # Returns the next `count` dates this schedule fires on or after `after`.
@@ -82,9 +76,61 @@ class FundingSchedule < ApplicationRecord
   end
 
   def first_occurrence_on_or_after(target)
-    cursor = start_date
-    cursor = advance(cursor) while cursor < target
-    cursor
+    return start_date if target <= start_date
+
+    first_occurrence_by_cadence(target)
+  end
+
+  def first_occurrence_by_cadence(target)
+    case cadence
+    when 'weekly'
+      days_ahead = (target - start_date).to_i
+      start_date + (days_ahead.fdiv(7).ceil * 7)
+    when 'biweekly'
+      days_ahead = (target - start_date).to_i
+      start_date + (days_ahead.fdiv(14).ceil * 14)
+    when 'monthly'
+      candidate = clamp_day(target.year, target.month, start_date.day)
+      candidate >= target ? candidate : advance_monthly(candidate)
+    when 'semimonthly'
+      first_semimonthly_occurrence_on_or_after(target)
+    end
+  end
+
+  def first_semimonthly_occurrence_on_or_after(target)
+    d1, d2 = [ start_date.day, second_day_of_month ].sort
+    occ1 = clamp_day(target.year, target.month, d1)
+    occ2 = clamp_day(target.year, target.month, d2)
+    if occ1 >= target then occ1
+    elsif occ2 >= target then occ2
+    else clamp_day((target >> 1).year, (target >> 1).month, d1)
+    end
+  end
+
+  def occurrences_in_range(first, through)
+    case cadence
+    when 'weekly'      then ((through - first).to_i / 7) + 1
+    when 'biweekly'    then ((through - first).to_i / 14) + 1
+    when 'monthly'
+      months = ((through.year - first.year) * 12) + (through.month - first.month)
+      months + (clamp_day(through.year, through.month, start_date.day) <= through ? 1 : 0)
+    when 'semimonthly' then count_semimonthly_occurrences(first, through)
+    end
+  end
+
+  def count_semimonthly_occurrences(first, through)
+    d1, d2 = [ start_date.day, second_day_of_month ].sort
+    first_ym = (first.year * 12) + first.month - 1
+    through_ym = (through.year * 12) + through.month - 1
+
+    if first_ym == through_ym
+      [ d1, d2 ].count { |d| (occ = clamp_day(first.year, first.month, d)) >= first && occ <= through }
+    else
+      count  = [ d1, d2 ].count { |d| clamp_day(first.year, first.month, d) >= first }
+      count += (through_ym - first_ym - 1) * 2
+      count += [ d1, d2 ].count { |d| clamp_day(through.year, through.month, d) <= through }
+      count
+    end
   end
 
   def advance(date)

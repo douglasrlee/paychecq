@@ -6,7 +6,7 @@ class ExpensesController < ApplicationController
   end
 
   def index
-    @expenses = Current.user.expenses.includes(:funding_schedule).order(:due_on, :name)
+    @expenses = Current.user.expenses.includes(:funding_schedule)
     @funding_schedules = Current.user.funding_schedules.order(:name)
   end
 
@@ -81,7 +81,7 @@ class ExpensesController < ApplicationController
   end
 
   def load_expenses_for_index
-    @expenses = Current.user.expenses.includes(:funding_schedule).order(:due_on, :name)
+    @expenses = Current.user.expenses.includes(:funding_schedule)
     @funding_schedules = Current.user.funding_schedules.order(:name)
   end
 

@@ -90,6 +90,17 @@ class ExpenseTest < ActiveSupport::TestCase
     assert_equal 8.00, expense.bucket_balance.to_f
   end
 
+  test 'fully_funded? is true once the bucket covers the target amount' do
+    expense = expenses(:netflix) # $22.99 target, $8.00 in bucket
+    expense.allocations.create!(amount: 14.99, funded_at: Time.current)
+
+    assert expense.fully_funded?
+  end
+
+  test 'fully_funded? is false when the bucket is under the target' do
+    assert_not expenses(:netflix).fully_funded?
+  end
+
   test 'off_track? is true when any allocation is pending' do
     expense = expenses(:netflix) # fixture has a pending allocation on paycheck_second
 
@@ -102,11 +113,38 @@ class ExpenseTest < ActiveSupport::TestCase
     assert_not expense.off_track?
   end
 
-  test 'past_due is true when due_on is before today' do
+  test 'off_track? is false when the current cycle is funded but a future cycle is queued' do
+    # A fully-funded current cycle plus a pre-funded next-cycle allocation that
+    # is still pending should NOT read as off-track.
+    schedule = @user.funding_schedules.create!(name: 'Rent paycheck', cadence: 'monthly', start_date: Date.new(2026, 1, 1))
+    expense = @user.expenses.create!(name: 'Rent', amount: 100, cadence: 'monthly',
+                                     due_on: Date.new(2026, 2, 1), funding_schedule: schedule)
+    e1 = schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 1))
+    e2 = schedule.funding_events.create!(occurs_on: Date.new(2026, 1, 15))
+    expense.allocations.create!(funding_event: e1, amount: 100, funded_at: Time.current) # current cycle, in bucket
+    expense.allocations.create!(funding_event: e2, amount: 50, funded_at: nil)           # next cycle, queued
+
+    assert expense.bucket_balance >= expense.amount
+    assert_not expense.off_track?
+  end
+
+  test 'current_due_on rolls forward to the next occurrence once the date passes' do
     travel_to Date.new(2026, 3, 1) do
-      assert build(due_on: Date.new(2026, 2, 14)).past_due?
-      assert_not build(due_on: Date.new(2026, 3, 1)).past_due?
-      assert_not build(due_on: Date.new(2026, 4, 1)).past_due?
+      expense = build(cadence: 'monthly', due_on: Date.new(2026, 2, 14))
+      # Feb 14 already passed, so it shows the next occurrence.
+      assert_equal Date.new(2026, 3, 14), expense.current_due_on
+    end
+
+    travel_to Date.new(2026, 3, 14) do
+      expense = build(cadence: 'monthly', due_on: Date.new(2026, 2, 14))
+      # On the due date itself it stays put.
+      assert_equal Date.new(2026, 3, 14), expense.current_due_on
+    end
+
+    travel_to Date.new(2026, 3, 15) do
+      expense = build(cadence: 'monthly', due_on: Date.new(2026, 2, 14))
+      # The day after, it rolls to the following occurrence.
+      assert_equal Date.new(2026, 4, 14), expense.current_due_on
     end
   end
 
@@ -116,22 +154,6 @@ class ExpenseTest < ActiveSupport::TestCase
     travel_to Date.new(2026, 1, 5) do
       expense = build(due_on: Date.new(2026, 2, 14), amount: 9.99)
       assert_in_delta 3.33, expense.per_paycheck_amount.to_f, 0.01 # 9.99 / 3
-    end
-  end
-
-  test 'bump_due_backward! recedes one cycle for each cadence' do
-    cases = {
-      'monthly' => [ Date.new(2026, 4, 15), Date.new(2026, 3, 15) ],
-      'quarterly' => [ Date.new(2026, 4, 15), Date.new(2026, 1, 15) ],
-      'semiannual' => [ Date.new(2026, 6, 15), Date.new(2025, 12, 15) ],
-      'yearly' => [ Date.new(2026, 4, 15), Date.new(2025, 4, 15) ]
-    }
-
-    cases.each do |cadence, (from, to)|
-      expense = build(cadence: cadence, due_on: from)
-      expense.save!
-      expense.bump_due_backward!
-      assert_equal to, expense.reload.due_on, "expected #{cadence} recede #{from} -> #{to}"
     end
   end
 

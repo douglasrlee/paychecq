@@ -12,18 +12,29 @@ class Expense < ApplicationRecord
   validates :due_on, presence: true
   validate :funding_schedule_belongs_to_user
 
-  # Returns the next date this expense is due on or after `after`.
-  # Not used by the index in Phase 2 — kept for the allocation engine.
+  # Returns the next date this expense is due on or after `after`. O(1):
+  # compute how many full cadence-cycles fit between due_on and after,
+  # jump there in one advance_months call, then advance once more if we
+  # still landed before after (happens when the clamped day is earlier
+  # in the target month than after.day).
   def next_due_on(after: Date.current)
     return nil if due_on.blank? || CADENCES.exclude?(cadence)
+    return due_on if due_on >= after
 
-    cursor = due_on
-    cursor = advance(cursor) while cursor < after
-    cursor
+    months_per = { 'monthly' => 1, 'quarterly' => 3, 'semiannual' => 6, 'yearly' => 12 }[cadence]
+    months_elapsed = ((after.year - due_on.year) * 12) + (after.month - due_on.month)
+    cycles = months_elapsed.fdiv(months_per).ceil
+    result = advance_months(due_on, cycles * months_per)
+    result < after ? advance_months(due_on, (cycles + 1) * months_per) : result
   end
 
-  def past_due?
-    due_on.present? && due_on < Date.current
+  # The due date to show and sort by. Due dates are calendar-driven and
+  # independent of payment: the next occurrence on or after today, rolling
+  # forward the day after one passes. `due_on` itself stays put as the anchor
+  # the user picked; this rolls it forward without mutating it (and without
+  # day-of-month drift, since it always clamps from the pristine `due_on` day).
+  def current_due_on(as_of: Date.current)
+    next_due_on(after: as_of) || due_on
   end
 
   # Money sitting in the bucket right now: the unspent remainder of each
@@ -38,15 +49,16 @@ class Expense < ApplicationRecord
                .sum(Arel.sql('amount - spent_amount'))
   end
 
-  # An expense is off-track when any allocation has been proposed but not
-  # yet funded (the balance hasn't caught up).
+  # An expense is off-track when the current cycle isn't fully funded yet and
+  # there's still money queued (a pending allocation) to catch it up. Banking
+  # future cycles ahead of time (the engine keeps pre-funding past a full
+  # bucket) leaves pending allocations around, so "any pending allocation" can
+  # no longer mean off-track — only an under-funded current cycle does.
   def off_track?
-    allocations.exists?(funded_at: nil)
+    allocations.exists?(funded_at: nil) && bucket_balance < amount
   end
 
   # True when the bucket has enough money to cover the expense's target.
-  # Only fully-funded expenses are eligible for transaction linking — we
-  # don't want to "spend" an under-funded bucket.
   def fully_funded?
     bucket_balance >= amount
   end
@@ -67,18 +79,12 @@ class Expense < ApplicationRecord
     (remaining / paychecks).round(2)
   end
 
-  # Roll due_on forward / backward by one cadence cycle. `bump_due_forward!`
-  # is called by ExpenseLinker when a transaction is linked. Unlink no
-  # longer uses `bump_due_backward!` — it restores from `previous_due_on`
-  # instead, so the day-of-month survives months that clamp (Jan 31 ->
-  # Feb 28 -> Jan 31, not Jan 28). `bump_due_backward!` is kept on the
-  # public surface for callers that genuinely want a one-cycle recede.
-  def bump_due_forward!
-    update!(due_on: advance(due_on))
-  end
-
-  def bump_due_backward!
-    update!(due_on: recede(due_on))
+  # The due date `cycles` full cadence-cycles after `from`. The allocation
+  # engine uses this to roll the funding horizon forward when pre-funding
+  # future cycles. Clamps day-of-month like the rest of the cadence math.
+  def advance_due(from, cycles)
+    months = { 'monthly' => 1, 'quarterly' => 3, 'semiannual' => 6, 'yearly' => 12 }[cadence]
+    advance_months(from, cycles * months)
   end
 
   private
@@ -90,32 +96,9 @@ class Expense < ApplicationRecord
     errors.add(:funding_schedule_id, 'must belong to you')
   end
 
-  def advance(date)
-    case cadence
-    when 'monthly'    then advance_months(date, 1)
-    when 'quarterly'  then advance_months(date, 3)
-    when 'semiannual' then advance_months(date, 6)
-    when 'yearly'     then advance_months(date, 12)
-    end
-  end
-
-  def recede(date)
-    case cadence
-    when 'monthly'    then recede_months(date, 1)
-    when 'quarterly'  then recede_months(date, 3)
-    when 'semiannual' then recede_months(date, 6)
-    when 'yearly'     then recede_months(date, 12)
-    end
-  end
-
   def advance_months(date, months)
     next_date = date >> months
     clamp_day(next_date.year, next_date.month, due_on.day)
-  end
-
-  def recede_months(date, months)
-    prev_date = date << months
-    clamp_day(prev_date.year, prev_date.month, due_on.day)
   end
 
   def clamp_day(year, month, day)

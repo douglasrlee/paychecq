@@ -39,18 +39,6 @@ class TransactionExpensesController < ApplicationController
       return
     end
 
-    unless expense.fully_funded?
-      respond_to do |format|
-        format.turbo_stream { head :unprocessable_content }
-        format.html do
-          redirect_to transaction_path(@transaction),
-                      alert: "#{expense.name} isn't fully funded yet.",
-                      status: :see_other
-        end
-      end
-      return
-    end
-
     ExpenseLinker.link(transaction: @transaction, expense: expense)
     respond_with_drawer
   end

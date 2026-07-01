@@ -10,12 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_25_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_30_032557) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
   enable_extension "pgcrypto"
+
+  create_table "allocation_spends", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "allocation_id", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.uuid "spent_by_transaction_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["allocation_id"], name: "index_allocation_spends_on_allocation_id"
+    t.index ["spent_by_transaction_id"], name: "index_allocation_spends_on_spent_by_transaction_id"
+  end
 
   create_table "allocations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "amount", precision: 10, scale: 2, null: false
@@ -343,6 +353,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_25_000001) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  add_foreign_key "allocation_spends", "allocations"
+  add_foreign_key "allocation_spends", "transactions", column: "spent_by_transaction_id"
   add_foreign_key "allocations", "expenses"
   add_foreign_key "allocations", "funding_events"
   add_foreign_key "allocations", "goals"

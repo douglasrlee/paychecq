@@ -132,6 +132,24 @@ class TransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'h3', text: 'ExactRenamed'
   end
 
+  test 'show renders one searchable picker listing both expenses and goals' do
+    user = users(:johndoe)
+    sign_in_as(user)
+    schedule = user.funding_schedules.create!(name: 'Pay', cadence: 'biweekly', start_date: Date.new(2026, 1, 1))
+    user.expenses.create!(name: 'Electric bill', amount: 80, cadence: 'monthly', due_on: Date.new(2026, 7, 1), funding_schedule: schedule)
+    user.goals.create!(name: 'Trip fund', amount: 500, cadence: 'yearly', due_on: Date.new(2026, 12, 1), funding_schedule: schedule)
+    transaction = Transaction.create!(name: 'UNLINKED', amount: 25.00, bank_account: bank_accounts(:chase_checking))
+
+    get transaction_url(transaction)
+
+    assert_response :success
+    assert_select 'input[data-bucket-picker-target=search]', count: 1
+    assert_select 'li[data-bucket-picker-target=group]', text: 'Expenses'
+    assert_select 'li[data-bucket-picker-target=group]', text: 'Goals'
+    assert_select 'button[data-type=expense]', text: /Electric bill/
+    assert_select 'button[data-type=goal]', text: /Trip fund/
+  end
+
   test 'show does not render a duplicate drawer_content frame in the layout' do
     transaction = Transaction.create!(name: 'Solo', amount: 10.00, bank_account: bank_accounts(:chase_checking))
     sign_in_as(users(:johndoe))
