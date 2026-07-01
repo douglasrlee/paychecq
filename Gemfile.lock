@@ -203,7 +203,7 @@ GEM
     mrml (1.10.0-x86_64-darwin)
     mrml (1.10.0-x86_64-linux)
     mrml (1.10.0-x86_64-linux-musl)
-    msgpack (1.8.1)
+    msgpack (1.8.3)
     multipart-post (2.4.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
