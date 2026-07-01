@@ -37,7 +37,7 @@ class Goal < ApplicationRecord
   # queued to catch it up. Pre-funded future cycles leave pending allocations
   # around, so "any pending allocation" no longer means off-track.
   def off_track?
-    bucket_balance < amount && allocations.exists?(funded_at: nil)
+    allocations.exists?(funded_at: nil) && bucket_balance < amount
   end
 
   def fully_funded?

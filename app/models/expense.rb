@@ -48,7 +48,7 @@ class Expense < ApplicationRecord
   # bucket) leaves pending allocations around, so "any pending allocation" can
   # no longer mean off-track — only an under-funded current cycle does.
   def off_track?
-    bucket_balance < amount && allocations.exists?(funded_at: nil)
+    allocations.exists?(funded_at: nil) && bucket_balance < amount
   end
 
   # True when the bucket has enough money to cover the expense's target.
