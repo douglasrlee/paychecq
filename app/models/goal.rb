@@ -80,7 +80,6 @@ class Goal < ApplicationRecord
     errors.add(:funding_schedule_id, 'must belong to you')
   end
 
-
   def advance_months(date, months)
     next_date = date >> months
     clamp_day(next_date.year, next_date.month, due_on.day)
