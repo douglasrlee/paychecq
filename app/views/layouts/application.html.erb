@@ -80,7 +80,7 @@
     <div data-drawer-target="panel"
          class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-base-100 dark:bg-base-300 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
       <% unless content_for?(:drawer_frame_provided) %>
-        <%= turbo_frame_tag "drawer_content" %>
+        <%= turbo_frame_tag "drawer_content", class: "flex-1 min-h-0 flex flex-col" %>
       <% end %>
     </div>
   </body>
