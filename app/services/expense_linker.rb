@@ -66,12 +66,14 @@ class ExpenseLinker
         remaining_by = AllocationSpend.where(allocation_id: allocation_ids)
                                       .group(:allocation_id)
                                       .sum(:amount)
+        last_spent_at_by = AllocationSpend.where(allocation_id: allocation_ids)
+                                          .group(:allocation_id)
+                                          .maximum(:created_at)
 
         Allocation.where(id: allocation_ids).find_each do |allocation|
-          remaining = remaining_by[allocation.id] || 0
           allocation.update!(
-            spent_amount: remaining,
-            spent_at: remaining.positive? ? allocation.spent_at : nil
+            spent_amount: remaining_by[allocation.id] || 0,
+            spent_at: last_spent_at_by[allocation.id]
           )
         end
 
