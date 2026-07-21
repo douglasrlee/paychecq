@@ -21,7 +21,7 @@
     "@codecov/bundle-analyzer": "^2.0.1",
     "@tailwindcss/cli": "^4.3.2",
     "esbuild": "^0.28.1",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.3"
   },
   "overrides": {
     "undici": "^7.28.0"
