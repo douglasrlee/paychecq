@@ -234,7 +234,7 @@ GEM
       racc (~> 1.4)
     openssl (4.0.1)
     ostruct (0.6.3)
-    pagy (43.5.6)
+    pagy (43.6.0)
       json
       uri
       yaml
@@ -450,7 +450,7 @@ DEPENDENCIES
   mjml-rails
   mrml
   ostruct
-  pagy (~> 43.5)
+  pagy (~> 43.6)
   paper_trail
   pg (~> 1.1)
   plaid
