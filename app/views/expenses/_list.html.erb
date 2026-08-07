@@ -18,21 +18,24 @@
   <% elsif expenses.any? %>
     <%
       total = expenses.sum(&:amount)
-      # Single aggregate query (not `expenses.sum(&:bucket_balance)`, which
-      # would fire one SQL per expense — N+1 on the index page).
-      allocated = Allocation.where(expense_id: expenses.map(&:id))
-                            .where.not(funded_at: nil)
-                            .where('amount > spent_amount')
-                            .sum(Arel.sql('amount - spent_amount'))
+      # Single grouped query (not `expenses.sum(&:bucket_balance)`/`.fully_funded?`/
+      # `.off_track?` per expense, which would each fire their own SQL — N+1 on the
+      # index page). balances/pending_ids feed both the summary counts and every row.
+      balances = Allocation.where(expense_id: expenses.map(&:id))
+                           .where.not(funded_at: nil)
+                           .where('amount > spent_amount')
+                           .group(:expense_id).sum(Arel.sql('amount - spent_amount'))
+      allocated = balances.values.sum
+      pending_ids = Allocation.where(expense_id: expenses.map(&:id), funded_at: nil).distinct.pluck(:expense_id).to_set
       breakdown = expenses.group_by(&:funding_schedule)
                           .transform_values { |exps| exps.sum(&:per_paycheck_amount) }
                           .sort_by { |schedule, _| schedule.name }
     %>
-    <%= render "components/fundable_summary", items: expenses, total: total, allocated: allocated, breakdown: breakdown %>
+    <%= render "components/fundable_summary", items: expenses, total: total, allocated: allocated, breakdown: breakdown, balances: balances %>
 
     <div class="bg-base-200 rounded-xl overflow-hidden">
       <% expenses.each do |expense| %>
-        <%= render "components/fundable_row", item: expense %>
+        <%= render "components/fundable_row", item: expense, balance: balances[expense.id] || 0, pending: pending_ids.include?(expense.id) %>
       <% end %>
     </div>
   <% else %>

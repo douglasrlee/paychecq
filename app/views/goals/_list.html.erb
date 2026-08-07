@@ -18,19 +18,24 @@
   <% elsif goals.any? %>
     <%
       total = goals.sum(&:amount)
-      allocated = Allocation.where(goal_id: goals.map(&:id))
-                            .where.not(funded_at: nil)
-                            .where('amount > spent_amount')
-                            .sum(Arel.sql('amount - spent_amount'))
+      # Single grouped query (not `goals.sum(&:bucket_balance)`/`.fully_funded?`/
+      # `.off_track?` per goal, which would each fire their own SQL — N+1 on the
+      # index page). balances/pending_ids feed both the summary counts and every row.
+      balances = Allocation.where(goal_id: goals.map(&:id))
+                           .where.not(funded_at: nil)
+                           .where('amount > spent_amount')
+                           .group(:goal_id).sum(Arel.sql('amount - spent_amount'))
+      allocated = balances.values.sum
+      pending_ids = Allocation.where(goal_id: goals.map(&:id), funded_at: nil).distinct.pluck(:goal_id).to_set
       breakdown = goals.group_by(&:funding_schedule)
                        .transform_values { |gs| gs.sum(&:per_paycheck_amount) }
                        .sort_by { |schedule, _| schedule.name }
     %>
-    <%= render "components/fundable_summary", items: goals, total: total, allocated: allocated, breakdown: breakdown %>
+    <%= render "components/fundable_summary", items: goals, total: total, allocated: allocated, breakdown: breakdown, balances: balances %>
 
     <div class="bg-base-200 rounded-xl overflow-hidden">
       <% goals.each do |goal| %>
-        <%= render "components/fundable_row", item: goal %>
+        <%= render "components/fundable_row", item: goal, balance: balances[goal.id] || 0, pending: pending_ids.include?(goal.id) %>
       <% end %>
     </div>
   <% else %>

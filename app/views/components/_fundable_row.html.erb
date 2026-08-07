@@ -1,8 +1,11 @@
-<%# locals: (item:) %>
+<%# locals: (item:, balance:, pending:) %>
+<%# balance/pending come precomputed from the caller's batched queries — calling
+    item.bucket_balance/.fully_funded?/.off_track? here would re-run a SUM (and an
+    EXISTS) query per row, the exact N+1 the list partials otherwise avoid. %>
 <%
-  bucket = item.bucket_balance
-  funded = item.fully_funded?
-  off_track = item.off_track?
+  bucket = balance
+  funded = bucket >= item.amount
+  off_track = !funded && pending
   percent = item.amount.positive? ? (bucket / item.amount * 100).to_i.clamp(0, 100) : 0
   remaining = [ item.amount - bucket, 0 ].max
   status_text = if funded

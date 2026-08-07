@@ -212,11 +212,13 @@
                       <% funded = balance >= expense.amount %>
                       <% off_track = !funded && pending_expense_ids.include?(expense.id) %>
                       <% percent = expense.amount.positive? ? (balance / expense.amount * 100).to_i.clamp(0, 100) : 0 %>
+                      <% status_text = funded ? "fully funded" : "#{percent}% funded#{', off track' if off_track}" %>
                       <li data-bucket-picker-target="option" data-name="<%= expense.name.downcase %>">
                         <button type="button"
                                 data-action="click->bucket-picker#select"
                                 data-type="expense"
                                 data-id="<%= expense.id %>"
+                                aria-label="<%= "#{expense.name}, #{status_text}, #{number_to_currency(balance)} available" %>"
                                 class="w-full flex items-center gap-2.5 px-2.5 py-2 border-l-2 border-transparent text-left hover:bg-base-content/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
                           <%= render "components/funding_icon", funded: funded, percent: percent, off_track: off_track, size: :sm %>
                           <span class="truncate text-sm"><%= expense.name %></span>
@@ -235,11 +237,13 @@
                       <% funded = balance >= goal.amount %>
                       <% off_track = !funded && pending_goal_ids.include?(goal.id) %>
                       <% percent = goal.amount.positive? ? (balance / goal.amount * 100).to_i.clamp(0, 100) : 0 %>
+                      <% status_text = funded ? "fully funded" : "#{percent}% funded#{', off track' if off_track}" %>
                       <li data-bucket-picker-target="option" data-name="<%= goal.name.downcase %>">
                         <button type="button"
                                 data-action="click->bucket-picker#select"
                                 data-type="goal"
                                 data-id="<%= goal.id %>"
+                                aria-label="<%= "#{goal.name}, #{status_text}, #{number_to_currency(balance)} available" %>"
                                 class="w-full flex items-center gap-2.5 px-2.5 py-2 border-l-2 border-transparent text-left hover:bg-base-content/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
                           <%= render "components/funding_icon", funded: funded, percent: percent, off_track: off_track, size: :sm %>
                           <span class="truncate text-sm"><%= goal.name %></span>

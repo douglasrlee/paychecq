@@ -1,6 +1,8 @@
-<%# locals: (items:, total:, allocated:, breakdown:) %>
+<%# locals: (items:, total:, allocated:, breakdown:, balances:) %>
+<%# balances comes precomputed from the caller's batched query — items.count(&:fully_funded?)
+    would call bucket_balance (a SUM query) once per item. %>
 <%
-  funded_count = items.count(&:fully_funded?)
+  funded_count = items.count { |item| (balances[item.id] || 0) >= item.amount }
   needs_count = items.size - funded_count
   overall_percent = total.positive? ? ((allocated / total) * 100).clamp(0, 100) : 0
 %>
