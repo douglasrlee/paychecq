@@ -18,38 +18,24 @@
   <% elsif expenses.any? %>
     <%
       total = expenses.sum(&:amount)
-      # Single aggregate query (not `expenses.sum(&:bucket_balance)`, which
-      # would fire one SQL per expense — N+1 on the index page).
-      allocated = Allocation.where(expense_id: expenses.map(&:id))
-                            .where.not(funded_at: nil)
-                            .where('amount > spent_amount')
-                            .sum(Arel.sql('amount - spent_amount'))
+      # Single grouped query (not `expenses.sum(&:bucket_balance)`/`.fully_funded?`/
+      # `.off_track?` per expense, which would each fire their own SQL — N+1 on the
+      # index page). balances/pending_ids feed both the summary counts and every row.
+      balances = Allocation.where(expense_id: expenses.map(&:id))
+                           .where.not(funded_at: nil)
+                           .where('amount > spent_amount')
+                           .group(:expense_id).sum(Arel.sql('amount - spent_amount'))
+      allocated = balances.values.sum
+      pending_ids = Allocation.where(expense_id: expenses.map(&:id), funded_at: nil).distinct.pluck(:expense_id).to_set
       breakdown = expenses.group_by(&:funding_schedule)
                           .transform_values { |exps| exps.sum(&:per_paycheck_amount) }
                           .sort_by { |schedule, _| schedule.name }
     %>
-    <div class="px-1 mb-4 flex flex-wrap items-end gap-x-8 gap-y-3">
-      <div>
-        <div class="text-xs text-base-content/60">Allocated / Total</div>
-        <div class="text-2xl font-bold tabular-nums leading-tight">
-          <%= number_to_currency(allocated) %>
-          <span class="text-base font-normal text-base-content/40">/ <%= number_to_currency(total) %></span>
-        </div>
-      </div>
-      <% breakdown.each do |schedule, amount| %>
-        <div>
-          <div class="text-xs text-base-content/60 truncate">From <%= schedule.name %></div>
-          <div class="font-semibold tabular-nums leading-tight">
-            <%= number_to_currency(amount) %>
-            <span class="text-xs text-base-content/60 font-normal">/paycheck</span>
-          </div>
-        </div>
-      <% end %>
-    </div>
+    <%= render "components/fundable_summary", items: expenses, total: total, allocated: allocated, breakdown: breakdown, balances: balances %>
 
-    <div class="space-y-2">
+    <div class="bg-base-200 rounded-xl overflow-hidden">
       <% expenses.each do |expense| %>
-        <%= render expense %>
+        <%= render "components/fundable_row", item: expense, balance: balances[expense.id] || 0, pending: pending_ids.include?(expense.id) %>
       <% end %>
     </div>
   <% else %>

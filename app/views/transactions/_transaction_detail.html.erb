@@ -166,6 +166,12 @@
         <% user_goals = Current.user.goals.order(:name).to_a %>
         <% expense_balances = user_expenses.any? ? Allocation.where(expense: user_expenses).where.not(funded_at: nil).where('amount > spent_amount').group(:expense_id).sum(Arel.sql('amount - spent_amount')) : {} %>
         <% goal_balances = user_goals.any? ? Allocation.where(goal: user_goals).where.not(funded_at: nil).where('amount > spent_amount').group(:goal_id).sum(Arel.sql('amount - spent_amount')) : {} %>
+        <%# Batched (not per-item .off_track?) to avoid an EXISTS query per row. %>
+        <% pending_expense_ids = user_expenses.any? ? Allocation.where(expense: user_expenses, funded_at: nil).distinct.pluck(:expense_id).to_set : Set.new %>
+        <% pending_goal_ids = user_goals.any? ? Allocation.where(goal: user_goals, funded_at: nil).distinct.pluck(:goal_id).to_set : Set.new %>
+        <%# Fully-funded buckets are the likely pick when linking a transaction — surface them first. %>
+        <% user_expenses = user_expenses.sort_by { |e| [ (expense_balances[e.id] || 0) >= e.amount ? 0 : 1, e.name ] } %>
+        <% user_goals = user_goals.sort_by { |g| [ (goal_balances[g.id] || 0) >= g.amount ? 0 : 1, g.name ] } %>
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-base-content/50">Bucket</span>
           <button data-action="toggle#toggle" class="btn btn-ghost btn-sm text-primary">
@@ -185,52 +191,76 @@
               <%# Name flips to goal_id when a goal is picked (see bucket-picker). %>
               <%= hidden_field_tag :expense_id, '', required: true, data: { bucket_picker_target: 'input' } %>
 
-              <input type="text" placeholder="Search expenses and goals"
-                     aria-label="Search expenses and goals"
-                     data-bucket-picker-target="search"
-                     data-action="input->bucket-picker#filter"
-                     class="input input-bordered input-sm w-full mb-2" />
+              <div class="bg-base-200 rounded-2xl p-2.5">
+                <div class="relative mb-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-base-content/40 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path stroke-linecap="round" d="m20 20-3.5-3.5" />
+                  </svg>
+                  <input type="text" placeholder="Search expenses and goals"
+                         aria-label="Search expenses and goals"
+                         data-bucket-picker-target="search"
+                         data-action="input->bucket-picker#filter"
+                         class="input input-bordered input-sm w-full pl-8" />
+                </div>
 
-              <ul class="menu bg-base-100 rounded-box w-full p-1 mb-3 max-h-60 overflow-y-auto flex-nowrap border border-base-300 [&_li>button:hover]:bg-base-200! [&_li>button:hover]:text-base-content! [&_li>button:focus]:bg-base-200! [&_li>button:focus]:text-base-content!">
-                <% if user_expenses.any? %>
-                  <li class="menu-title text-xs" data-bucket-picker-target="group">Expenses</li>
-                  <% user_expenses.each do |expense| %>
-                    <li data-bucket-picker-target="option" data-name="<%= expense.name.downcase %>">
-                      <button type="button"
-                              data-action="click->bucket-picker#select"
-                              data-type="expense"
-                              data-id="<%= expense.id %>">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="picker-check h-4 w-4 shrink-0 text-primary invisible" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span class="truncate"><%= expense.name %></span>
-                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(expense_balances[expense.id] || 0) %></span>
-                      </button>
-                    </li>
+                <ul class="bg-base-100 rounded-xl border border-base-300 max-h-60 overflow-y-auto">
+                  <% if user_expenses.any? %>
+                    <li class="px-2.5 pt-2.5 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/45" data-bucket-picker-target="group">Expenses</li>
+                    <% user_expenses.each do |expense| %>
+                      <% balance = expense_balances[expense.id] || 0 %>
+                      <% funded = balance >= expense.amount %>
+                      <% off_track = !funded && pending_expense_ids.include?(expense.id) %>
+                      <% percent = expense.amount.positive? ? (balance / expense.amount * 100).to_i.clamp(0, 100) : 0 %>
+                      <% status_text = funded ? "fully funded" : "#{percent}% funded#{', off track' if off_track}" %>
+                      <li data-bucket-picker-target="option" data-name="<%= expense.name.downcase %>">
+                        <button type="button"
+                                data-action="click->bucket-picker#select"
+                                data-type="expense"
+                                data-id="<%= expense.id %>"
+                                aria-label="<%= "#{expense.name}, #{status_text}, #{number_to_currency(balance)} available" %>"
+                                class="w-full flex items-center gap-2.5 px-2.5 py-2 border-l-2 border-transparent text-left hover:bg-base-content/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
+                          <%= render "components/funding_icon", funded: funded, percent: percent, off_track: off_track, size: :sm %>
+                          <span class="truncate text-sm"><%= expense.name %></span>
+                          <span class="text-right shrink-0 ml-auto">
+                            <span class="block text-xs font-semibold tabular-nums"><%= number_to_currency(balance) %></span>
+                            <span class="block text-xs text-base-content/45">available</span>
+                          </span>
+                        </button>
+                      </li>
+                    <% end %>
                   <% end %>
-                <% end %>
-                <% if user_goals.any? %>
-                  <li class="menu-title text-xs" data-bucket-picker-target="group">Goals</li>
-                  <% user_goals.each do |goal| %>
-                    <li data-bucket-picker-target="option" data-name="<%= goal.name.downcase %>">
-                      <button type="button"
-                              data-action="click->bucket-picker#select"
-                              data-type="goal"
-                              data-id="<%= goal.id %>">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="picker-check h-4 w-4 shrink-0 text-primary invisible" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span class="truncate"><%= goal.name %></span>
-                        <span class="text-xs text-base-content/50 shrink-0 ml-auto"><%= number_to_currency(goal_balances[goal.id] || 0) %></span>
-                      </button>
-                    </li>
+                  <% if user_goals.any? %>
+                    <li class="px-2.5 pt-2.5 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/45" data-bucket-picker-target="group">Goals</li>
+                    <% user_goals.each do |goal| %>
+                      <% balance = goal_balances[goal.id] || 0 %>
+                      <% funded = balance >= goal.amount %>
+                      <% off_track = !funded && pending_goal_ids.include?(goal.id) %>
+                      <% percent = goal.amount.positive? ? (balance / goal.amount * 100).to_i.clamp(0, 100) : 0 %>
+                      <% status_text = funded ? "fully funded" : "#{percent}% funded#{', off track' if off_track}" %>
+                      <li data-bucket-picker-target="option" data-name="<%= goal.name.downcase %>">
+                        <button type="button"
+                                data-action="click->bucket-picker#select"
+                                data-type="goal"
+                                data-id="<%= goal.id %>"
+                                aria-label="<%= "#{goal.name}, #{status_text}, #{number_to_currency(balance)} available" %>"
+                                class="w-full flex items-center gap-2.5 px-2.5 py-2 border-l-2 border-transparent text-left hover:bg-base-content/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
+                          <%= render "components/funding_icon", funded: funded, percent: percent, off_track: off_track, size: :sm %>
+                          <span class="truncate text-sm"><%= goal.name %></span>
+                          <span class="text-right shrink-0 ml-auto">
+                            <span class="block text-xs font-semibold tabular-nums"><%= number_to_currency(balance) %></span>
+                            <span class="block text-xs text-base-content/45">available</span>
+                          </span>
+                        </button>
+                      </li>
+                    <% end %>
                   <% end %>
-                <% end %>
-              </ul>
+                </ul>
 
-              <div class="flex gap-2">
-                <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', bucket_picker_target: 'submit' } %>
-                <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
+                <div class="flex gap-2 mt-3">
+                  <%= f.button 'Save', type: 'submit', class: 'btn btn-primary btn-sm flex-1', disabled: true, data: { controller: 'loading-button', loading_button_text_value: 'Saving...', bucket_picker_target: 'submit' } %>
+                  <button type="button" data-action="toggle#toggle" class="btn btn-ghost btn-sm flex-1">Cancel</button>
+                </div>
               </div>
             <% end %>
           <% else %>

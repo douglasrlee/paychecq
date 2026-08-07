@@ -26,5 +26,12 @@ module PayChecQ
 
     # Use custom mail delivery job with retries
     config.action_mailer.delivery_job = 'MailDeliveryJob'
+
+    # The app doesn't use ActiveStorage attachments/variants. Rails 8.1's
+    # framework default (config.load_defaults 8.1) picks :vips, and since
+    # Rails 8.1.3.1 that gets resolved eagerly at boot rather than lazily —
+    # crashing on boot without the ruby-vips gem and the libvips system
+    # library, neither of which this app has (or needs).
+    config.active_storage.variant_processor = :disabled
   end
 end

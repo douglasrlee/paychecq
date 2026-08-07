@@ -1,0 +1,48 @@
+<%# locals: (item:, balance:, pending:) %>
+<%# balance/pending come precomputed from the caller's batched queries — calling
+    item.bucket_balance/.fully_funded?/.off_track? here would re-run a SUM (and an
+    EXISTS) query per row, the exact N+1 the list partials otherwise avoid. %>
+<%
+  bucket = balance
+  funded = bucket >= item.amount
+  off_track = !funded && pending
+  percent = item.amount.positive? ? (bucket / item.amount * 100).to_i.clamp(0, 100) : 0
+  remaining = [ item.amount - bucket, 0 ].max
+  status_text = if funded
+    "fully funded"
+  else
+    "#{percent}% funded, #{number_to_currency(remaining)} to go#{', off track' if off_track}"
+  end
+%>
+<%= link_to edit_polymorphic_path(item),
+      class: "flex items-center gap-3 px-3 py-2.5 border-t border-base-content/10 first:border-t-0 hover:bg-base-content/5 focus-visible:outline-2 focus-visible:outline-primary focus-visible:-outline-offset-2",
+      "aria-label": "Edit #{item.name}, #{status_text}",
+      data: { turbo_frame: "drawer_content", action: "click->drawer#open" } do %>
+  <%= render "components/funding_icon", funded: funded, percent: percent, off_track: off_track %>
+
+  <div class="min-w-0 flex-1">
+    <div class="flex items-baseline gap-2 min-w-0">
+      <p class="text-sm truncate <%= funded ? 'text-base-content/80' : 'font-medium' %>"><%= item.name %></p>
+      <p class="text-xs text-base-content/60 shrink-0">Due <%= item.current_due_on.strftime('%b %-d') %></p>
+      <% if off_track %>
+        <span class="badge badge-warning badge-xs shrink-0">Off track</span>
+      <% end %>
+    </div>
+    <% unless funded %>
+      <p class="text-xs text-base-content/60 tabular-nums">
+        <%= number_to_currency(bucket) %> of <%= number_to_currency(item.amount) %>
+        &middot; <%= number_to_currency(item.per_paycheck_amount) %>/<%= item.funding_schedule.name %>
+      </p>
+    <% end %>
+  </div>
+
+  <div class="text-right shrink-0">
+    <% if funded %>
+      <p class="text-sm font-medium tabular-nums text-base-content/65"><%= number_to_currency(bucket) %></p>
+      <p class="text-xs text-success">funded</p>
+    <% else %>
+      <p class="text-sm font-bold tabular-nums <%= off_track ? 'text-warning' : 'text-primary' %>"><%= number_to_currency(remaining) %></p>
+      <p class="text-xs text-base-content/50">to go</p>
+    <% end %>
+  </div>
+<% end %>

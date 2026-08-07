@@ -16,10 +16,14 @@ export default class extends Controller {
     this.inputTarget.name = type === "goal" ? "goal_id" : "expense_id"
     this.element.action = type === "goal" ? this.goalUrlValue : this.expenseUrlValue
 
+    // The icon slot shows funding status (check/ring), not selection, so
+    // selection is a row highlight instead of a checkmark.
     this.optionTargets.forEach((option) => {
       const button = option.querySelector("button")
       const selected = button.dataset.id === id
-      button.querySelector(".picker-check")?.classList.toggle("invisible", !selected)
+      button.classList.toggle("bg-primary/10", selected)
+      button.classList.toggle("border-primary", selected)
+      button.classList.toggle("border-transparent", !selected)
     })
 
     if (this.hasSubmitTarget) this.submitTarget.disabled = false
