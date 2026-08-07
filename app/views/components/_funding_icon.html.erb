@@ -1,0 +1,14 @@
+<%# locals: (funded:, percent: 0, off_track: false, size: :md) %>
+<% ring_size = size == :sm ? "1.75rem" : "2.375rem" %>
+<% ring_inset = size == :sm ? "4px" : "5px" %>
+<% check_svg_size = size == :sm ? "h-3 w-3" : "h-3.5 w-3.5" %>
+<% if funded %>
+  <span class="funding-check" style="--check-size: <%= ring_size %>" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" class="<%= check_svg_size %>" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7" />
+    </svg>
+  </span>
+<% else %>
+  <span class="funding-ring" aria-hidden="true"
+        style="--ring-size: <%= ring_size %>; --ring-inset: <%= ring_inset %>; --pct: <%= percent %><%= '; --ring-color: var(--color-warning)' if off_track %>"></span>
+<% end %>

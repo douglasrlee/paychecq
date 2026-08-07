@@ -28,28 +28,11 @@
                           .transform_values { |exps| exps.sum(&:per_paycheck_amount) }
                           .sort_by { |schedule, _| schedule.name }
     %>
-    <div class="px-1 mb-4 flex flex-wrap items-end gap-x-8 gap-y-3">
-      <div>
-        <div class="text-xs text-base-content/60">Allocated / Total</div>
-        <div class="text-2xl font-bold tabular-nums leading-tight">
-          <%= number_to_currency(allocated) %>
-          <span class="text-base font-normal text-base-content/40">/ <%= number_to_currency(total) %></span>
-        </div>
-      </div>
-      <% breakdown.each do |schedule, amount| %>
-        <div>
-          <div class="text-xs text-base-content/60 truncate">From <%= schedule.name %></div>
-          <div class="font-semibold tabular-nums leading-tight">
-            <%= number_to_currency(amount) %>
-            <span class="text-xs text-base-content/60 font-normal">/paycheck</span>
-          </div>
-        </div>
-      <% end %>
-    </div>
+    <%= render "components/fundable_summary", items: expenses, total: total, allocated: allocated, breakdown: breakdown %>
 
-    <div class="space-y-2">
+    <div class="bg-base-200 rounded-xl overflow-hidden">
       <% expenses.each do |expense| %>
-        <%= render expense %>
+        <%= render "components/fundable_row", item: expense %>
       <% end %>
     </div>
   <% else %>

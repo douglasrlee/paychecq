@@ -78,6 +78,41 @@
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Compact funding-status indicators, shared by app/views/components/
+   _funding_icon.html.erb wherever a percent-funded or fully-funded state
+   needs to show (expense/goal list rows, the transaction bucket picker). A
+   donut ring for "percent funded so far" (--pct set inline per instance,
+   cut into a ring via mask so it works over any row background, including
+   :hover) and a solid check for "fully funded". Both size via a custom
+   property so callers can shrink them (e.g. the bucket picker) without a
+   second set of rules. */
+@utility funding-ring {
+  --pct: 0;
+  --ring-color: var(--color-primary);
+  --ring-size: 2.375rem;
+  --ring-inset: 5px;
+  width: var(--ring-size);
+  height: var(--ring-size);
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: conic-gradient(var(--ring-color) calc(var(--pct) * 1%), color-mix(in oklch, var(--color-base-content) 16%, transparent) 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-inset)), #000 calc(100% - var(--ring-inset)));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-inset)), #000 calc(100% - var(--ring-inset)));
+}
+
+@utility funding-check {
+  --check-size: 2.375rem;
+  width: var(--check-size);
+  height: var(--check-size);
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: var(--color-success);
+  color: var(--color-success-content);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* daisyUI swaps :root's background to a tinted gradient when a modal opens
    (--page-scroll-bg-on). With our layout's bg-base-300 dark page, that
    "tinted" variant is actually LIGHTER than the page itself — so the user
